@@ -7,6 +7,8 @@
 - 移除独立卡片外框和卡片间距，改为原生自适应高度列表；默认字号实测每行约 83pt，原布局为 160pt 卡片加 16pt 间距。
 - 发行方和账户合为一行，处理重复发行方前缀、大小写、空白和中英文冒号；保留邮箱、相似名称和原始存储字段。
 - 左滑展示编辑、二维码和删除操作，关闭完整滑动直接执行；删除继续使用确认框。
+- 复制反馈改为居中毛玻璃 HUD，2 秒后自动消失；提示不参与列表布局、不拦截触摸，连续复制刷新计时且不叠加。
+- HUD 的 iOS 26.5 UI 回归通过：出现和消失前后账户行 frame 完全一致，连续点击仅存在一个提示，随后自动移除。已检查截图；结果为 `build/Validation/Copy-HUD-Verified.xcresult`，截图为 `build/Validation/Copy-HUD-Screenshots/copy-hud.png`。
 - 21 项单元测试通过，包含名称去重边界用例。UI 回归增加行高、合并名称、左滑编辑/二维码、取消删除和确认删除后的空态验证。
 - XCTest 可能把 UITableView 复用缓存中的旧 cell 留在层级中；删除验证以实际空态及截图为准。
 - iPhone 16 Pro / iOS 18.5 与 iPhone 17 Pro / iOS 26.5 的完整账户 UI 流程均通过，包含复制、搜索、左滑编辑/二维码、文件导出和删除确认。结果位于 `build/Validation/Compact-Accounts-Final.xcresult`，无运行时警告。

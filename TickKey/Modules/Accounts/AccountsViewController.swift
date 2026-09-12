@@ -14,6 +14,8 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
   private let empty = UIStackView()
   private let emptyTitle = UILabel()
   private let emptyBody = UILabel()
+  private var copyHUD: UIVisualEffectView?
+  private var copyHUDDismissal: AnyCancellable?
   private var subscriptions = Set<AnyCancellable>()
   private var shown: [Token] = []
   private let searchChanges = PassthroughSubject<Void, Never>()
@@ -125,8 +127,14 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
     }
   }
 
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    dismissCopyHUD()
+  }
+
   /// 重新生成导航文案和操作入口，使语言修改立即反映到主界面。
   private func localize() {
+    dismissCopyHUD()
     title = "TickKey"
     search.searchBar.placeholder = Localization.text("search")
     navigationItem.leftBarButtonItem = UIBarButtonItem(
@@ -276,11 +284,55 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
         [["public.utf8-plain-text": code]],
         options: [.localOnly: true, .expirationDate: Date().addingTimeInterval(30)])
       UIAccessibility.post(notification: .announcement, argument: Localization.text("copied"))
-      navigationItem.prompt = Localization.text("copied")
-      DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in self?.navigationItem.prompt = nil }
+      showCopyHUD()
     } catch {
       showError(error)
     }
+  }
+
+  /// 将复制反馈覆盖在内容中央，不参与列表布局；连续复制只保留最新提示并重新计时。
+  private func showCopyHUD() {
+    dismissCopyHUD()
+    let hud = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
+    hud.layer.cornerRadius = 18
+    hud.clipsToBounds = true
+    hud.isUserInteractionEnabled = false
+    hud.accessibilityIdentifier = "copy-hud"
+    let icon = UIImageView(image: UIImage(systemName: "checkmark.circle.fill"))
+    icon.tintColor = view.tintColor
+    icon.contentMode = .scaleAspectFit
+    icon.isAccessibilityElement = false
+    icon.snp.makeConstraints { $0.size.equalTo(32) }
+    let label = UILabel()
+    label.text = Localization.text("copied")
+    label.font = .preferredFont(forTextStyle: .subheadline)
+    label.adjustsFontForContentSizeCategory = true
+    label.textAlignment = .center
+    label.numberOfLines = 0
+    let stack = UIStackView(arrangedSubviews: [icon, label])
+    stack.axis = .vertical
+    stack.alignment = .center
+    stack.spacing = 10
+    hud.contentView.addSubview(stack)
+    stack.snp.makeConstraints { $0.edges.equalToSuperview().inset(20) }
+    view.addSubview(hud)
+    hud.snp.makeConstraints {
+      $0.center.equalTo(view.safeAreaLayoutGuide)
+      $0.leading.greaterThanOrEqualTo(view.safeAreaLayoutGuide).offset(24)
+      $0.trailing.lessThanOrEqualTo(view.safeAreaLayoutGuide).offset(-24)
+      $0.width.lessThanOrEqualTo(280)
+    }
+    copyHUD = hud
+    copyHUDDismissal = Just(())
+      .delay(for: .seconds(2), scheduler: DispatchQueue.main)
+      .sink { [weak self] _ in self?.dismissCopyHUD() }
+  }
+
+  private func dismissCopyHUD() {
+    copyHUDDismissal?.cancel()
+    copyHUDDismissal = nil
+    copyHUD?.removeFromSuperview()
+    copyHUD = nil
   }
 
   /// 使用系统行内操作并禁用整段滑动直接执行，删除仍需独立确认。

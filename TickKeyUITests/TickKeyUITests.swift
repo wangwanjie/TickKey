@@ -55,14 +55,18 @@ internal final class TickKeyUITests: XCTestCase {
     app.secureTextFields["secret"].typeText("JBSWY3DPEHPK3PXP")
     app.buttons["save-account"].tap()
     XCTAssertTrue(app.cells["token-alice@example.com"].waitForExistence(timeout: 5))
+    // 部分模拟器会额外弹出系统密码保存面板；测试账户不保存到系统密码库。
+    let savePassword = app.sheets["保存密码？"]
+    if savePassword.exists {
+      savePassword.buttons["以后"].tap()
+    }
     XCTAssertTrue(app.staticTexts["GitHub · alice@example.com"].exists)
     XCTAssertLessThan(app.cells["token-alice@example.com"].frame.height, 100)
     let screen = XCTAttachment(screenshot: app.screenshot())
     screen.name = "Accounts"
     screen.lifetime = .keepAlways
     add(screen)
-    app.cells["token-alice@example.com"].tap()
-    XCTAssertTrue(app.staticTexts["Copied · clears in 30 seconds"].waitForExistence(timeout: 3))
+    verifyCopyHUD(app)
     let search = app.searchFields.firstMatch
     search.tap()
     search.typeText("no-such-account")
@@ -91,6 +95,26 @@ internal final class TickKeyUITests: XCTestCase {
     app.buttons["Close"].tap()
     verifyFileExports(app)
     verifySwipeDeletion(app)
+  }
+
+  /// 复制提示覆盖内容但不移动账户行，连续点击不会叠加提示，且会自动消失。
+  @MainActor
+  private func verifyCopyHUD(_ app: XCUIApplication) {
+    let cell = app.cells["token-alice@example.com"]
+    let frame = cell.frame
+    cell.tap()
+    let hud = app.otherElements["copy-hud"]
+    XCTAssertTrue(hud.waitForExistence(timeout: 3))
+    XCTAssertEqual(cell.frame, frame)
+    let screen = XCTAttachment(screenshot: app.screenshot())
+    screen.name = "Copy HUD"
+    screen.lifetime = .keepAlways
+    add(screen)
+    cell.tap()
+    XCTAssertTrue(hud.waitForExistence(timeout: 3))
+    XCTAssertEqual(app.otherElements.matching(identifier: "copy-hud").count, 1)
+    XCTAssertTrue(hud.waitForNonExistence(timeout: 5))
+    XCTAssertEqual(cell.frame, frame)
   }
 
   /// 左滑只展开菜单，取消删除保持账户，确认后才真正移除。
