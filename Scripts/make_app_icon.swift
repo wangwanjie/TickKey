@@ -27,13 +27,38 @@ image.unlockFocus()
 
 /// 根据平台选择透明度，iOS 图标必须不含 alpha 通道，渲染失败时中止生成。
 private func png(_ size: Int, to url: URL) throws {
+  if url.path.contains("/TickKey/Assets") {
+    // AppKit 无法可靠绘制三通道位图；先用不透明的四字节 RGB 上下文绘制，再编码 PNG。
+    guard let context = CGContext(
+      data: nil,
+      width: size,
+      height: size,
+      bitsPerComponent: 8,
+      bytesPerRow: size * 4,
+      space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
+      bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue),
+      let source = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+      throw CocoaError(.fileWriteUnknown)
+    }
+    context.setFillColor(CGColor(srgbRed: 0.12, green: 0.28, blue: 0.61, alpha: 1))
+    context.fill(CGRect(x: 0, y: 0, width: size, height: size))
+    context.interpolationQuality = .high
+    context.draw(source, in: CGRect(x: 0, y: 0, width: size, height: size))
+    guard let rendered = context.makeImage(),
+          let data = NSBitmapImageRep(cgImage: rendered).representation(using: .png, properties: [:]) else {
+      throw CocoaError(.fileWriteUnknown)
+    }
+    try data.write(to: url)
+    return
+  }
+
   guard let rep = NSBitmapImageRep(
     bitmapDataPlanes: nil,
     pixelsWide: size,
     pixelsHigh: size,
     bitsPerSample: 8,
-    samplesPerPixel: url.path.contains("/TickKey/Assets") ? 3 : 4,
-    hasAlpha: !url.path.contains("/TickKey/Assets"),
+    samplesPerPixel: 4,
+    hasAlpha: true,
     isPlanar: false,
     colorSpaceName: .deviceRGB,
     bytesPerRow: 0,
@@ -42,10 +67,6 @@ private func png(_ size: Int, to url: URL) throws {
   }
   NSGraphicsContext.saveGraphicsState()
   NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
-  if url.path.contains("/TickKey/Assets") {
-    NSColor(srgbRed: 0.12, green: 0.28, blue: 0.61, alpha: 1).setFill()
-    NSBezierPath(rect: NSRect(x: 0, y: 0, width: size, height: size)).fill()
-  }
   image.draw(in: NSRect(x: 0, y: 0, width: size, height: size))
   NSGraphicsContext.restoreGraphicsState()
   guard let data = rep.representation(using: .png, properties: [:]) else {
@@ -61,7 +82,7 @@ for folder in [mac, ios] {
 }
 
 private var entries: [[String: String]] = []
-for size in [16, 32, 128, 256, 512] {
+for size in CommandLine.arguments.contains("--ios-only") ? [] : [16, 32, 128, 256, 512] {
   for scale in [1, 2] {
     let name = "icon-\(size)@\(scale)x.png"
     try png(size * scale, to: mac.appendingPathComponent(name))
@@ -69,10 +90,13 @@ for size in [16, 32, 128, 256, 512] {
   }
 }
 
-try JSONSerialization.data(
-  withJSONObject: ["images": entries, "info": ["author": "xcode", "version": 1]],
-  options: [.prettyPrinted])
-  .write(to: mac.appendingPathComponent("Contents.json"))
+if !entries.isEmpty {
+  try JSONSerialization.data(
+    withJSONObject: ["images": entries, "info": ["author": "xcode", "version": 1]],
+    options: [.prettyPrinted])
+    .write(to: mac.appendingPathComponent("Contents.json"))
+}
+
 entries = []
 for (idiom, sizes, scales) in [("iphone", [20.0, 29, 40, 60], [2, 3]), ("ipad", [20.0, 29, 40, 76, 83.5], [1, 2])] {
   for size in sizes {
