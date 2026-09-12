@@ -63,6 +63,7 @@ internal final class PhotoImportCoordinator: NSObject, PHPickerViewControllerDel
   }
 
   func choosePhotos() {
+    PerformanceDiagnostics.event("photos.open")
     var configuration = PHPickerConfiguration()
     configuration.filter = .images
     configuration.selectionLimit = 0
@@ -90,7 +91,7 @@ internal final class PhotoImportCoordinator: NSObject, PHPickerViewControllerDel
   /// 顺序读取原始图像数据，Vision 自动处理照片方向；不保存图片或记录密钥。
   private func load(at index: Int, progress: UIAlertController) {
     guard index < selections.count else {
-      progress.dismiss(animated: true) { [weak self] in self?.finish() }
+      finish(progress: progress)
       return
     }
     progress.message = String(format: Localization.text("import.photos.progress"), index + 1, selections.count)
@@ -98,7 +99,11 @@ internal final class PhotoImportCoordinator: NSObject, PHPickerViewControllerDel
       .itemProvider
       .loadDataRepresentation(forTypeIdentifier: UTType.image.identifier) { [weak self] data, _ in
         DispatchQueue.global(qos: .userInitiated).async {
-          let decoded = autoreleasepool { data.flatMap { try? PhotoTokenDecoder.decode($0) } }
+          let decoded = autoreleasepool {
+            PerformanceDiagnostics.measure("photos.decode", count: data?.count ?? 0) {
+              data.flatMap { try? PhotoTokenDecoder.decode($0) }
+            }
+          }
           DispatchQueue.main.async {
             guard let self else {
               return
@@ -119,22 +124,27 @@ internal final class PhotoImportCoordinator: NSObject, PHPickerViewControllerDel
   }
 
   /// 汇总有效账户后一次事务去重写入，部分失败时仍反馈成功数量及跳过原因。
-  private func finish() {
-    defer {
-      tokens = []
-      selections = []
-    }
-    do {
-      var message = tokens.isEmpty
-        ? Localization.text("import.photos.empty")
-        : try AppModel.shared.importTokens(tokens)
-      if failedImages > 0 || rejectedCodes > 0 {
-        message += "\n\n" + String(
-          format: Localization.text("import.photos.skipped"), failedImages, rejectedCodes)
+  private func finish(progress: UIAlertController) {
+    let skipped = failedImages > 0 || rejectedCodes > 0
+      ? "\n\n" + String(format: Localization.text("import.photos.skipped"), failedImages, rejectedCodes)
+      : ""
+    let imported = tokens
+    tokens = []
+    selections = []
+    let completion: (Result<String, Error>) -> Void = { [weak self] result in
+      progress.dismiss(animated: true) {
+        switch result {
+        case let .success(message):
+          self?.presenter?.showMessage(message + skipped)
+        case let .failure(error):
+          self?.presenter?.showError(error)
+        }
       }
-      presenter?.showMessage(message)
-    } catch {
-      presenter?.showError(error)
+    }
+    if imported.isEmpty {
+      completion(.success(Localization.text("import.photos.empty")))
+    } else {
+      AppModel.shared.importTokens(imported, completion: completion)
     }
   }
 }

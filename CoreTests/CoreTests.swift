@@ -233,4 +233,60 @@ internal final class CoreTests: XCTestCase {
       account: "alice@example.com",
       secret: "JBSWY3DPEHPK3PXP")
   }
+
+  /// 后台导入期间旧状态可读、交错写入被拒绝，成功后内存和磁盘一次性保持一致。
+  @MainActor
+  func testBackgroundImportPreservesAtomicityAndDeduplication() async throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let vault = try Vault(directory: root, testKey: Data(repeating: 3, count: 32))
+    let model = try AppModel(vault: vault)
+    let first = try fixture()
+    _ = try model.add([first])
+    let original = model.tokens
+    let imported = try (0 ..< 500).map {
+      try Token(issuer: "Example", account: "account-\($0)", secret: "JBSWY3DPEHPK3PXP")
+    }
+    let result: Result<String, Error> = await withCheckedContinuation { continuation in
+      model.importTokens(imported + imported + [first]) { continuation.resume(returning: $0) }
+      XCTAssertEqual(model.tokens, original)
+      do {
+        try model.delete(original[0])
+        XCTFail("导入期间不应允许交错写入")
+      } catch {
+        XCTAssertEqual(model.tokens, original)
+      }
+    }
+    _ = try result.get()
+    XCTAssertEqual(model.tokens.count, 501)
+    XCTAssertEqual(model.tokens.first, original.first)
+    XCTAssertEqual(Set(model.tokens.map(\.id)).count, 501)
+    XCTAssertEqual(try vault.load(), model.tokens)
+    try model.delete(model.tokens[0])
+    XCTAssertEqual(model.tokens.count, 500)
+  }
+
+  /// 失败不发布半批数据，且解除写入保护，使下一次正常导入仍可完成。
+  @MainActor
+  func testBackgroundImportFailureLeavesVaultIntactAndAllowsRetry() async throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let vault = try Vault(directory: root, testKey: Data(repeating: 4, count: 32))
+    let model = try AppModel(vault: vault)
+    let valid = try fixture()
+    var invalid = valid
+    invalid.secret = "invalid!"
+    let failed: Result<String, Error> = await withCheckedContinuation { continuation in
+      model.importTokens([valid, invalid]) { continuation.resume(returning: $0) }
+    }
+    XCTAssertThrowsError(try failed.get())
+    XCTAssertTrue(model.tokens.isEmpty)
+    XCTAssertTrue(try vault.load().isEmpty)
+    let retry: Result<String, Error> = await withCheckedContinuation { continuation in
+      model.importTokens([valid]) { continuation.resume(returning: $0) }
+    }
+    _ = try retry.get()
+    XCTAssertEqual(model.tokens.count, 1)
+    XCTAssertEqual(try vault.load(), model.tokens)
+  }
 }

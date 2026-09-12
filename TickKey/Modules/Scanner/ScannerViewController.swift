@@ -4,11 +4,13 @@ import UIKit
 
 /// 管理相机授权与二维码识别，识别成功后返回表单供用户确认。
 internal final class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
-  private let session = AVCaptureSession()
-  private let queue = DispatchQueue(label: "cn.vanjay.TickKey.camera")
+  private let pipeline = CameraSessionPipeline()
   private var preview: AVCaptureVideoPreviewLayer?
+  private var previewConnection: AVCaptureConnection?
+  private var previewOrientation: AVCaptureVideoOrientation?
   private var completed = false
-  private var requested = false
+  private var requestID = UUID()
+  private var visible = false
   private let completion: (Token) -> Void
 
   init(completion: @escaping (Token) -> Void) {
@@ -34,24 +36,26 @@ internal final class ScannerViewController: UIViewController, AVCaptureMetadataO
 
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
-
-    guard !requested else {
-      return
-    }
-    requested = true
+    visible = true
+    let identifier = UUID()
+    requestID = identifier
+    PerformanceDiagnostics.event("camera.visible")
 
     // 页面出现后再请求授权，确保拒绝或无相机时的提示可以正常呈现。
     switch AVCaptureDevice.authorizationStatus(for: .video) {
     case .authorized:
-      configure()
+      configure(identifier: identifier)
     case .notDetermined:
       AVCaptureDevice.requestAccess(for: .video) { [weak self] allowed in
         DispatchQueue.main
           .async {
+            guard let self, self.visible, self.requestID == identifier else {
+              return
+            }
             if allowed {
-              self?.configure()
+              self.configure(identifier: identifier)
             } else {
-              self?.showMessage(Localization.text("camera.denied"))
+              self.showMessage(Localization.text("camera.denied"))
             }
           }
       }
@@ -60,29 +64,34 @@ internal final class ScannerViewController: UIViewController, AVCaptureMetadataO
     }
   }
 
-  /// 建立仅识别 QR 的采集管线，启动和停止相机放到专用队列。
-  private func configure() {
-    guard let device = AVCaptureDevice.default(for: .video), let input = try? AVCaptureDeviceInput(device: device),
-          session.canAddInput(input)
-    else {
-      showMessage(Localization.text("camera.unavailable"))
+  /// 相机准备期间界面仍可取消；退出后到达的权限或配置回调不再启动相机。
+  private func configure(identifier: UUID) {
+    pipeline.prepare(delegate: self) { [weak self] result in
+      guard let self, visible, requestID == identifier else {
+        return
+      }
+      switch result {
+      case let .success(session):
+        attachPreview(session)
+        pipeline.start()
+      case .failure:
+        showMessage(Localization.text("camera.unavailable"))
+      }
+    }
+  }
+
+  /// 图层与提示属于 UI，只在主线程安装；此时后台配置已完成且尚未启动采集。
+  private func attachPreview(_ session: AVCaptureSession) {
+    guard preview == nil else {
       return
     }
-    session.addInput(input)
-    let output = AVCaptureMetadataOutput()
-
-    guard session.canAddOutput(output) else {
-      showMessage(Localization.text("camera.unavailable"))
-      return
+    preview = PerformanceDiagnostics.measure("camera.preview.attach") {
+      let preview = AVCaptureVideoPreviewLayer(session: session)
+      preview.videoGravity = .resizeAspectFill
+      view.layer.insertSublayer(preview, at: 0)
+      return preview
     }
-    session.addOutput(output)
-    output.setMetadataObjectsDelegate(self, queue: .main)
-    output.metadataObjectTypes = [.qr]
-    let preview = AVCaptureVideoPreviewLayer(session: session)
-    preview.videoGravity = .resizeAspectFill
-    view.layer.insertSublayer(preview, at: 0)
-    self.preview = preview
-
+    previewConnection = preview?.connection
     let help = UILabel()
     help.text = Localization.text("scan.help")
     help.numberOfLines = 0
@@ -97,8 +106,6 @@ internal final class ScannerViewController: UIViewController, AVCaptureMetadataO
       $0.height.greaterThanOrEqualTo(60)
     }
     view.setNeedsLayout()
-    let session = session
-    queue.async { session.startRunning() }
   }
 
   override func viewDidLayoutSubviews() {
@@ -116,14 +123,18 @@ internal final class ScannerViewController: UIViewController, AVCaptureMetadataO
       default:
         .portrait
       }
-      preview?.connection?.videoOrientation = video
+      if let previewConnection, previewOrientation != video {
+        previewOrientation = video
+        pipeline.setOrientation(video, connection: previewConnection)
+      }
     }
   }
 
-  override func viewDidDisappear(_ animated: Bool) {
-    super.viewDidDisappear(animated)
-    let session = session
-    queue.async { session.stopRunning() }
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    visible = false
+    requestID = UUID()
+    pipeline.stop()
   }
 
   @objc private func close() {
@@ -135,7 +146,7 @@ internal final class ScannerViewController: UIViewController, AVCaptureMetadataO
     _ output: AVCaptureMetadataOutput,
     didOutput metadataObjects: [AVMetadataObject],
     from connection: AVCaptureConnection) {
-    guard !completed,
+    guard visible, !completed,
           let text = (metadataObjects.first as? AVMetadataMachineReadableCodeObject)?.stringValue else {
       return
     }

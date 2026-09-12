@@ -10,12 +10,15 @@ $(SRCROOT)/Shared/Core/TOTP.swift
 $(SRCROOT)/Shared/Core/Token.swift
 $(SRCROOT)/Shared/Storage/Vault.swift
 $(SRCROOT)/Shared/Support/Localization.swift
+$(SRCROOT)/Shared/Support/PerformanceDiagnostics.swift
 $(SRCROOT)/Shared/Support/QRCode.swift
 $(SRCROOT)/TickKey/AppDelegate.swift
+$(SRCROOT)/TickKey/MainThreadMonitor.swift
 $(SRCROOT)/TickKey/Modules/Accounts/AccountsViewController.swift
 $(SRCROOT)/TickKey/Modules/Accounts/CountdownView.swift
 $(SRCROOT)/TickKey/Modules/Accounts/TokenCell.swift
 $(SRCROOT)/TickKey/Modules/Accounts/TokenEditorViewController.swift
+$(SRCROOT)/TickKey/Modules/Scanner/CameraSessionPipeline.swift
 $(SRCROOT)/TickKey/Modules/Scanner/ScannerViewController.swift
 $(SRCROOT)/TickKey/Modules/Settings/SettingsDrawerController.swift
 $(SRCROOT)/TickKey/Modules/Settings/SettingsViewController.swift

@@ -8,7 +8,8 @@ import Security
 // MARK: - Vault
 
 /// Keychain 中保存设备密钥，SQLite 只存认证加密后的完整账户记录。
-internal final class Vault {
+/// 跨队列只共享不可变密钥、由 GRDB 串行化的 DatabaseQueue 和内部加锁的 MMKV；编解码器逐次创建。
+internal final class Vault: @unchecked Sendable {
   /// 用于事务写入的密文记录，排序信息与账户内容分离。
   private struct EncryptedRecord {
     let id: String
@@ -187,6 +188,8 @@ internal final class AppModel: ObservableObject {
   @Published private(set) var preferences = Preferences()
   @Published private(set) var startupError: Error?
   private var vault: Vault?
+  private let importQueue = DispatchQueue(label: "cn.vanjay.TickKey.import", qos: .userInitiated)
+  private var importing = false
 
   /// 注入独立存储用于测试，避免回归测试触碰真实用户的保险库。
   init(vault: Vault) throws {
@@ -222,13 +225,23 @@ internal final class AppModel: ObservableObject {
 
   /// 在现有账户及本次导入内部同时去重，新条目重新分配 UUID，最后统一保存。
   func add(_ imported: [Token]) throws -> (added: Int, duplicates: Int) {
-    var updated = tokens
+    let merged = try Self.merge(imported, into: tokens)
+    let added = merged.tokens.count - tokens.count
+    try persist(merged.tokens)
+    return (added, merged.duplicates)
+  }
+
+  /// 校验和去重不访问主线程模型，供同步编辑和后台批量导入共用。
+  private nonisolated static func merge(_ imported: [Token], into existing: [Token]) throws
+    -> (tokens: [Token], duplicates: Int) {
+    var updated = existing
+    var identities = Set(existing.map(\.identity))
     var duplicates = 0
 
     for var token in imported {
       try token.validate()
 
-      if updated.contains(where: { $0.sameIdentity(as: token) }) {
+      if !identities.insert(token.identity).inserted {
         duplicates += 1
         continue
       }
@@ -236,11 +249,38 @@ internal final class AppModel: ObservableObject {
       updated.append(token)
     }
 
-    // 到这里才写入，保证批量导入不会留下半次成功的结果。
-    let added = updated.count - tokens.count
-    try persist(updated)
+    return (updated, duplicates)
+  }
 
-    return (added, duplicates)
+  /// iOS 批量导入的校验、加密和数据库事务均在后台完成，成功后才发布新状态。
+  func importTokens(_ imported: [Token], completion: @escaping (Result<String, Error>) -> Void) {
+    guard let vault, startupError == nil, !importing else {
+      completion(.failure(TickKeyError.storage))
+      return
+    }
+    importing = true
+    let existing = tokens
+    importQueue.async {
+      let result = Result {
+        let merged = try PerformanceDiagnostics.measure("import.merge", count: imported.count) {
+          try Self.merge(imported, into: existing)
+        }
+        try PerformanceDiagnostics.measure("import.persist", count: merged.tokens.count) {
+          try vault.save(merged.tokens)
+        }
+        return merged
+      }
+      DispatchQueue.main.async {
+        self.importing = false
+        completion(result.map { merged in
+          self.tokens = merged.tokens
+          return String(
+            format: Localization.text("import.result"),
+            merged.tokens.count - existing.count,
+            merged.duplicates)
+        })
+      }
+    }
   }
 
   /// 把整批导入结果转为本地化反馈，分别显示新增与完全重复的数量。
@@ -284,10 +324,11 @@ internal final class AppModel: ObservableObject {
 
   /// 启动读取失败时禁止写回；数据库保存成功后才替换内存状态。
   private func persist(_ updated: [Token]) throws {
-    guard let vault, startupError == nil else {
+    // 后台导入持有旧快照时拒绝交错编辑，避免完成回写覆盖较新的账户状态。
+    guard let vault, startupError == nil, !importing else {
       throw TickKeyError.storage
     }
-    try vault.save(updated)
+    try PerformanceDiagnostics.measure("vault.persist", count: updated.count) { try vault.save(updated) }
     tokens = updated
   }
 }

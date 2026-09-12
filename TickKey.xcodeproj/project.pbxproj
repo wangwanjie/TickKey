@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		00E5D58B0AAEA8717ACA56BA /* MacAccountsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D3D348A3253A2C39DDD942 /* MacAccountsViewController.swift */; };
 		0600EC5B5B6F9F02898E89B5 /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B98A6BFA2AAF840CDA673B9 /* ScannerViewController.swift */; };
+		06BD463C434F0FC7C1E97DFC /* PerformanceDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21492D218E6B71BBB2BE118B /* PerformanceDiagnostics.swift */; };
 		06F56189D72448AAA648C8C0 /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89506548F613E3AD3E1C6DC /* PreferencesWindowController.swift */; };
 		0914756C0B6C51FF963CB514 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93EC8E76C7EF814D0AABDB11 /* Localization.swift */; };
 		0BD2CAF7CA954C242F76B013 /* TickKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E0528BE627C42A685596F4 /* TickKeyTests.swift */; };
@@ -16,6 +17,7 @@
 		1097746AC3219DAB0FEB30E9 /* MMKV in Frameworks */ = {isa = PBXBuildFile; productRef = DD0D3B8E576773FDA8A0DEA4 /* MMKV */; };
 		114996776182274904136959 /* MacTokenCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C031BF8D0672E33EDAB51BC0 /* MacTokenCard.swift */; };
 		155BAB086A96D3C0472800AF /* Vault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0AEA3530EA288B7613E59B /* Vault.swift */; };
+		1A826850801DB8D9FC89AA0C /* PerformanceDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21492D218E6B71BBB2BE118B /* PerformanceDiagnostics.swift */; };
 		1DB87539ED23831FD92F43F8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 13DAA77DE54B503E089964F4 /* InfoPlist.strings */; };
 		21BA47C4EFA75DBD29EB2626 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E6673FBAE6D0A3EB37A5FBEE /* Assets.xcassets */; };
 		21D9A4F5BDA1B594E0EBAD14 /* QRViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 278B2D14042F3F28AA3E40F0 /* QRViewController.swift */; };
@@ -62,10 +64,12 @@
 		D98D5F3388675CCA607E3466 /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 443BCF4D70C160F975211E34 /* Token.swift */; };
 		DDD0B42FCD30B75E3407B98E /* OTPURI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940242A45BABC514829D320F /* OTPURI.swift */; };
 		DE2CD90082BBB1213F5DB677 /* AccountsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD152AF5F7B31D34CF39364 /* AccountsViewController.swift */; };
+		E240217DB6A03115895DD0A5 /* CameraSessionPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 422BE5C6566C16DD2E2D0DEC /* CameraSessionPipeline.swift */; };
 		E3BAD3C99267334277409859 /* UpdateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82FF67E531A6CEDD862E8E27 /* UpdateController.swift */; };
 		E9E2BE0418855278FDFA5035 /* BackupCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED0E6ED3BAD1CCDC78C5F552 /* BackupCodec.swift */; };
 		EA2CBE4A588499CEABFBDAC5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 76C88A297AAA0F8322B4DE53 /* LaunchScreen.storyboard */; };
 		EB5DA83073DBB7F4CDF8C03C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 13DAA77DE54B503E089964F4 /* InfoPlist.strings */; };
+		EF24C0773196744B31E35C30 /* MainThreadMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6EE9929C25925DC0CBEAFC8 /* MainThreadMonitor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -101,6 +105,7 @@
 		182CEB606C7CB5D84D21AE99 /* TickKey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = TickKey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C30AB5800A2B7BADD7C6B18 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		1D14AD1DB4E4BF60B19BCF63 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		21492D218E6B71BBB2BE118B /* PerformanceDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceDiagnostics.swift; sourceTree = "<group>"; };
 		26D3D348A3253A2C39DDD942 /* MacAccountsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAccountsViewController.swift; sourceTree = "<group>"; };
 		27481E3E74DD0AE47B76D0CE /* PhotoImportCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoImportCoordinator.swift; sourceTree = "<group>"; };
 		278B2D14042F3F28AA3E40F0 /* QRViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRViewController.swift; sourceTree = "<group>"; };
@@ -111,6 +116,7 @@
 		2D0AEA3530EA288B7613E59B /* Vault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vault.swift; sourceTree = "<group>"; };
 		2EDD720FA50B20D5D6F90AE2 /* MacCountdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCountdownView.swift; sourceTree = "<group>"; };
 		313DD658FBF6903A75128D8C /* TickKeyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TickKeyUITests.swift; sourceTree = "<group>"; };
+		422BE5C6566C16DD2E2D0DEC /* CameraSessionPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSessionPipeline.swift; sourceTree = "<group>"; };
 		424E5C3B9C04207771D3132C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		443BCF4D70C160F975211E34 /* Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
 		58F35817C0A5223739F672F9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -130,6 +136,7 @@
 		9FD152AF5F7B31D34CF39364 /* AccountsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsViewController.swift; sourceTree = "<group>"; };
 		AA907854CEA5B55E6FF92781 /* TickKeyMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TickKeyMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C031BF8D0672E33EDAB51BC0 /* MacTokenCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTokenCard.swift; sourceTree = "<group>"; };
+		C6EE9929C25925DC0CBEAFC8 /* MainThreadMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainThreadMonitor.swift; sourceTree = "<group>"; };
 		C70404C1A4C48CB26DB17FFA /* v1-backup.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "v1-backup.txt"; sourceTree = "<group>"; };
 		C73021E47D25ED4A7D2FD332 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D1D784E26B84E9CC760A8436 /* CountdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownView.swift; sourceTree = "<group>"; };
@@ -289,6 +296,7 @@
 		B09A05D859F286F7BA8EE1CD /* Scanner */ = {
 			isa = PBXGroup;
 			children = (
+				422BE5C6566C16DD2E2D0DEC /* CameraSessionPipeline.swift */,
 				6B98A6BFA2AAF840CDA673B9 /* ScannerViewController.swift */,
 			);
 			path = Scanner;
@@ -299,6 +307,7 @@
 			children = (
 				58F35817C0A5223739F672F9 /* AppDelegate.swift */,
 				E6673FBAE6D0A3EB37A5FBEE /* Assets.xcassets */,
+				C6EE9929C25925DC0CBEAFC8 /* MainThreadMonitor.swift */,
 				981092109ADBDB281A7723CA /* SceneDelegate.swift */,
 				76C88A297AAA0F8322B4DE53 /* LaunchScreen.storyboard */,
 				AD2DD8ED066730E90655FFC7 /* Modules */,
@@ -368,6 +377,7 @@
 			isa = PBXGroup;
 			children = (
 				93EC8E76C7EF814D0AABDB11 /* Localization.swift */,
+				21492D218E6B71BBB2BE118B /* PerformanceDiagnostics.swift */,
 				0F9DCCE1C20D54CAB1BB1FF3 /* QRCode.swift */,
 			);
 			path = Support;
@@ -687,6 +697,7 @@
 				9F62891A39F5E0C88D616D52 /* MacTokenEditor.swift in Sources */,
 				4AE1D72CEE41E539558675E1 /* MacTransferCoordinator.swift in Sources */,
 				DDD0B42FCD30B75E3407B98E /* OTPURI.swift in Sources */,
+				06BD463C434F0FC7C1E97DFC /* PerformanceDiagnostics.swift in Sources */,
 				06F56189D72448AAA648C8C0 /* PreferencesWindowController.swift in Sources */,
 				61ED9CD415677517430B2D03 /* QRCode.swift in Sources */,
 				3C8E69723DE15D53AE23D85C /* TOTP.swift in Sources */,
@@ -703,10 +714,13 @@
 				DE2CD90082BBB1213F5DB677 /* AccountsViewController.swift in Sources */,
 				A1EF9464E55B0EAA1CF7DDF5 /* AppDelegate.swift in Sources */,
 				E9E2BE0418855278FDFA5035 /* BackupCodec.swift in Sources */,
+				E240217DB6A03115895DD0A5 /* CameraSessionPipeline.swift in Sources */,
 				87F94734851844E24ED3D648 /* CountdownView.swift in Sources */,
 				3595455C7F5306FB1E8E7C31 /* IOSTransferCoordinator.swift in Sources */,
 				0914756C0B6C51FF963CB514 /* Localization.swift in Sources */,
+				EF24C0773196744B31E35C30 /* MainThreadMonitor.swift in Sources */,
 				36602B4DF75EAC82D169F00E /* OTPURI.swift in Sources */,
+				1A826850801DB8D9FC89AA0C /* PerformanceDiagnostics.swift in Sources */,
 				8B7FE9976946767E55592696 /* PhotoImportCoordinator.swift in Sources */,
 				A24D44F263194AC0E84B1311 /* QRCode.swift in Sources */,
 				21D9A4F5BDA1B594E0EBAD14 /* QRViewController.swift in Sources */,

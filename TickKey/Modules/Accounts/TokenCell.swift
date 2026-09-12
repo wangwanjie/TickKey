@@ -98,10 +98,17 @@ internal final class TokenCell: UICollectionViewCell {
     if step != lastStep {
       lastStep = step
       lastCode = (try? TOTP.code(for: token)).map(TOTP.display) ?? "—"
+      code.text = lastCode
     }
-    code.text = lastCode
     countdown.fraction = TOTP.remainingFraction(for: token)
-    countdown.accessibilityLabel = String(Int(ceil(countdown.fraction * Double(token.period)))) + " s"
+    let remaining = String(Int(ceil(countdown.fraction * Double(token.period)))) + " s"
+    if countdown.accessibilityLabel != remaining {
+      countdown.accessibilityLabel = remaining
+    }
+  }
+
+  override func layoutSubviews() {
+    super.layoutSubviews()
     contentView.layer.borderColor = UIColor.separator.withAlphaComponent(0.25).cgColor
   }
 }

@@ -71,5 +71,49 @@ internal final class TickKeyUITests: XCTestCase {
     app.buttons["Edit"].tap()
     XCTAssertEqual(app.textFields["account"].value as? String, "alice@example.com")
     app.buttons["Cancel"].tap()
+    // 覆盖原先未进入过的二维码导出页面，防止视图约束异常逃过核心编码测试。
+    app.buttons["Export"].tap()
+    app.buttons["Account QR codes"].tap()
+    XCTAssertTrue(app.images["export-qr-image"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["1 / 1"].exists)
+    XCTAssertFalse(app.buttons["next-qr"].isEnabled)
+    app.buttons["Close"].tap()
+    app.buttons["Edit alice@example.com"].tap()
+    app.buttons["Show QR code"].tap()
+    XCTAssertTrue(app.images["export-qr-image"].waitForExistence(timeout: 5))
+    app.buttons["Close"].tap()
+    verifyFileExports(app)
+  }
+
+  /// 编码、文件写入和密码弹窗衔接完成后应打开文件面板；测试取消保存以免写入用户目录。
+  @MainActor
+  private func verifyFileExports(_ app: XCUIApplication) {
+    app.buttons["Export"].tap()
+    app.buttons["Plain text (.txt)"].tap()
+    let warning = app.alerts["Plain text (.txt)"]
+    XCTAssertTrue(warning.waitForExistence(timeout: 5))
+    warning.buttons["Continue"].tap()
+    dismissFileExport(app)
+    app.buttons["Export"].tap()
+    app.buttons["Encrypted backup (.tickkey)"].tap()
+    let password = app.secureTextFields.element(boundBy: 0)
+    XCTAssertTrue(password.waitForExistence(timeout: 5))
+    password.tap()
+    password.typeText("Test-backup-password-2026")
+    let confirmation = app.secureTextFields.element(boundBy: 1)
+    confirmation.tap()
+    confirmation.typeText("Test-backup-password-2026")
+    app.buttons["Continue"].tap()
+    dismissFileExport(app)
+  }
+
+  /// 系统文件面板的取消控件在部分 SDK/运行时组合下没有 button 语义，使用下拉关闭。
+  @MainActor
+  private func dismissFileExport(_ app: XCUIApplication) {
+    XCTAssertTrue(app.buttons["Save"].waitForExistence(timeout: 15))
+    let navigation = app.navigationBars["FullDocumentManagerViewControllerNavigationBar"]
+    navigation.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.05))
+      .press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)))
+    XCTAssertTrue(app.buttons["add-account"].waitForExistence(timeout: 5))
   }
 }

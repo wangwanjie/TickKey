@@ -119,7 +119,7 @@ internal final class TokenEditorViewController: UIViewController {
     super.viewDidAppear(animated)
 
     if original == nil {
-      issuer.becomeFirstResponder()
+      PerformanceDiagnostics.measure("editor.focus") { _ = issuer.becomeFirstResponder() }
     }
   }
 

@@ -42,6 +42,26 @@ internal enum TickKeyError: LocalizedError {
 
 /// 身份字段不含本地 UUID；仅全部录入字段一致时去重。
 internal struct Token: Codable, Identifiable, Equatable {
+  /// 使用结构化身份建立哈希集合，避免批量导入的逐项全表扫描；不参与备份编码。
+  struct Identity: Hashable {
+    let issuer: String
+    let account: String
+    let secret: String
+    let algorithm: String
+    let digits: Int
+    let period: Int
+  }
+
+  var identity: Identity {
+    Identity(
+      issuer: issuer,
+      account: account,
+      secret: secret,
+      algorithm: algorithm.rawValue,
+      digits: digits,
+      period: period)
+  }
+
   var id: UUID
   var issuer: String
   var account: String
@@ -87,8 +107,7 @@ internal struct Token: Codable, Identifiable, Equatable {
 
   /// 比较全部录入字段，忽略本地 UUID；空账户名与任何补填名称均视为不同身份。
   func sameIdentity(as other: Self) -> Bool {
-    issuer == other.issuer && account == other.account && secret == other.secret &&
-      algorithm == other.algorithm && digits == other.digits && period == other.period
+    identity == other.identity
   }
 
   var title: String {

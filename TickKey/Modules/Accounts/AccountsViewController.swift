@@ -7,7 +7,7 @@ import UIKit
 /// 展示自适应账户卡片，协调搜索、复制、编辑和导入导出入口。
 internal final class AccountsViewController: UIViewController, UICollectionViewDataSource,
   UICollectionViewDelegateFlowLayout,
-  UISearchResultsUpdating {
+  UISearchResultsUpdating, UISearchBarDelegate {
   private let model = AppModel.shared
   private let search = UISearchController(searchResultsController: nil)
   private let layout = UICollectionViewFlowLayout()
@@ -17,6 +17,12 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
   private let emptyBody = UILabel()
   private var subscriptions = Set<AnyCancellable>()
   private var shown: [Token] = []
+  private let searchChanges = PassthroughSubject<Void, Never>()
+  private var filterID = UUID()
+  private var filterWork: DispatchWorkItem?
+  private let filterQueue = DispatchQueue(label: "cn.vanjay.TickKey.search", qos: .userInitiated)
+  private var lastLayoutWidth: CGFloat = 0
+  private var lastHeadlineSize: CGFloat = 0
   private lazy var transfer = IOSTransferCoordinator(presenter: self)
   private lazy var photoImport = PhotoImportCoordinator(presenter: self)
   var onSettings: (() -> Void)?
@@ -28,7 +34,15 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
     // 系统搜索栏在 iPhone 与 iPad 上自动采用合适的位置。
     navigationController?.navigationBar.prefersLargeTitles = true
     search.searchResultsUpdater = self
+    search.searchBar.delegate = self
     search.obscuresBackgroundDuringPresentation = false
+    // 账户检索保留多语言输入，但不需要拼写修正和内联预测，减少输入系统的候选请求。
+    search.searchBar.autocorrectionType = .no
+    search.searchBar.spellCheckingType = .no
+    search.searchBar.autocapitalizationType = .none
+    if #available(iOS 17.0, *) {
+      search.searchBar.searchTextField.inlinePredictionType = .no
+    }
     navigationItem.searchController = search
     navigationItem.hidesSearchBarWhenScrolling = false
     definesPresentationContext = true
@@ -40,7 +54,9 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
     collection.alwaysBounceVertical = true
     collection.register(TokenCell.self, forCellWithReuseIdentifier: TokenCell.reuseID)
     view.addSubview(collection)
-    collection.snp.makeConstraints { $0.edges.equalTo(view.safeAreaLayoutGuide) }
+    // 滚动视图由 UIKit 调整安全区内边距，避免搜索/键盘转场的临时安全区高度产生约束冲突。
+    collection.snp.makeConstraints { $0.edges.equalToSuperview() }
+    collection.keyboardDismissMode = .onDrag
 
     let icon = UIImageView(image: UIImage(systemName: "lock.shield"))
     icon.contentMode = .scaleAspectFit
@@ -67,7 +83,16 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
       $0.width.lessThanOrEqualTo(400)
     }
 
-    // 发布变更后再读取模型；倒计时只更新当前可见的卡片。
+    bindUpdates()
+    reload()
+  }
+
+  /// 发布变更后再读取模型；倒计时只更新当前可见的卡片。
+  private func bindUpdates() {
+    searchChanges
+      .debounce(for: .milliseconds(120), scheduler: DispatchQueue.main)
+      .sink { [weak self] in self?.reload() }
+      .store(in: &subscriptions)
     model.$tokens
       .sink { [weak self] _ in
         DispatchQueue.main.async {
@@ -83,13 +108,14 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
     Timer.publish(every: 1.0 / 30, on: .main, in: .common)
       .autoconnect()
       .sink { [weak self] _ in
-        guard self?.view.window != nil, UIApplication.shared.applicationState == .active else {
+        guard self?.view.window != nil,
+              self?.presentedViewController == nil || self?.presentedViewController is UISearchController,
+              UIApplication.shared.applicationState == .active else {
           return
         }
         self?.collection.visibleCells.compactMap { $0 as? TokenCell }.forEach { $0.tick() }
       }
       .store(in: &subscriptions)
-    reload()
   }
 
   override func viewDidAppear(_ animated: Bool) {
@@ -102,7 +128,19 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
 
   override func viewDidLayoutSubviews() {
     super.viewDidLayoutSubviews()
+    let width = contentWidth
+    let headlineSize = UIFont.preferredFont(forTextStyle: .headline).pointSize
+    guard width != lastLayoutWidth || headlineSize != lastHeadlineSize else {
+      return
+    }
+    lastLayoutWidth = width
+    lastHeadlineSize = headlineSize
     layout.invalidateLayout()
+  }
+
+  /// 横屏刘海和 iPad 安全区由滚动视图调整，卡片宽度必须减去对应内边距。
+  private var contentWidth: CGFloat {
+    collection.bounds.width - collection.adjustedContentInset.left - collection.adjustedContentInset.right
   }
 
   /// 重新生成导航文案和操作入口，使语言修改立即反映到主界面。
@@ -129,20 +167,59 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
   }
 
   func updateSearchResults(for searchController: UISearchController) {
-    reload()
+    PerformanceDiagnostics.event("search.changed", count: model.tokens.count)
+    // 输入一变化就作废旧结果，防止防抖期间回写上一个关键词的结果。
+    filterID = UUID()
+    filterWork?.cancel()
+    searchChanges.send()
+  }
+
+  func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
+    PerformanceDiagnostics.event("search.focus.requested")
+    return true
+  }
+
+  func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+    PerformanceDiagnostics.event("search.focus.began")
   }
 
   /// 搜索只影响当前展示列表，导出仍由协调器读取完整账户集合。
   private func reload() {
-    shown = model.tokens.filter { $0.matches(search.searchBar.text ?? "") }
-    collection.reloadData()
-    empty.isHidden = !shown.isEmpty
-    emptyTitle.text = Localization.text(model.tokens.isEmpty ? "empty.title" : "empty.search")
-    emptyBody.text = Localization.text(model.tokens.isEmpty ? "empty.body" : "search")
+    let tokens = model.tokens
+    let query = search.searchBar.text ?? ""
+    let identifier = UUID()
+    filterID = identifier
+    filterWork?.cancel()
+    let work = DispatchWorkItem { [weak self] in
+      let result = PerformanceDiagnostics.measure("search.filter", count: tokens.count) {
+        tokens.filter { $0.matches(query) }
+      }
+      DispatchQueue.main.async { [weak self] in
+        guard let self, filterID == identifier else {
+          return
+        }
+        applyResults(result, hasAccounts: !tokens.isEmpty)
+      }
+    }
+    filterWork = work
+    filterQueue.async(execute: work)
+  }
+
+  /// 后台筛选完成后仅在主线程更新视图，并单独记录列表刷新提交耗时。
+  private func applyResults(_ result: [Token], hasAccounts: Bool) {
+    PerformanceDiagnostics.measure("accounts.reload", count: result.count) {
+      shown = result
+      collection.reloadData()
+      empty.isHidden = !shown.isEmpty
+      emptyTitle.text = Localization.text(hasAccounts ? "empty.search" : "empty.title")
+      emptyBody.text = Localization.text(hasAccounts ? "search" : "empty.body")
+    }
   }
 
   /// 提供手动添加、扫码、图片与文件导入入口，并为 iPad 指定弹出锚点。
   @objc private func add() {
+    PerformanceDiagnostics.event("import.menu")
+    view.endEditing(true)
     let sheet = UIAlertController(title: Localization.text("add"), message: nil, preferredStyle: .actionSheet)
     sheet
       .addAction(UIAlertAction(title: Localization.text("manual"), style: .default) { [weak self] _ in
@@ -171,6 +248,8 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
   }
 
   @objc private func exportMenu() {
+    PerformanceDiagnostics.event("export.menu")
+    view.endEditing(true)
     transfer.chooseExport(anchor: navigationItem.rightBarButtonItems?.last)
   }
 
@@ -211,7 +290,7 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     sizeForItemAt indexPath: IndexPath) -> CGSize {
-    let width = collectionView.bounds.width - 40
+    let width = max(1, contentWidth - 40)
     let columns = max(1, Int((width + 16) / 330))
 
     return CGSize(

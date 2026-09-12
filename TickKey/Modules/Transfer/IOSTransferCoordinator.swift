@@ -12,7 +12,9 @@ internal final class IOSTransferCoordinator: NSObject, UIDocumentPickerDelegate 
   }
 
   func chooseImport() {
-    let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.data, .text], asCopy: true)
+    let picker = PerformanceDiagnostics.measure("import.picker.create") {
+      UIDocumentPickerViewController(forOpeningContentTypes: [.data, .text], asCopy: true)
+    }
     picker.delegate = self
     presenter?.present(picker, animated: true)
   }
@@ -29,36 +31,54 @@ internal final class IOSTransferCoordinator: NSObject, UIDocumentPickerDelegate 
       return
     }
 
-    do {
-      let access = url.startAccessingSecurityScopedResource()
-      defer {
-        if access {
-          url.stopAccessingSecurityScopedResource()
-        }
-      }
-
-      guard try (url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) <= BackupCodec.maximumSize
-      else {
-        throw TickKeyError.unsupportedFormat
-      }
-
-      let data = try Data(contentsOf: url)
-      controller.dismiss(animated: true) { [weak self] in
+    controller.dismiss(animated: true) { [weak self] in
+      self?.work("import.file.read", { try Self.readImport(url) }, completion: { [weak self] result in
         guard let self else {
           return
         }
-
-        if BackupCodec.isEncrypted(data) {
-          password(exporting: false) { [weak self] in self?.decode(data, password: $0) }
-        } else {
-          decode(data, password: nil)
+        do {
+          let data = try result.get()
+          if BackupCodec.isEncrypted(data) {
+            password(exporting: false) { [weak self] in self?.decode(data, password: $0) }
+          } else {
+            decode(data, password: nil)
+          }
+        } catch {
+          presenter?.showError(error)
         }
-      }
-    } catch {
-      controller.dismiss(animated: true) { [weak self] in
-        self?.presenter?.showError(error)
+      })
+    }
+  }
+
+  /// 后台限定最大读取量，文件大小缺失或读取期间变化时也不会无界分配内存。
+  private nonisolated static func readImport(_ url: URL) throws -> Data {
+    let access = url.startAccessingSecurityScopedResource()
+    defer {
+      if access {
+        url.stopAccessingSecurityScopedResource()
       }
     }
+    guard let stream = InputStream(url: url) else {
+      throw TickKeyError.unsupportedFormat
+    }
+    stream.open()
+    defer { stream.close() }
+    var data = Data()
+    var buffer = [UInt8](repeating: 0, count: 64 * 1024)
+    while true {
+      let count = stream.read(&buffer, maxLength: buffer.count)
+      guard count >= 0 else {
+        throw TickKeyError.unsupportedFormat
+      }
+      if count == 0 {
+        break
+      }
+      guard data.count + count <= BackupCodec.maximumSize else {
+        throw TickKeyError.unsupportedFormat
+      }
+      data.append(contentsOf: buffer.prefix(count))
+    }
+    return data
   }
 
   func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
@@ -68,21 +88,32 @@ internal final class IOSTransferCoordinator: NSObject, UIDocumentPickerDelegate 
     }
   }
 
-  /// 在后台解码完整文件，回到主线程后一次性导入并反馈去重结果。
+  /// 解码与持久化均在后台进行，整个过程保留进度提示，完成后再反馈结果。
   private func decode(_ data: Data, password: String?) {
-    work({ try BackupCodec.decode(data, password: password) }, completion: { [weak self] result in
-      guard let self else {
-        return
+    process { finish in
+      DispatchQueue.global(qos: .userInitiated).async {
+        let result = Result {
+          try PerformanceDiagnostics.measure("import.decode", count: data.count) {
+            try BackupCodec.decode(data, password: password)
+          }
+        }
+        DispatchQueue.main.async {
+          switch result {
+          case let .success(tokens):
+            AppModel.shared.importTokens(tokens, completion: finish)
+          case let .failure(error):
+            finish(.failure(error))
+          }
+        }
       }
-
-      do {
-        let tokens = try result.get()
-        let message = try AppModel.shared.importTokens(tokens)
-        presenter?.showMessage(message)
-      } catch {
-        presenter?.showError(error)
+    } completion: { [weak self] (result: Result<String, Error>) in
+      switch result {
+      case let .success(message):
+        self?.presenter?.showMessage(message)
+      case let .failure(error):
+        self?.presenter?.showError(error)
       }
-    })
+    }
   }
 
   /// 明确导出范围与格式，明文导出前提示文件包含账户密钥。
@@ -99,24 +130,15 @@ internal final class IOSTransferCoordinator: NSObject, UIDocumentPickerDelegate 
     sheet.addAction(UIAlertAction(title: Localization.text("encrypted.format"), style: .default) { [weak self] _ in
       self?.password(exporting: true) { [weak self] password in
         let tokens = AppModel.shared.tokens
-        self?.work({ try BackupCodec.encrypt(tokens, password: password) }, completion: { result in
-          do {
-            try self?.save(result.get(), extension: "tickkey")
-          } catch {
-            self?.presenter?.showError(error)
-          }
-        })
+        self?.save(extension: "tickkey") { try BackupCodec.encrypt(tokens, password: password) }
       }
     })
     sheet.addAction(UIAlertAction(title: Localization.text("text.format"), style: .default) { [weak self] _ in
       self?.presenter?.confirm(
         title: Localization.text("text.format"),
         message: Localization.text("plaintext.warning")) {
-          do {
-            try self?.save(BackupCodec.text(AppModel.shared.tokens), extension: "txt")
-          } catch {
-            self?.presenter?.showError(error)
-          }
+          let tokens = AppModel.shared.tokens
+          self?.save(extension: "txt") { try BackupCodec.text(tokens) }
         }
     })
     sheet
@@ -129,15 +151,40 @@ internal final class IOSTransferCoordinator: NSObject, UIDocumentPickerDelegate 
   }
 
   /// 先写入受文件保护的临时目录，再由系统文件面板导出到用户选定位置。
-  private func save(_ data: Data, extension ext: String) throws {
-    let folder = FileManager.default.temporaryDirectory.appendingPathComponent("TickKey-export-" + UUID().uuidString)
-    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-    let url = folder.appendingPathComponent("TickKey-backup." + ext)
-    try data.write(to: url, options: [.atomic, .completeFileProtection])
-    temporaryExport = url
-    let picker = UIDocumentPickerViewController(forExporting: [url], asCopy: true)
-    picker.delegate = self
-    presenter?.present(picker, animated: true)
+  private func save(extension ext: String, data: @escaping () throws -> Data) {
+    work(
+      "export.prepare",
+      {
+        let content = try data()
+        let folder = FileManager.default
+          .temporaryDirectory
+          .appendingPathComponent("TickKey-export-" + UUID().uuidString)
+        do {
+          try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+          let url = folder.appendingPathComponent("TickKey-backup." + ext)
+          try content.write(to: url, options: [.atomic, .completeFileProtection])
+          return url
+        } catch {
+          try? FileManager.default.removeItem(at: folder)
+          throw error
+        }
+      }, completion: { [weak self] result in
+        do {
+          let url = try result.get()
+          guard let self, let presenter else {
+            try? FileManager.default.removeItem(at: url.deletingLastPathComponent())
+            return
+          }
+          temporaryExport = url
+          let picker = PerformanceDiagnostics.measure("export.picker.create") {
+            UIDocumentPickerViewController(forExporting: [url], asCopy: true)
+          }
+          picker.delegate = self
+          presenter.present(picker, animated: true)
+        } catch {
+          self?.presenter?.showError(error)
+        }
+      })
   }
 
   /// 导出时要求再次确认密码，导入时只收集解密所需的密码。
@@ -172,6 +219,7 @@ internal final class IOSTransferCoordinator: NSObject, UIDocumentPickerDelegate 
   }
 
   func showQR(_ tokens: [Token]) {
+    PerformanceDiagnostics.event("qr.open", count: tokens.count)
     guard !tokens.isEmpty else {
       return
     }
@@ -179,12 +227,28 @@ internal final class IOSTransferCoordinator: NSObject, UIDocumentPickerDelegate 
   }
 
   /// 将耗时的密码派生和文件解码移到后台，完成后再关闭进度提示并更新界面。
-  private func work<T>(_ operation: @escaping () throws -> T, completion: @escaping (Result<T, Error>) -> Void) {
-    let alert = UIAlertController(title: Localization.text("processing"), message: nil, preferredStyle: .alert)
-    presenter?.present(alert, animated: true) {
+  private func work<T>(
+    _ name: StaticString,
+    _ operation: @escaping () throws -> T,
+    completion: @escaping (Result<T, Error>) -> Void) {
+    process({ finish in
       DispatchQueue.global(qos: .userInitiated).async {
-        let result = Result { try operation() }
-        DispatchQueue.main.async { alert.dismiss(animated: true) { completion(result) } }
+        let result = Result { try PerformanceDiagnostics.measure(name, operation) }
+        DispatchQueue.main.async { finish(result) }
+      }
+    }, completion: completion)
+  }
+
+  /// 统一进度生命周期，允许后台解码后继续异步持久化，而不提前关闭进度界面。
+  private func process<T>(
+    _ start: @escaping (@escaping (Result<T, Error>) -> Void) -> Void,
+    completion: @escaping (Result<T, Error>) -> Void) {
+    let alert = UIAlertController(title: Localization.text("processing"), message: nil, preferredStyle: .alert)
+    PerformanceDiagnostics.event("transfer.progress.requested")
+    presenter?.present(alert, animated: true) {
+      PerformanceDiagnostics.event("transfer.progress.visible")
+      start { result in
+        alert.dismiss(animated: true) { completion(result) }
       }
     }
   }

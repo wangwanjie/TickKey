@@ -5,6 +5,46 @@ import XCTest
 
 /// 从生成的二维码中还原 URI，验证实际图像能被系统识别。
 internal final class TickKeyTests: XCTestCase {
+  /// 真实加载导出页面并等待后台二维码，覆盖共同父视图崩溃和快速翻页过期结果。
+  @MainActor
+  func testQRExportLayoutAndPagination() async throws {
+    let first = try Token(issuer: "Example", account: "first", secret: "JBSWY3DPEHPK3PXP")
+    let second = try Token(issuer: "Example", account: "second", secret: "GEZDGNBVGY3TQOJQ")
+    let controller = QRViewController(tokens: [first, second])
+    controller.loadViewIfNeeded()
+    controller.beginAppearanceTransition(true, animated: false)
+    controller.endAppearanceTransition()
+    let image = try XCTUnwrap(descendants(of: controller.view)
+      .compactMap { $0 as? UIImageView }
+      .first { $0.accessibilityIdentifier == "export-qr-image" })
+    let buttons = descendants(of: controller.view).compactMap { $0 as? UIButton }
+    let next = try XCTUnwrap(buttons.first { $0.accessibilityIdentifier == "next-qr" })
+    let previous = try XCTUnwrap(buttons.first { $0.accessibilityIdentifier == "previous-qr" })
+    XCTAssertFalse(previous.isEnabled)
+    next.sendActions(for: .touchUpInside)
+    previous.sendActions(for: .touchUpInside)
+    next.sendActions(for: .touchUpInside)
+    XCTAssertFalse(next.isEnabled)
+    let rendered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in image.image != nil }, object: nil)
+    await fulfillment(of: [rendered], timeout: 10)
+    let cgImage = try XCTUnwrap(image.image?.cgImage)
+    XCTAssertEqual(try PhotoTokenDecoder.decode(makePhoto([cgImage])).tokens.first?.account, second.account)
+    for size in [CGSize(width: 320, height: 568), CGSize(width: 844, height: 390)] {
+      controller.view.frame = CGRect(origin: .zero, size: size)
+      controller.view.setNeedsLayout()
+      controller.view.layoutIfNeeded()
+      XCTAssertGreaterThan(image.bounds.width, 0)
+      XCTAssertLessThanOrEqual(image.bounds.width, min(360, size.width - 48))
+      XCTAssertEqual(image.bounds.width, image.bounds.height, accuracy: 0.5)
+      XCTAssertFalse(image.hasAmbiguousLayout)
+    }
+  }
+
+  @MainActor
+  private func descendants(of view: UIView) -> [UIView] {
+    view.subviews.flatMap { [$0] + descendants(of: $0) }
+  }
+
   /// 真实拼图包含多个账户与无关二维码，验证部分无效时继续识别。
   func testPhotoImportFindsMultipleAccountsAndSkipsUnsupportedCode() throws {
     let first = try Token(issuer: "Example", account: "first", secret: "JBSWY3DPEHPK3PXP")
