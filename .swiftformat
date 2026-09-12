@@ -1,0 +1,14 @@
+--swiftversion 6.0
+--indent 2
+--linebreaks lf
+--maxwidth 120
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+--closingparen same-line
+--self remove
+--stripunusedargs closure-only
+--marktypes always
+--semicolons never
+--header strip
+--disable trailingCommas

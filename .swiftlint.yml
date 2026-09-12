@@ -1,0 +1,129 @@
+included:
+  - Sources
+  - Tests
+
+excluded:
+  - Pods
+  - Carthage
+  - DerivedData
+  - .build
+  - Generated
+
+opt_in_rules:
+  - array_init
+  - closure_spacing
+  - collection_alignment
+  - conditional_returns_on_newline
+  - contains_over_filter_count
+  - empty_count
+  - empty_string
+  - explicit_init
+  - explicit_top_level_acl
+  - extension_access_modifier
+  - fatal_error_message
+  - first_where
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - last_where
+  - multiline_arguments
+  - multiline_function_chains
+  - multiline_parameters
+  - operator_usage_whitespace
+  - overridden_super_call
+  - prefer_self_in_static_references
+  - private_action
+  - private_outlet
+  - redundant_nil_coalescing
+  - sorted_first_last
+  - toggle_bool
+  - unneeded_parentheses_in_condition
+  - unused_import
+  - vertical_parameter_alignment_on_call
+  - yoda_condition
+
+analyzer_rules:
+  - unused_declaration
+  - unused_import
+
+line_length:
+  warning: 120
+  error: 160
+  ignores_urls: true
+  ignores_function_declarations: true
+  ignores_comments: true
+
+file_length:
+  warning: 700
+  error: 1_000
+
+function_body_length:
+  warning: 60
+  error: 100
+
+function_parameter_count:
+  warning: 6
+  error: 8
+
+type_body_length:
+  warning: 400
+  error: 700
+
+type_name:
+  min_length: 3
+  max_length:
+    warning: 50
+    error: 60
+
+identifier_name:
+  min_length:
+    warning: 2
+    error: 1
+  excluded:
+    - id
+    - x
+    - y
+    - z
+    - i
+    - j
+    - k
+
+cyclomatic_complexity:
+  warning: 10
+  error: 20
+
+nesting:
+  type_level:
+    warning: 2
+    error: 3
+
+force_cast:
+  severity: error
+
+force_try:
+  severity: error
+
+force_unwrapping:
+  severity: error
+
+implicitly_unwrapped_optional:
+  severity: error
+
+trailing_whitespace:
+  ignores_empty_lines: false
+  ignores_comments: false
+
+vertical_whitespace:
+  max_empty_lines: 1
+
+custom_rules:
+  no_print:
+    name: "Avoid print"
+    regex: '(^|[^a-zA-Z0-9_])print\('
+    message: "Use the project logger instead of print()."
+    severity: warning
+
+  no_nslog:
+    name: "Avoid NSLog"
+    regex: '(^|[^a-zA-Z0-9_])NSLog\('
+    message: "Use the project logger instead of NSLog()."
+    severity: warning

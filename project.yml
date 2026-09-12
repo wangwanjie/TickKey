@@ -31,6 +31,21 @@ targets:
   TickKey:
     type: application
     platform: iOS
+    preBuildScripts:
+      - name: Code Lint
+        basedOnDependencyAnalysis: false
+        script: |
+          if command -v swiftlint >/dev/null 2>&1; then
+            swiftlint lint --config "${SRCROOT}/.swiftlint.yml"
+          else
+            echo "warning: SwiftLint is not installed. Install it with: brew install swiftlint"
+          fi
+
+          if command -v swiftformat >/dev/null 2>&1; then
+            swiftformat "${SRCROOT}" --config "${SRCROOT}/.swiftformat" --lint
+          else
+            echo "warning: SwiftFormat is not installed. Install it with: brew install swiftformat"
+          fi
     sources:
       - path: TickKey
         excludes: [Info.plist, Base.lproj/Main.storyboard]
@@ -53,6 +68,7 @@ targets:
       Release: Configuration/Release.xcconfig
   TickKeyMac:
     type: application
+    productName: TickKey
     platform: macOS
     sources: [TickKeyMac, Shared]
     dependencies:

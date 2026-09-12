@@ -13,6 +13,7 @@
 - Mac Release 包包含 x86_64 / arm64，Developer ID 签名验证通过；Apple 公证 Accepted，DMG staple / validate 通过。
 - Sparkle appcast 的文件长度和 Ed25519 签名已用独立 Python 实现和配置中的公钥验证。
 - Shell 语法、plist、图标资源引用和 git diff 空白检查通过。
+- 保留并同步了工作期间新增的 Code Lint 构建阶段及格式配置；本机没有 SwiftLint / SwiftFormat，构建按该脚本的既有行为跳过这两项检查并提示警告。当前 SwiftLint 的 included 仍是作者配置的 Sources / Tests，正式启用前需映射到实际源码目录。
 
 ## 版本与尚未验证的范围
 

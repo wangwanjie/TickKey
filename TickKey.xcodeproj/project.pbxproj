@@ -93,7 +93,7 @@
 		0F9DCCE1C20D54CAB1BB1FF3 /* QRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCode.swift; sourceTree = "<group>"; };
 		11E0528BE627C42A685596F4 /* TickKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TickKeyTests.swift; sourceTree = "<group>"; };
 		18015B304E92513C3B26C7F3 /* TickKeyTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = TickKeyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		182CEB606C7CB5D84D21AE99 /* TickKey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TickKey.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		182CEB606C7CB5D84D21AE99 /* TickKey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = TickKey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C30AB5800A2B7BADD7C6B18 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		1D14AD1DB4E4BF60B19BCF63 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		26D3D348A3253A2C39DDD942 /* MacAccountsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAccountsViewController.swift; sourceTree = "<group>"; };
@@ -121,17 +121,17 @@
 		981092109ADBDB281A7723CA /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		9FD152AF5F7B31D34CF39364 /* AccountsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsViewController.swift; sourceTree = "<group>"; };
 		AA907854CEA5B55E6FF92781 /* TickKeyMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TickKeyMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		B8C7D1267E8B40E6327F799B /* TickKey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TickKey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C70404C1A4C48CB26DB17FFA /* v1-backup.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "v1-backup.txt"; sourceTree = "<group>"; };
 		C73021E47D25ED4A7D2FD332 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D1F6188B188E8728DF79AEF1 /* ApplicationMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationMain.swift; sourceTree = "<group>"; };
 		D89506548F613E3AD3E1C6DC /* PreferencesWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
 		DA9D5AE93E8019BE542D5D74 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DB4CEBF256554D1232013CE3 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		DF168CFAAF2FBF87F6DCE391 /* TickKey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TickKey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E6673FBAE6D0A3EB37A5FBEE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EBF671870B357D9C7E5AC5E7 /* TOTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOTP.swift; sourceTree = "<group>"; };
 		ED0E6ED3BAD1CCDC78C5F552 /* BackupCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupCodec.swift; sourceTree = "<group>"; };
-		F04AADF18BB926C4721FC8A2 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		F04AADF18BB926C4721FC8A2 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -330,7 +330,7 @@
 			isa = PBXGroup;
 			children = (
 				182CEB606C7CB5D84D21AE99 /* TickKey.app */,
-				B8C7D1267E8B40E6327F799B /* TickKey.app */,
+				DF168CFAAF2FBF87F6DCE391 /* TickKey.app */,
 				AA907854CEA5B55E6FF92781 /* TickKeyMacTests.xctest */,
 				18015B304E92513C3B26C7F3 /* TickKeyTests.xctest */,
 				841EBCF13F4D3AD251594059 /* TickKeyUITests.xctest */,
@@ -430,14 +430,14 @@
 				15295F9598B941E742597A38 /* Sparkle */,
 			);
 			productName = TickKeyMac;
-			productReference = B8C7D1267E8B40E6327F799B /* TickKey.app */;
+			productReference = DF168CFAAF2FBF87F6DCE391 /* TickKey.app */;
 			productType = "com.apple.product-type.application";
 		};
 		D7F219A50F651166FBCD41AB /* TickKey */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4677F33F9792605171BAE4BC /* Build configuration list for PBXNativeTarget "TickKey" */;
 			buildPhases = (
-				95B8D19F305573CA005DD647 /* Code Lint */,
+				CA5FEAD38829D1B22C973194 /* Code Lint */,
 				E9312E1423E38436778A5FA3 /* Sources */,
 				2080080D2BAF7E72E76F1E1C /* Resources */,
 				DD0812C6404F706F2957BA76 /* Frameworks */,
@@ -597,8 +597,9 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		95B8D19F305573CA005DD647 /* Code Lint */ = {
+		CA5FEAD38829D1B22C973194 /* Code Lint */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
