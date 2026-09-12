@@ -1,0 +1,567 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 110;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		95B8D1713055625E005DD647 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 95B8D1523055625D005DD647 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 95B8D1593055625D005DD647;
+			remoteInfo = TickKey;
+		};
+		95B8D17B3055625E005DD647 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 95B8D1523055625D005DD647 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 95B8D1593055625D005DD647;
+			remoteInfo = TickKey;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		95B8D15A3055625D005DD647 /* TickKey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TickKey.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		95B8D1703055625E005DD647 /* TickKeyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TickKeyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		95B8D17A3055625E005DD647 /* TickKeyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TickKeyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		95B8D1803055625E005DD647 /* Exceptions for "TickKey" folder in "TickKey" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 95B8D1593055625D005DD647 /* TickKey */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		95B8D15C3055625D005DD647 /* TickKey */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				95B8D1803055625E005DD647 /* Exceptions for "TickKey" folder in "TickKey" target */,
+			);
+			path = TickKey;
+			sourceTree = "<group>";
+		};
+		95B8D1733055625E005DD647 /* TickKeyTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TickKeyTests;
+			sourceTree = "<group>";
+		};
+		95B8D17D3055625E005DD647 /* TickKeyUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TickKeyUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		95B8D1573055625D005DD647 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		95B8D16D3055625E005DD647 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		95B8D1773055625E005DD647 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		95B8D1513055625D005DD647 = {
+			isa = PBXGroup;
+			children = (
+				95B8D15C3055625D005DD647 /* TickKey */,
+				95B8D1733055625E005DD647 /* TickKeyTests */,
+				95B8D17D3055625E005DD647 /* TickKeyUITests */,
+				95B8D15B3055625D005DD647 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		95B8D15B3055625D005DD647 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				95B8D15A3055625D005DD647 /* TickKey.app */,
+				95B8D1703055625E005DD647 /* TickKeyTests.xctest */,
+				95B8D17A3055625E005DD647 /* TickKeyUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		95B8D1593055625D005DD647 /* TickKey */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 95B8D1813055625E005DD647 /* Build configuration list for PBXNativeTarget "TickKey" */;
+			buildPhases = (
+				95B8D1563055625D005DD647 /* Sources */,
+				95B8D1573055625D005DD647 /* Frameworks */,
+				95B8D1583055625D005DD647 /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				95B8D15C3055625D005DD647 /* TickKey */,
+			);
+			name = TickKey;
+			productName = TickKey;
+			productReference = 95B8D15A3055625D005DD647 /* TickKey.app */;
+			productType = "com.apple.product-type.application";
+		};
+		95B8D16F3055625E005DD647 /* TickKeyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 95B8D1863055625E005DD647 /* Build configuration list for PBXNativeTarget "TickKeyTests" */;
+			buildPhases = (
+				95B8D16C3055625E005DD647 /* Sources */,
+				95B8D16D3055625E005DD647 /* Frameworks */,
+				95B8D16E3055625E005DD647 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				95B8D1723055625E005DD647 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				95B8D1733055625E005DD647 /* TickKeyTests */,
+			);
+			name = TickKeyTests;
+			productName = TickKeyTests;
+			productReference = 95B8D1703055625E005DD647 /* TickKeyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		95B8D1793055625E005DD647 /* TickKeyUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 95B8D1893055625E005DD647 /* Build configuration list for PBXNativeTarget "TickKeyUITests" */;
+			buildPhases = (
+				95B8D1763055625E005DD647 /* Sources */,
+				95B8D1773055625E005DD647 /* Frameworks */,
+				95B8D1783055625E005DD647 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				95B8D17C3055625E005DD647 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				95B8D17D3055625E005DD647 /* TickKeyUITests */,
+			);
+			name = TickKeyUITests;
+			productName = TickKeyUITests;
+			productReference = 95B8D17A3055625E005DD647 /* TickKeyUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		95B8D1523055625D005DD647 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					95B8D1593055625D005DD647 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					95B8D16F3055625E005DD647 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 95B8D1593055625D005DD647;
+					};
+					95B8D1793055625E005DD647 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 95B8D1593055625D005DD647;
+					};
+				};
+			};
+			buildConfigurationList = 95B8D1553055625D005DD647 /* Build configuration list for PBXProject "TickKey" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 95B8D1513055625D005DD647;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 95B8D15B3055625D005DD647 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				95B8D1593055625D005DD647 /* TickKey */,
+				95B8D16F3055625E005DD647 /* TickKeyTests */,
+				95B8D1793055625E005DD647 /* TickKeyUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		95B8D1583055625D005DD647 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		95B8D16E3055625E005DD647 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		95B8D1783055625E005DD647 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		95B8D1563055625D005DD647 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		95B8D16C3055625E005DD647 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		95B8D1763055625E005DD647 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		95B8D1723055625E005DD647 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 95B8D1593055625D005DD647 /* TickKey */;
+			targetProxy = 95B8D1713055625E005DD647 /* PBXContainerItemProxy */;
+		};
+		95B8D17C3055625E005DD647 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 95B8D1593055625D005DD647 /* TickKey */;
+			targetProxy = 95B8D17B3055625E005DD647 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		95B8D1823055625E005DD647 /* Debug configuration for PBXNativeTarget "TickKey" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X6B6C6U6QV;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TickKey/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = cn.vanjay.TickKey;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		95B8D1833055625E005DD647 /* Release configuration for PBXNativeTarget "TickKey" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X6B6C6U6QV;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TickKey/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = cn.vanjay.TickKey;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		95B8D1843055625E005DD647 /* Debug configuration for PBXProject "TickKey" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = X6B6C6U6QV;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		95B8D1853055625E005DD647 /* Release configuration for PBXProject "TickKey" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = X6B6C6U6QV;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		95B8D1873055625E005DD647 /* Debug configuration for PBXNativeTarget "TickKeyTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X6B6C6U6QV;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = cn.vanjay.TickKeyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TickKey.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TickKey";
+			};
+			name = Debug;
+		};
+		95B8D1883055625E005DD647 /* Release configuration for PBXNativeTarget "TickKeyTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X6B6C6U6QV;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = cn.vanjay.TickKeyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TickKey.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TickKey";
+			};
+			name = Release;
+		};
+		95B8D18A3055625E005DD647 /* Debug configuration for PBXNativeTarget "TickKeyUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X6B6C6U6QV;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = cn.vanjay.TickKeyUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = TickKey;
+			};
+			name = Debug;
+		};
+		95B8D18B3055625E005DD647 /* Release configuration for PBXNativeTarget "TickKeyUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X6B6C6U6QV;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = cn.vanjay.TickKeyUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = TickKey;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		95B8D1553055625D005DD647 /* Build configuration list for PBXProject "TickKey" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95B8D1843055625E005DD647 /* Debug configuration for PBXProject "TickKey" */,
+				95B8D1853055625E005DD647 /* Release configuration for PBXProject "TickKey" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		95B8D1813055625E005DD647 /* Build configuration list for PBXNativeTarget "TickKey" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95B8D1823055625E005DD647 /* Debug configuration for PBXNativeTarget "TickKey" */,
+				95B8D1833055625E005DD647 /* Release configuration for PBXNativeTarget "TickKey" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		95B8D1863055625E005DD647 /* Build configuration list for PBXNativeTarget "TickKeyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95B8D1873055625E005DD647 /* Debug configuration for PBXNativeTarget "TickKeyTests" */,
+				95B8D1883055625E005DD647 /* Release configuration for PBXNativeTarget "TickKeyTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		95B8D1893055625E005DD647 /* Build configuration list for PBXNativeTarget "TickKeyUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95B8D18A3055625E005DD647 /* Debug configuration for PBXNativeTarget "TickKeyUITests" */,
+				95B8D18B3055625E005DD647 /* Release configuration for PBXNativeTarget "TickKeyUITests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 95B8D1523055625D005DD647 /* Project object */;
+	validationLevel = 1;
+}
