@@ -312,3 +312,56 @@ internal final class CoreTests: XCTestCase {
     XCTAssertEqual(try vault.load(), model.tokens)
   }
 }
+
+/// 批量删除覆盖阈值、搜索范围以及整批持久化，不接触真实账户。
+extension CoreTests {
+  func testSelectionScopeAndDeletionConfirmationThreshold() throws {
+    let tokens = try (1 ... 7).map {
+      try Token(issuer: "Test", account: "account-\($0)", secret: "JBSWY3DPEHPK3PXP")
+    }
+    var selection = AccountSelection()
+    XCTAssertNil(selection.deletion(in: tokens))
+    selection.selectAll(in: Array(tokens.prefix(5)))
+    XCTAssertFalse(try XCTUnwrap(selection.deletion(in: tokens)).requiresSecondConfirmation)
+    selection.toggle(tokens[5].id)
+    XCTAssertTrue(try XCTUnwrap(selection.deletion(in: tokens)).requiresSecondConfirmation)
+    selection.invert(in: tokens)
+    XCTAssertEqual(selection.ids, [tokens[6].id])
+    XCTAssertFalse(try XCTUnwrap(selection.deletion(in: tokens)).requiresSecondConfirmation)
+    // 搜索结果只有一项时，全选也必须二次确认。
+    XCTAssertTrue(try XCTUnwrap(selection.deletion(in: [tokens[6]])).requiresSecondConfirmation)
+    selection.selectAll(in: tokens)
+    let request = try XCTUnwrap(selection.deletion(in: tokens))
+    XCTAssertTrue(request.requiresSecondConfirmation)
+    selection.invert(in: tokens)
+    XCTAssertNil(selection.deletion(in: tokens))
+    XCTAssertEqual(request.ids.count, 7)
+    selection.selectAll(in: tokens)
+    selection.retainVisible(Array(tokens.prefix(2)))
+    XCTAssertEqual(selection.ids, Set(tokens.prefix(2).map(\.id)))
+    selection.retainVisible([])
+    XCTAssertTrue(selection.ids.isEmpty)
+  }
+
+  @MainActor
+  func testBatchDeletionPersistsOnlySelectedIDs() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let vault = try Vault(directory: root, testKey: Data(repeating: 8, count: 32))
+    let model = try AppModel(vault: vault)
+    let tokens = try (1 ... 7).map {
+      try Token(issuer: "Test", account: "account-\($0)", secret: "JBSWY3DPEHPK3PXP")
+    }
+    _ = try model.add(tokens)
+    let before = model.tokens
+    try model.delete(ids: [])
+    XCTAssertEqual(model.tokens, before)
+    let deleted = Set(before.prefix(6).map(\.id))
+    try model.delete(ids: deleted.union([UUID()]))
+    XCTAssertEqual(model.tokens, [before[6]])
+    XCTAssertEqual(try vault.load(), model.tokens)
+    try model.delete(ids: [before[6].id])
+    XCTAssertTrue(model.tokens.isEmpty)
+    XCTAssertTrue(try vault.load().isEmpty)
+  }
+}

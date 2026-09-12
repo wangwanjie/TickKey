@@ -205,6 +205,12 @@ internal final class AppModel: ObservableObject {
         if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
           let root = FileManager.default.temporaryDirectory.appendingPathComponent("TickKey-UI-" + UUID().uuidString)
           vault = try Vault(directory: root, testKey: Data(repeating: 7, count: 32))
+          if ProcessInfo.processInfo.arguments.contains("--ui-testing-selection") {
+            let fixtures = try (1 ... 7).map {
+              try Token(issuer: "Selection Test", account: "test-\($0)", secret: "JBSWY3DPEHPK3PXP")
+            }
+            try vault?.save(fixtures)
+          }
         } else {
           vault = try Vault()
         }
@@ -309,7 +315,15 @@ internal final class AppModel: ObservableObject {
 
   /// 删除指定本地账户，保存成功后再发布新的账户列表。
   func delete(_ token: Token) throws {
-    try persist(tokens.filter { $0.id != token.id })
+    try delete(ids: [token.id])
+  }
+
+  /// 整批删除只保存一次；保存失败时内存和数据库都保留原来的完整账户集合。
+  func delete(ids: Set<UUID>) throws {
+    guard !ids.isEmpty else {
+      return
+    }
+    try persist(tokens.filter { !ids.contains($0.id) })
   }
 
   /// 先保存偏好，再更新本地化和订阅者，使语言与外观可以即时切换。

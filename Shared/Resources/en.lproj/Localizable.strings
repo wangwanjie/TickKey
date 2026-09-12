@@ -82,3 +82,15 @@
 "import.photos.progress" = "Reading image %d of %d…";
 "import.photos.empty" = "No supported authenticator QR codes were found in the selected images.";
 "import.photos.skipped" = "%d images yielded no accounts (unreadable or no supported QR code); %d invalid or unsupported QR codes were skipped.";
+
+"selection.start" = "Select";
+"selection.invert" = "Invert";
+"selection.count" = "%d selected";
+"selection.scope" = "%d selected · Current search results only";
+"selection.hint" = "Selection applies to current search results only";
+"selection.toggle" = "Toggle selection";
+"selection.delete" = "Delete selected accounts?";
+"selection.delete.warning" = "Selected accounts: %d. Deletion cannot be undone. If you have not made a backup, cancel and export one first.";
+"selection.delete.final" = "Confirm permanent deletion";
+"selection.delete.final.warning" = "Final confirmation: permanently delete the selected accounts (%d)? This cannot be undone. Make sure you have exported a backup and can restore it before deleting.";
+"selection.delete.confirm" = "Delete permanently";

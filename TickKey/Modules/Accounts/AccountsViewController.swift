@@ -18,6 +18,9 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
   private var copyHUDDismissal: AnyCancellable?
   private var subscriptions = Set<AnyCancellable>()
   private var shown: [Token] = []
+  private var selecting = false
+  private var filtering = false
+  private var selection = AccountSelection()
   private let searchChanges = PassthroughSubject<Void, Never>()
   private var filterID = UUID()
   private var filterWork: DispatchWorkItem?
@@ -30,7 +33,7 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
     super.viewDidLoad()
     view.backgroundColor = .systemBackground
 
-    // 系统搜索栏在 iPhone 与 iPad 上自动采用合适的位置。
+    // 搜索栏保持在顶部，避免 iOS 26 将它整合进多选操作的底部工具栏。
     navigationController?.navigationBar.prefersLargeTitles = true
     search.searchResultsUpdater = self
     search.searchBar.delegate = self
@@ -42,6 +45,12 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
     if #available(iOS 17.0, *) {
       search.searchBar.searchTextField.inlinePredictionType = .no
     }
+    if #available(iOS 16.0, *) {
+      navigationItem.preferredSearchBarPlacement = .stacked
+    }
+    if #available(iOS 26.0, *) {
+      navigationItem.searchBarPlacementAllowsToolbarIntegration = false
+    }
     navigationItem.searchController = search
     navigationItem.hidesSearchBarWhenScrolling = false
     definesPresentationContext = true
@@ -50,6 +59,7 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
     table.backgroundColor = .clear
     table.dataSource = self
     table.delegate = self
+    table.allowsMultipleSelectionDuringEditing = true
     table.rowHeight = UITableView.automaticDimension
     table.estimatedRowHeight = 84
     table.tableFooterView = UIView()
@@ -135,24 +145,8 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
   /// 重新生成导航文案和操作入口，使语言修改立即反映到主界面。
   private func localize() {
     dismissCopyHUD()
-    title = "TickKey"
     search.searchBar.placeholder = Localization.text("search")
-    navigationItem.leftBarButtonItem = UIBarButtonItem(
-      image: UIImage(systemName: "gearshape"),
-      style: .plain,
-      target: self,
-      action: #selector(settings))
-    navigationItem.leftBarButtonItem?.accessibilityLabel = Localization.text("settings")
-    navigationItem.rightBarButtonItems = [
-      UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(add)),
-      UIBarButtonItem(
-        image: UIImage(systemName: "square.and.arrow.up"),
-        style: .plain,
-        target: self,
-        action: #selector(exportMenu))
-    ]
-    navigationItem.rightBarButtonItems?[0].accessibilityIdentifier = "add-account"
-    navigationItem.rightBarButtonItems?[1].accessibilityLabel = Localization.text("export")
+    updateSelectionControls()
     reload()
   }
 
@@ -161,6 +155,9 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
     // 输入一变化就作废旧结果，防止防抖期间回写上一个关键词的结果。
     filterID = UUID()
     filterWork?.cancel()
+    filtering = true
+    selection = AccountSelection()
+    synchronizeSelection()
     searchChanges.send()
   }
 
@@ -173,8 +170,14 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
     PerformanceDiagnostics.event("search.focus.began")
   }
 
+  func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+    searchBar.resignFirstResponder()
+  }
+
   /// 搜索只影响当前展示列表，导出仍由协调器读取完整账户集合。
   private func reload() {
+    filtering = true
+    updateSelectionControls()
     let tokens = model.tokens
     let query = search.searchBar.text ?? ""
     let identifier = UUID()
@@ -199,8 +202,11 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
   private func applyResults(_ result: [Token], hasAccounts: Bool) {
     PerformanceDiagnostics.measure("accounts.reload", count: result.count) {
       shown = result
-      table.setEditing(false, animated: false)
+      filtering = false
+      selection.retainVisible(result)
+      table.setEditing(selecting, animated: false)
       table.reloadData()
+      synchronizeSelection()
       empty.isHidden = !shown.isEmpty
       emptyTitle.text = Localization.text(hasAccounts ? "empty.search" : "empty.title")
       emptyBody.text = Localization.text(hasAccounts ? "search" : "empty.body")
@@ -241,7 +247,7 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
   @objc private func exportMenu() {
     PerformanceDiagnostics.event("export.menu")
     view.endEditing(true)
-    transfer.chooseExport(anchor: navigationItem.rightBarButtonItems?.last)
+    transfer.chooseExport(anchor: navigationItem.rightBarButtonItems?[1])
   }
 
   @objc private func settings() {
@@ -277,6 +283,11 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
   }
 
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    if selecting {
+      selection.toggle(shown[indexPath.row].id)
+      updateSelectionControls()
+      return
+    }
     tableView.deselectRow(at: indexPath, animated: true)
     do {
       let code = try TOTP.code(for: shown[indexPath.row])
@@ -288,6 +299,14 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
     } catch {
       showError(error)
     }
+  }
+
+  func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+    guard selecting else {
+      return
+    }
+    selection.toggle(shown[indexPath.row].id)
+    updateSelectionControls()
   }
 
   /// 将复制反馈覆盖在内容中央，不参与列表布局；连续复制只保留最新提示并重新计时。
@@ -339,6 +358,9 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
   func tableView(
     _ tableView: UITableView,
     trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+    guard !selecting else {
+      return nil
+    }
     let token = shown[indexPath.row]
     let edit = UIContextualAction(style: .normal, title: Localization.text("edit")) { [weak self] _, _, done in
       done(true)
@@ -371,6 +393,137 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
     let configuration = UISwipeActionsConfiguration(actions: [delete, qr, edit])
     configuration.performsFirstActionWithFullSwipe = false
     return configuration
+  }
+}
+
+/// 集中处理多选状态及批量删除的分步确认。
+extension AccountsViewController {
+  /// 多选模式只提供选择和删除入口，底部工具栏适应窄屏。
+  private func updateSelectionControls() {
+    title = selecting ? String(format: Localization.text("selection.count"), selection.ids.count) : "TickKey"
+    navigationItem.prompt = selecting ? Localization.text("selection.hint") : nil
+    navigationController?.setToolbarHidden(!selecting, animated: false)
+    if selecting {
+      navigationItem.leftBarButtonItem = UIBarButtonItem(
+        title: Localization.text("cancel"), style: .plain, target: self, action: #selector(toggleSelection))
+      navigationItem.rightBarButtonItems = []
+      let all = UIBarButtonItem(
+        title: Localization.text("select.all"), style: .plain, target: self, action: #selector(selectAllAccounts))
+      all.accessibilityIdentifier = "select-all-accounts"
+      let invert = UIBarButtonItem(
+        title: Localization.text("selection.invert"), style: .plain, target: self, action: #selector(invertSelection))
+      invert.accessibilityIdentifier = "invert-account-selection"
+      let delete = UIBarButtonItem(
+        title: Localization.text("delete"), style: .plain, target: self, action: #selector(deleteSelected))
+      delete.tintColor = .systemRed
+      delete.isEnabled = !filtering && !selection.ids.isEmpty
+      delete.accessibilityIdentifier = "delete-selected-accounts"
+      all.isEnabled = !filtering && !shown.isEmpty
+      invert.isEnabled = !filtering && !shown.isEmpty
+      toolbarItems = [all, .flexibleSpace(), invert, .flexibleSpace(), delete]
+      return
+    }
+    toolbarItems = nil
+    navigationItem.leftBarButtonItem = UIBarButtonItem(
+      image: UIImage(systemName: "gearshape"),
+      style: .plain,
+      target: self,
+      action: #selector(settings))
+    navigationItem.leftBarButtonItem?.accessibilityLabel = Localization.text("settings")
+    navigationItem.rightBarButtonItems = [
+      UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(add)),
+      UIBarButtonItem(
+        image: UIImage(systemName: "square.and.arrow.up"),
+        style: .plain,
+        target: self,
+        action: #selector(exportMenu)),
+      UIBarButtonItem(
+        image: UIImage(systemName: "checkmark.circle"),
+        style: .plain,
+        target: self,
+        action: #selector(toggleSelection))
+    ]
+    navigationItem.rightBarButtonItems?[0].accessibilityIdentifier = "add-account"
+    navigationItem.rightBarButtonItems?[1].accessibilityLabel = Localization.text("export")
+    navigationItem.rightBarButtonItems?[2].accessibilityLabel = Localization.text("selection.start")
+    navigationItem.rightBarButtonItems?[2].accessibilityIdentifier = "select-accounts"
+    navigationItem.rightBarButtonItems?[2].isEnabled = !filtering && !shown.isEmpty
+  }
+
+  @objc private func toggleSelection() {
+    view.endEditing(true)
+    search.isActive = false
+    dismissCopyHUD()
+    selecting.toggle()
+    selection = AccountSelection()
+    table.setEditing(selecting, animated: true)
+    synchronizeSelection()
+  }
+
+  @objc private func selectAllAccounts() {
+    guard !filtering else {
+      return
+    }
+    selection.selectAll(in: shown)
+    synchronizeSelection()
+  }
+
+  @objc private func invertSelection() {
+    guard !filtering else {
+      return
+    }
+    selection.invert(in: shown)
+    synchronizeSelection()
+  }
+
+  private func synchronizeSelection() {
+    for (row, token) in shown.enumerated() {
+      let path = IndexPath(row: row, section: 0)
+      if selecting, selection.ids.contains(token.id) {
+        table.selectRow(at: path, animated: false, scrollPosition: .none)
+      } else {
+        table.deselectRow(at: path, animated: false)
+      }
+    }
+    updateSelectionControls()
+  }
+
+  @objc private func deleteSelected() {
+    guard !filtering, let request = selection.deletion(in: shown) else {
+      return
+    }
+    presentDeletionConfirmation(request, final: false)
+  }
+
+  /// 第一层完全关闭后再展示第二层；只有最后一次确认才提交固定的删除集合。
+  private func presentDeletionConfirmation(_ request: AccountDeletion, final: Bool) {
+    let alert = UIAlertController(
+      title: Localization.text(final ? "selection.delete.final" : "selection.delete"),
+      message: final ? request.finalWarning : request.warning,
+      preferredStyle: .alert)
+    alert.addAction(UIAlertAction(title: Localization.text("cancel"), style: .cancel))
+    let needsAnother = request.requiresSecondConfirmation && !final
+    alert.addAction(UIAlertAction(
+      title: Localization.text(needsAnother ? "continue" : "selection.delete.confirm"),
+      style: .destructive) { [weak self, weak alert] _ in
+        alert?.dismiss(animated: true) { [weak self] in
+          guard let self else {
+            return
+          }
+          if needsAnother {
+            presentDeletionConfirmation(request, final: true)
+          } else {
+            do {
+              try model.delete(ids: request.ids)
+              toggleSelection()
+            } catch {
+              showError(error)
+            }
+          }
+        }
+      })
+    let presenter: UIViewController = search.isActive ? search : self
+    presenter.present(alert, animated: true)
   }
 }
 

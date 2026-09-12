@@ -1,5 +1,7 @@
 import XCTest
 
+// MARK: - TickKeyUITests
+
 /// 在独立临时保险库中覆盖添加、复制、搜索和编辑的用户流程。
 internal final class TickKeyUITests: XCTestCase {
   /// 验证侧边抽屉推开主界面、点击遮罩复位及图片选择器可取消。
@@ -72,7 +74,9 @@ internal final class TickKeyUITests: XCTestCase {
     search.typeText("no-such-account")
     XCTAssertTrue(app.staticTexts["No matching accounts"].waitForExistence(timeout: 3))
     search.buttons.firstMatch.tap()
-    let cancelSearch = app.buttons["Cancel"].exists ? app.buttons["Cancel"] : app.buttons["close"]
+    let cancelSearch = app.buttons
+      .matching(NSPredicate(format: "label ==[c] 'Cancel' OR label ==[c] 'Close'"))
+      .firstMatch
     cancelSearch.tap()
     app.cells["token-alice@example.com"].swipeLeft()
     app.buttons["Edit"].tap()
@@ -168,5 +172,99 @@ internal final class TickKeyUITests: XCTestCase {
     navigation.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.05))
       .press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)))
     XCTAssertTrue(app.buttons["add-account"].waitForExistence(timeout: 5))
+  }
+}
+
+/// 使用独立的七个虚构账户验证选择与两次确认，测试启动不会读写真实保险库。
+extension TickKeyUITests {
+  @MainActor
+  private func launchSelectionFixture() -> XCUIApplication {
+    continueAfterFailure = false
+    let app = XCUIApplication()
+    app.launchArguments = ["--ui-testing", "--ui-testing-selection", "-AppleLanguages", "(en)"]
+    app.launch()
+    XCTAssertTrue(app.cells["token-test-1"].waitForExistence(timeout: 5))
+    app.buttons["select-accounts"].tap()
+    return app
+  }
+
+  @MainActor
+  func testBatchDeletionRequiresTwoConfirmationsAboveFive() {
+    let app = launchSelectionFixture()
+    let delete = app.buttons["delete-selected-accounts"]
+    XCTAssertFalse(delete.isEnabled)
+    app.buttons["select-all-accounts"].tap()
+    app.buttons["invert-account-selection"].tap()
+    XCTAssertFalse(delete.isEnabled)
+    app.buttons["select-all-accounts"].tap()
+    app.cells["token-test-1"].tap()
+    delete.tap()
+    let first = app.alerts["Delete selected accounts?"]
+    XCTAssertTrue(first.waitForExistence(timeout: 3))
+    XCTAssertTrue(first.staticTexts
+      .containing(NSPredicate(format: "label CONTAINS 'Selected accounts: 6'"))
+      .firstMatch
+      .exists)
+    first.buttons["Cancel"].tap()
+    XCTAssertTrue(app.cells["token-test-2"].exists)
+    delete.tap()
+    first.buttons["Continue"].tap()
+    let final = app.alerts["Confirm permanent deletion"]
+    XCTAssertTrue(final.waitForExistence(timeout: 3))
+    let screenshot = XCTAttachment(screenshot: app.screenshot())
+    screenshot.name = "Batch deletion second confirmation"
+    screenshot.lifetime = .keepAlways
+    add(screenshot)
+    final.buttons["Cancel"].tap()
+    XCTAssertTrue(app.cells["token-test-2"].exists)
+    delete.tap()
+    first.buttons["Continue"].tap()
+    XCTAssertTrue(final.waitForExistence(timeout: 3))
+    final.buttons["Delete permanently"].tap()
+    XCTAssertTrue(app.buttons["select-accounts"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.cells["token-test-1"].exists)
+    XCTAssertFalse(app.cells["token-test-2"].exists)
+    app.terminate()
+  }
+
+  @MainActor
+  func testPartialBatchDeletionUsesOneConfirmation() {
+    let app = launchSelectionFixture()
+    app.cells["token-test-1"].tap()
+    app.cells["token-test-2"].tap()
+    XCTAssertFalse(app.otherElements["copy-hud"].exists)
+    app.buttons["delete-selected-accounts"].tap()
+    let first = app.alerts["Delete selected accounts?"]
+    XCTAssertTrue(first.waitForExistence(timeout: 3))
+    first.buttons["Delete permanently"].tap()
+    XCTAssertTrue(app.buttons["select-accounts"].waitForExistence(timeout: 5))
+    XCTAssertFalse(app.alerts["Confirm permanent deletion"].exists)
+    XCTAssertTrue(app.cells["token-test-3"].exists)
+    XCTAssertFalse(app.cells["token-test-1"].exists)
+  }
+
+  @MainActor
+  func testFilteredSelectAllRequiresTwoConfirmationsForOneAccount() {
+    let app = launchSelectionFixture()
+    let search = app.searchFields.firstMatch
+    search.tap()
+    search.typeText("test-1\n")
+    XCTAssertTrue(app.cells["token-test-2"].waitForNonExistence(timeout: 5))
+    app.buttons["select-all-accounts"].tap()
+    app.buttons["delete-selected-accounts"].tap()
+    let first = app.alerts["Delete selected accounts?"]
+    XCTAssertTrue(first.waitForExistence(timeout: 3))
+    XCTAssertTrue(first.staticTexts
+      .containing(NSPredicate(format: "label CONTAINS 'Selected accounts: 1'"))
+      .firstMatch
+      .exists)
+    first.buttons["Continue"].tap()
+    let final = app.alerts["Confirm permanent deletion"]
+    XCTAssertTrue(final.waitForExistence(timeout: 3))
+    final.buttons["Delete permanently"].tap()
+    // 完成删除退出搜索和多选后，其余六个隐藏账户必须仍然存在。
+    XCTAssertTrue(app.cells["token-test-2"].waitForExistence(timeout: 5))
+    XCTAssertFalse(app.cells["token-test-1"].exists)
+    XCTAssertEqual(app.cells.count, 6)
   }
 }

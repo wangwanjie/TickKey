@@ -82,3 +82,15 @@
 "import.photos.progress" = "正在识别第 %d / %d 张图片…";
 "import.photos.empty" = "所选图片中未找到支持的验证码二维码。";
 "import.photos.skipped" = "%d 张图片未识别出账户（无法读取或无支持的二维码）；已跳过 %d 个无效或不支持的二维码。";
+
+"selection.start" = "多选";
+"selection.invert" = "反选";
+"selection.count" = "已选 %d 项";
+"selection.scope" = "已选 %d 项 · 仅限当前搜索结果";
+"selection.hint" = "全选和反选仅作用于当前搜索结果";
+"selection.toggle" = "切换选择";
+"selection.delete" = "删除所选账户？";
+"selection.delete.warning" = "即将删除 %d 个账户，此操作不可恢复。如果尚未备份，请先取消删除并导出备份。";
+"selection.delete.final" = "再次确认永久删除";
+"selection.delete.final.warning" = "最后确认：永久删除 %d 个账户？删除后不可恢复。请确认已提前导出备份，并能够使用备份恢复账户。";
+"selection.delete.confirm" = "永久删除";

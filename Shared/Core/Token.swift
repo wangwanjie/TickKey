@@ -141,6 +141,57 @@ internal struct Token: Codable, Identifiable, Equatable {
   }
 }
 
+// MARK: - AccountSelection
+
+/// 多选只作用于当前可见账户；搜索变化后丢弃隐藏选择，避免误删。
+internal struct AccountSelection {
+  private(set) var ids = Set<UUID>()
+
+  mutating func toggle(_ id: UUID) {
+    if !ids.insert(id).inserted {
+      ids.remove(id)
+    }
+  }
+
+  mutating func selectAll(in visible: [Token]) {
+    ids = Set(visible.map(\.id))
+  }
+
+  mutating func invert(in visible: [Token]) {
+    ids = Set(visible.map(\.id)).subtracting(ids)
+  }
+
+  mutating func retainVisible(_ visible: [Token]) {
+    ids.formIntersection(visible.map(\.id))
+  }
+
+  /// 固定本次确认的删除范围，后续列表刷新不得扩大已确认的集合。
+  func deletion(in visible: [Token]) -> AccountDeletion? {
+    let visibleIDs = Set(visible.map(\.id))
+    let selected = ids.intersection(visibleIDs)
+    guard !selected.isEmpty else {
+      return nil
+    }
+    return AccountDeletion(ids: selected, requiresSecondConfirmation: selected.count > 5 || selected == visibleIDs)
+  }
+}
+
+// MARK: - AccountDeletion
+
+/// 两端共用删除数量、风险判断与备份提醒。
+internal struct AccountDeletion {
+  let ids: Set<UUID>
+  let requiresSecondConfirmation: Bool
+
+  var warning: String {
+    String(format: Localization.text("selection.delete.warning"), ids.count)
+  }
+
+  var finalWarning: String {
+    String(format: Localization.text("selection.delete.final.warning"), ids.count)
+  }
+}
+
 // MARK: - Base32
 
 /// 实现 RFC 4648 Base32 编解码，接受无填充形式并拒绝无效尾部位。
