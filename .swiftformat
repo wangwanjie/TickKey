@@ -11,4 +11,7 @@
 --marktypes always
 --semicolons never
 --header strip
---disable trailingCommas
+--disable trailingCommas,wrapMultilineStatementBraces,redundantInternal
+--exclude build,Pods,Carthage,DerivedData,.build,Generated
+--enable wrapGuardStatementBodies,wrapMultilineFunctionChains,wrapSwitchCases,wrapCaseBodies,singlePropertyPerLine,markTypes
+--never-trailing work

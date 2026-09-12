@@ -39,7 +39,7 @@
 "import.result" = "已匯入 %d 個帳戶，略過 %d 個完全重複的帳戶。";
 "error" = "無法完成操作";
 "error.secret" = "請輸入有效的 Base32 密鑰。";
-"error.token" = "請檢查帳戶、位數（6–8）和週期（1–300 秒）。";
+"error.token" = "請至少填寫發行方或帳戶名稱，並檢查位數（6–8）和週期（1–300 秒）。";
 "error.uri" = "不是支援的 TOTP QR 碼或 otpauth 連結。";
 "error.format" = "不支援的格式、空檔案或檔案超過 16 MB。";
 "error.password" = "請輸入至少 10 個字元的密碼。";

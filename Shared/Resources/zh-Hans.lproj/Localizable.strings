@@ -39,7 +39,7 @@
 "import.result" = "已导入 %d 个账户，跳过 %d 个完全重复的账户。";
 "error" = "操作未完成";
 "error.secret" = "请输入有效的 Base32 密钥。";
-"error.token" = "请检查账户、位数（6–8）和周期（1–300 秒）。";
+"error.token" = "请至少填写发行方或账户名称，并检查位数（6–8）和周期（1–300 秒）。";
 "error.uri" = "不是支持的 TOTP 二维码或 otpauth 链接。";
 "error.format" = "不支持的格式、空文件或文件超过 16 MB。";
 "error.password" = "请输入至少 10 个字符的密码。";

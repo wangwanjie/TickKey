@@ -39,7 +39,7 @@
 "import.result" = "Imported %d accounts; skipped %d exact duplicates.";
 "error" = "Unable to complete";
 "error.secret" = "Enter a valid Base32 secret.";
-"error.token" = "Check the account, digits (6–8) and period (1–300 seconds).";
+"error.token" = "Enter an issuer or account name, and check the digits (6–8) and period (1–300 seconds).";
 "error.uri" = "Not a supported TOTP QR code or otpauth URI.";
 "error.format" = "Unsupported, empty or oversized file (maximum 16 MB).";
 "error.password" = "Enter a password of at least 10 characters.";

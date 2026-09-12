@@ -14,6 +14,7 @@
 		0BD2CAF7CA954C242F76B013 /* TickKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E0528BE627C42A685596F4 /* TickKeyTests.swift */; };
 		0DE86E37C9BBC9F1A25BE20E /* Vault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0AEA3530EA288B7613E59B /* Vault.swift */; };
 		1097746AC3219DAB0FEB30E9 /* MMKV in Frameworks */ = {isa = PBXBuildFile; productRef = DD0D3B8E576773FDA8A0DEA4 /* MMKV */; };
+		114996776182274904136959 /* MacTokenCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C031BF8D0672E33EDAB51BC0 /* MacTokenCard.swift */; };
 		155BAB086A96D3C0472800AF /* Vault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0AEA3530EA288B7613E59B /* Vault.swift */; };
 		1DB87539ED23831FD92F43F8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 13DAA77DE54B503E089964F4 /* InfoPlist.strings */; };
 		21BA47C4EFA75DBD29EB2626 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E6673FBAE6D0A3EB37A5FBEE /* Assets.xcassets */; };
@@ -25,6 +26,7 @@
 		36602B4DF75EAC82D169F00E /* OTPURI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940242A45BABC514829D320F /* OTPURI.swift */; };
 		37401430041823D03BE8DA40 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 981092109ADBDB281A7723CA /* SceneDelegate.swift */; };
 		398601BBABAFD18B917A810C /* Theme.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27F91E8DE7D430ED0E77D255 /* Theme.xcassets */; };
+		3A8C0D17C127818A93DF337D /* MacCountdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EDD720FA50B20D5D6F90AE2 /* MacCountdownView.swift */; };
 		3ACB75E49C89BA98EF109CA2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5C74B1100F5B7CABF745A6EB /* SnapKit */; };
 		3C8E69723DE15D53AE23D85C /* TOTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBF671870B357D9C7E5AC5E7 /* TOTP.swift */; };
 		3D9C5726D9A532251D26C3AA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F04AADF18BB926C4721FC8A2 /* PrivacyInfo.xcprivacy */; };
@@ -39,6 +41,7 @@
 		6D13F6A97675E8668645ABBC /* Theme.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27F91E8DE7D430ED0E77D255 /* Theme.xcassets */; };
 		847BF3455F5F35ECA7A44143 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F04AADF18BB926C4721FC8A2 /* PrivacyInfo.xcprivacy */; };
 		86FFD1A7FBE0362BEC067CE0 /* MacQRViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64A90979EE6D553B7778D927 /* MacQRViewController.swift */; };
+		87F94734851844E24ED3D648 /* CountdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D784E26B84E9CC760A8436 /* CountdownView.swift */; };
 		8EDD1396AB15B8AF3CC1D1C7 /* v1-backup.txt in Resources */ = {isa = PBXBuildFile; fileRef = C70404C1A4C48CB26DB17FFA /* v1-backup.txt */; };
 		991F6F682B2637D5073CE95C /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 443BCF4D70C160F975211E34 /* Token.swift */; };
 		9A49B6C1CC6FF001DBCD8362 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93EC8E76C7EF814D0AABDB11 /* Localization.swift */; };
@@ -103,6 +106,7 @@
 		28CE4E18DB890A29E4720CAD /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		28EB91D0E30545E7B146FCBC /* MacTransferCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTransferCoordinator.swift; sourceTree = "<group>"; };
 		2D0AEA3530EA288B7613E59B /* Vault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vault.swift; sourceTree = "<group>"; };
+		2EDD720FA50B20D5D6F90AE2 /* MacCountdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCountdownView.swift; sourceTree = "<group>"; };
 		313DD658FBF6903A75128D8C /* TickKeyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TickKeyUITests.swift; sourceTree = "<group>"; };
 		424E5C3B9C04207771D3132C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		443BCF4D70C160F975211E34 /* Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
@@ -121,8 +125,10 @@
 		981092109ADBDB281A7723CA /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		9FD152AF5F7B31D34CF39364 /* AccountsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsViewController.swift; sourceTree = "<group>"; };
 		AA907854CEA5B55E6FF92781 /* TickKeyMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TickKeyMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C031BF8D0672E33EDAB51BC0 /* MacTokenCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTokenCard.swift; sourceTree = "<group>"; };
 		C70404C1A4C48CB26DB17FFA /* v1-backup.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "v1-backup.txt"; sourceTree = "<group>"; };
 		C73021E47D25ED4A7D2FD332 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		D1D784E26B84E9CC760A8436 /* CountdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownView.swift; sourceTree = "<group>"; };
 		D1F6188B188E8728DF79AEF1 /* ApplicationMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationMain.swift; sourceTree = "<group>"; };
 		D89506548F613E3AD3E1C6DC /* PreferencesWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
 		DA9D5AE93E8019BE542D5D74 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -256,6 +262,8 @@
 			isa = PBXGroup;
 			children = (
 				26D3D348A3253A2C39DDD942 /* MacAccountsViewController.swift */,
+				2EDD720FA50B20D5D6F90AE2 /* MacCountdownView.swift */,
+				C031BF8D0672E33EDAB51BC0 /* MacTokenCard.swift */,
 				28CD5A0BEB6B967DD7E87F1B /* MacTokenEditor.swift */,
 			);
 			path = Accounts;
@@ -296,6 +304,7 @@
 			isa = PBXGroup;
 			children = (
 				9FD152AF5F7B31D34CF39364 /* AccountsViewController.swift */,
+				D1D784E26B84E9CC760A8436 /* CountdownView.swift */,
 				8CA48EBCD10998E1A5C0D1FA /* TokenCell.swift */,
 				60F30E94C1F636CB4CA216D7 /* TokenEditorViewController.swift */,
 			);
@@ -414,6 +423,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2BB3843EB9CEBB197B9C979E /* Build configuration list for PBXNativeTarget "TickKeyMac" */;
 			buildPhases = (
+				191FDBE49E5BFCD8E0F47A05 /* Code Lint */,
 				E715FD85ABA67F25FD0382B2 /* Sources */,
 				BF578FE6CE3F231542A7E1A3 /* Resources */,
 				E3C3442FA86876B36DF4F1DD /* Frameworks */,
@@ -597,13 +607,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		CA5FEAD38829D1B22C973194 /* Code Lint */ = {
+		191FDBE49E5BFCD8E0F47A05 /* Code Lint */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
+				"$(SRCROOT)/Configuration/SwiftLintInputs.xcfilelist",
 			);
 			inputPaths = (
 			);
@@ -614,7 +625,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if command -v swiftlint >/dev/null 2>&1; then\n  swiftlint lint --config \"${SRCROOT}/.swiftlint.yml\"\nelse\n  echo \"warning: SwiftLint is not installed. Install it with: brew install swiftlint\"\nfi\n\nif command -v swiftformat >/dev/null 2>&1; then\n  swiftformat \"${SRCROOT}\" --config \"${SRCROOT}/.swiftformat\" --lint\nelse\n  echo \"warning: SwiftFormat is not installed. Install it with: brew install swiftformat\"\nfi\n";
+			shellScript = "\"${SRCROOT}/Scripts/check_swift.sh\"";
+		};
+		CA5FEAD38829D1B22C973194 /* Code Lint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"$(SRCROOT)/Configuration/SwiftLintInputs.xcfilelist",
+			);
+			inputPaths = (
+			);
+			name = "Code Lint";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Scripts/check_swift.sh\"";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -644,7 +675,9 @@
 				CECCD83DDBCECB5C5BA06C31 /* BackupCodec.swift in Sources */,
 				9A49B6C1CC6FF001DBCD8362 /* Localization.swift in Sources */,
 				00E5D58B0AAEA8717ACA56BA /* MacAccountsViewController.swift in Sources */,
+				3A8C0D17C127818A93DF337D /* MacCountdownView.swift in Sources */,
 				86FFD1A7FBE0362BEC067CE0 /* MacQRViewController.swift in Sources */,
+				114996776182274904136959 /* MacTokenCard.swift in Sources */,
 				9F62891A39F5E0C88D616D52 /* MacTokenEditor.swift in Sources */,
 				4AE1D72CEE41E539558675E1 /* MacTransferCoordinator.swift in Sources */,
 				DDD0B42FCD30B75E3407B98E /* OTPURI.swift in Sources */,
@@ -664,6 +697,7 @@
 				DE2CD90082BBB1213F5DB677 /* AccountsViewController.swift in Sources */,
 				A1EF9464E55B0EAA1CF7DDF5 /* AppDelegate.swift in Sources */,
 				E9E2BE0418855278FDFA5035 /* BackupCodec.swift in Sources */,
+				87F94734851844E24ED3D648 /* CountdownView.swift in Sources */,
 				3595455C7F5306FB1E8E7C31 /* IOSTransferCoordinator.swift in Sources */,
 				0914756C0B6C51FF963CB514 /* Localization.swift in Sources */,
 				36602B4DF75EAC82D169F00E /* OTPURI.swift in Sources */,
@@ -865,7 +899,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = X6B6C6U6QV;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -885,9 +919,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -989,7 +1023,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = X6B6C6U6QV;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1003,9 +1037,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
