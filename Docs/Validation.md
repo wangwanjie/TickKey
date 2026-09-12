@@ -46,6 +46,18 @@
 - 最低 iOS 版本已按作者确认更新为 15.0，测试不再使用临时覆盖参数；macOS 最低版本仍为 12.0。
 - Shell 语法、工程生成配置、资源引用及 git diff 空白检查通过。
 
+## 2026-09-13 多选删除与 Mac 主题修复
+
+- 两端支持进入和退出多选、全选、反选、选中数量及批量删除。选择范围限定于当前搜索结果，刷新后清除隐藏选择，确认过程固定删除 UUID 集合。
+- 超过 5 项或选中当前结果的全部项目时，必须完成两层确认；两层都提示不可恢复及提前导出备份。少量非全选删除仍需一次确认，任意一层取消均不删除。
+- 删除通过单次数据库事务保存，验证空选择、5/6 项边界、单项搜索结果全选、反选、删除后剩余账户及重新读取数据库的一致性。
+- Mac 主界面、侧栏和卡片在各自有效外观中解析动态颜色；切换外观后主动刷新背景。测试覆盖深色、浅色连续往返，避免固定 CGColor 沿用旧颜色。
+- macOS 最新构建产物的 19 项测试通过，日志为 `build/Validation/batch-mac-direct-tests.log`。Xcode 的宿主进程复测曾停在 dyld 加载阶段，因此最终通过 `xctest` 直接加载已构建的应用动态库和测试 bundle 运行；工程发布配置未变更。首轮常规测试结果为 `build/Validation/Batch-Mac-2.xcresult`。
+- iPhone 17 Pro / iOS 26.5：23 项单元测试及 5 项 UI 流程通过。多选的 3 项流程及设置流程见 `build/Validation/Batch-iOS-Final.xcresult`；原有搜索关闭按钮的大小写兼容修正后，添加、复制、搜索、编辑、导出和单项删除的独立复测见 `build/Validation/Batch-iOS-Search-Regression.xcresult`。
+- 搜索栏固定顶部，避免新版 iOS 将搜索入口整合进多选工具栏；提交搜索时收起键盘，搜索状态下从当前搜索控制器展示确认框。全选删除单项搜索结果后，其余 6 个账户保持完整。
+- Mac 独立测试应用 `cn.vanjay.TickKey.batchqa` 通过辅助功能读取确认入口和虚构账户；检测到手动操作后停止自动控制该窗口。LookInside health 可发现应用，但 `current_screen` 返回 `no_target`，不计为成功的层级检查。
+- 35 个自有 Swift 文件通过严格 SwiftFormat / SwiftLint，0 违规；三种语言资源通过 `plutil -lint`，`git diff --check` 通过。
+
 ## 编译器分析的限制
 
 额外执行了配置中的 `unused_declaration` 和 `unused_import` 编译器分析：iOS 的 20 个编译单元达到 0 诊断。当前 SwiftLint / Xcode 27 组合对 macOS 的 `@main ApplicationMain.main()` 报告“未引用”；该方法由 Swift 生成的系统入口调用，不是可删除的死代码。分析共享测试文件时，还在非当前平台的条件导入分支报告模块不存在，而相同文件的两平台实际编译与测试均成功。

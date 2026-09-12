@@ -1,5 +1,6 @@
 import XCTest
 #if os(macOS)
+  import AppKit
   @testable import TickKeyMac
 #else
   @testable import TickKey
@@ -364,4 +365,24 @@ extension CoreTests {
     XCTAssertTrue(model.tokens.isEmpty)
     XCTAssertTrue(try vault.load().isEmpty)
   }
+
+  #if os(macOS)
+    /// 显式深浅色不依赖系统当前外观，视图与卡片颜色应随外观立即重算。
+    @MainActor
+    func testMacBackgroundColorsFollowEffectiveAppearance() throws {
+      let background = MacAppearanceBackgroundView(color: .windowBackgroundColor)
+      let card = try MacTokenCard(token: fixture())
+      for name in [NSAppearance.Name.darkAqua, .aqua, .darkAqua, .aqua] {
+        let appearance = try XCTUnwrap(NSAppearance(named: name))
+        background.appearance = appearance
+        background.updateLayer()
+        card.appearance = appearance
+        card.tick(hidden: false)
+        appearance.performAsCurrentDrawingAppearance {
+          XCTAssertEqual(background.layer?.backgroundColor, NSColor.windowBackgroundColor.cgColor)
+          XCTAssertEqual(card.layer?.backgroundColor, NSColor.controlBackgroundColor.cgColor)
+        }
+      }
+    }
+  #endif
 }

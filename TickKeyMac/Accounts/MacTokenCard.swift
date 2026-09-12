@@ -7,6 +7,9 @@ internal final class MacTokenCard: NSView {
   var onEdit: (() -> Void)?
   var onQR: (() -> Void)?
   var onDelete: (() -> Void)?
+  var onToggleSelection: (() -> Void)?
+  private var selecting = false
+  private var selected = false
   private let code = NSTextField(labelWithString: "")
   private let issuer = NSTextField(labelWithString: "")
   private let account = NSTextField(labelWithString: "")
@@ -92,11 +95,44 @@ internal final class MacTokenCard: NSView {
   }
 
   @objc func copy(_ sender: Any?) {
+    guard !selecting else {
+      return
+    }
     copyCode()
+  }
+
+  /// 复用卡片的点击、空格和辅助功能入口；多选时不再复制或显示单项菜单。
+  func setSelectionMode(_ selecting: Bool, selected: Bool) {
+    self.selecting = selecting
+    self.selected = selected
+    more.title = selecting ? (selected ? "☑" : "☐") : "•••"
+    more.setAccessibilityLabel(Localization.text(selecting ? "selection.toggle" : "edit") + " " + token.displayName)
+    setAccessibilityRole(selecting ? .checkBox : .button)
+    setAccessibilityValue(selecting ? NSNumber(value: selected) : nil)
+    setAccessibilityLabel(token.displayName + ", " + Localization.text(selecting ? "selection.toggle" : "copy"))
+    updateColors()
+  }
+
+  override func viewDidChangeEffectiveAppearance() {
+    super.viewDidChangeEffectiveAppearance()
+    updateColors()
+  }
+
+  private func updateColors() {
+    effectiveAppearance.performAsCurrentDrawingAppearance {
+      layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
+      layer?.borderColor = selecting && selected
+        ? NSColor.controlAccentColor.cgColor : NSColor.separatorColor.withAlphaComponent(0.35).cgColor
+      layer?.borderWidth = selecting && selected ? 2 : 1
+    }
   }
 
   /// 复制时重新计算当前验证码，30 秒后仅清理尚未被其他应用改写的剪贴板。
   private func copyCode() {
+    if selecting {
+      onToggleSelection?()
+      return
+    }
     do {
       let value = try TOTP.code(for: token)
       let board = NSPasteboard.general
@@ -130,11 +166,14 @@ internal final class MacTokenCard: NSView {
     pie.fraction = TOTP.remainingFraction(for: token)
     let accent = NSColor(named: "AccentColor") ?? .controlAccentColor
     code.textColor = accent
-    layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
-    layer?.borderColor = NSColor.separatorColor.withAlphaComponent(0.35).cgColor
+    updateColors()
   }
 
   @objc private func showMenu() {
+    if selecting {
+      onToggleSelection?()
+      return
+    }
     let menu = NSMenu()
 
     for (key, action) in [("edit", #selector(edit)), ("qr", #selector(qr)), ("delete", #selector(deleteToken))] {

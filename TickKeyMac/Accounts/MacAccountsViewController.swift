@@ -2,9 +2,11 @@ import AppKit
 import Combine
 import SnapKit
 
+// MARK: - MacAccountsViewController
+
 /// 管理原生 Mac 账户列表，按窗口宽度调整卡片列数。
 internal final class MacAccountsViewController: NSViewController, NSSearchFieldDelegate {
-  private let sidebar = NSView()
+  private let sidebar = MacAppearanceBackgroundView(color: .controlBackgroundColor)
   private let header = NSView()
   private let scroll = NSScrollView()
   private let canvas = NSView()
@@ -18,9 +20,15 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
   private var buttons: [(NSButton, String)] = []
   private lazy var transfer = MacTransferCoordinator(presenter: self)
   private var editor: MacTokenEditor?
+  private var selecting = false
+  private var selection = AccountSelection()
+  private var shown: [Token] = []
+  private var selectionButtons: [(NSButton, String)] = []
+  private var normalButtons: [NSButton] = []
 
   override func loadView() {
-    view = NSView(frame: NSRect(x: 0, y: 0, width: 1040, height: 720))
+    view = MacAppearanceBackgroundView(color: .windowBackgroundColor)
+    view.frame = NSRect(x: 0, y: 0, width: 1040, height: 720)
   }
 
   override func viewDidLoad() {
@@ -35,7 +43,7 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
     header.snp.makeConstraints {
       $0.leading.equalTo(sidebar.snp.trailing)
       $0.top.trailing.equalToSuperview()
-      $0.height.equalTo(140)
+      $0.height.equalTo(184)
     }
     scroll.snp.makeConstraints {
       $0.leading.equalTo(sidebar.snp.trailing)
@@ -123,30 +131,50 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
       $0.height.equalTo(28)
     }
 
+    configureActions()
+    heading.snp.makeConstraints { $0.trailing.lessThanOrEqualToSuperview().inset(28) }
+    empty.alignment = .center
+    empty.font = .systemFont(ofSize: 18)
+    empty.textColor = .secondaryLabelColor
+    canvas.addSubview(empty)
+  }
+
+  /// 将普通操作和多选操作放在独立一行，窄窗口中不挤压标题。
+  private func configureActions() {
     let actions = NSStackView()
     actions.spacing = 8
 
     for (key, selector) in [
       ("import", #selector(importAccounts)),
       ("export", #selector(exportAccounts)),
-      ("add", #selector(addAccount))
+      ("add", #selector(addAccount)),
+      ("selection.start", #selector(toggleSelection))
     ] {
       let button = NSButton(title: "", target: self, action: selector)
       button.bezelStyle = .rounded
       button.identifier = NSUserInterfaceItemIdentifier(key)
       actions.addArrangedSubview(button)
       buttons.append((button, key))
+      normalButtons.append(button)
+    }
+    for (key, selector) in [
+      ("select.all", #selector(selectAllAccounts)),
+      ("selection.invert", #selector(invertSelection)),
+      ("delete", #selector(deleteSelected)),
+      ("cancel", #selector(toggleSelection))
+    ] {
+      let button = NSButton(title: "", target: self, action: selector)
+      button.bezelStyle = .rounded
+      button.identifier = NSUserInterfaceItemIdentifier("selection." + key)
+      actions.addArrangedSubview(button)
+      selectionButtons.append((button, key))
     }
     header.addSubview(actions)
     actions.snp.makeConstraints {
-      $0.trailing.equalToSuperview().inset(28)
-      $0.centerY.equalTo(heading)
+      $0.leading.equalTo(heading)
+      $0.trailing.lessThanOrEqualToSuperview().inset(28)
+      $0.top.equalTo(summary.snp.bottom).offset(12)
     }
-    heading.snp.makeConstraints { $0.trailing.lessThanOrEqualTo(actions.snp.leading).offset(-12) }
-    empty.alignment = .center
-    empty.font = .systemFont(ofSize: 18)
-    empty.textColor = .secondaryLabelColor
-    canvas.addSubview(empty)
   }
 
   /// 订阅账户和偏好变化；定时刷新只处理可见卡片，减少大列表的绘制成本。
@@ -182,12 +210,6 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
   override func viewDidLayout() {
     super.viewDidLayout()
     arrangeCards()
-    colors()
-  }
-
-  private func colors() {
-    view.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
-    sidebar.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
   }
 
   func controlTextDidChange(_ obj: Notification) {
@@ -196,18 +218,24 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
 
   private func localize() {
     heading.stringValue = Localization.text("accounts")
-    summary.stringValue = Localization.text("subtitle")
     search.placeholderString = Localization.text("search")
     sidebarLabels.forEach { $0.0.stringValue = Localization.text($0.1) }
     buttons.forEach { $0.0.title = Localization.text($0.1) }
+    selectionButtons.forEach { $0.0.title = Localization.text($0.1) }
     reload()
   }
 
   /// 按搜索条件重建卡片，闭包通过弱引用回到控制器，避免卡片反向持有页面。
   private func reload() {
     cards.forEach { $0.removeFromSuperview() }
-    cards = AppModel.shared.tokens.filter { $0.matches(search.stringValue) }.map { token in
+    shown = AppModel.shared.tokens.filter { $0.matches(search.stringValue) }
+    selection.retainVisible(shown)
+    cards = shown.map { token in
       let card = MacTokenCard(token: token)
+      card.onToggleSelection = { [weak self] in
+        self?.selection.toggle(token.id)
+        self?.updateSelectionControls()
+      }
       card.onEdit = { [weak self] in self?.edit(token) }
       card.onQR = { [weak self] in self?.transfer.showQR([token]) }
       card.onDelete = {
@@ -227,7 +255,76 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
       .text(AppModel.shared.tokens.isEmpty ? "empty.title" : "empty.search") + "\n\n" + Localization
       .text("empty.body")
     empty.isHidden = !cards.isEmpty
+    updateSelectionControls()
     arrangeCards()
+  }
+
+  private func updateSelectionControls() {
+    summary.stringValue = selecting
+      ? String(format: Localization.text("selection.scope"), selection.ids.count)
+      : Localization.text("subtitle")
+    normalButtons.forEach { $0.isHidden = selecting }
+    normalButtons.last?.isEnabled = !shown.isEmpty
+    for (button, key) in selectionButtons {
+      button.isHidden = !selecting
+      button.isEnabled = key == "cancel" || (key == "delete" ? !selection.ids.isEmpty : !shown.isEmpty)
+      if key == "delete" {
+        button.contentTintColor = .systemRed
+      }
+    }
+    cards.forEach { $0.setSelectionMode(selecting, selected: selection.ids.contains($0.token.id)) }
+  }
+
+  @objc private func toggleSelection() {
+    selecting.toggle()
+    selection = AccountSelection()
+    updateSelectionControls()
+  }
+
+  @objc private func selectAllAccounts() {
+    selection.selectAll(in: shown)
+    updateSelectionControls()
+  }
+
+  @objc private func invertSelection() {
+    selection.invert(in: shown)
+    updateSelectionControls()
+  }
+
+  @objc private func deleteSelected() {
+    guard let request = selection.deletion(in: shown), let window = view.window else {
+      return
+    }
+    presentDeletionConfirmation(request, final: false, window: window)
+  }
+
+  /// 分两张独立警告面板确认高风险删除；取消任意一层都保留选择与账户。
+  private func presentDeletionConfirmation(_ request: AccountDeletion, final: Bool, window: NSWindow) {
+    let alert = NSAlert()
+    alert.alertStyle = .warning
+    alert.messageText = Localization.text(final ? "selection.delete.final" : "selection.delete")
+    alert.informativeText = final ? request.finalWarning : request.warning
+    let cancel = alert.addButton(withTitle: Localization.text("cancel"))
+    cancel.keyEquivalent = "\r"
+    let needsAnother = request.requiresSecondConfirmation && !final
+    let confirm = alert.addButton(withTitle: Localization.text(needsAnother ? "continue" : "selection.delete.confirm"))
+    confirm.keyEquivalent = ""
+    confirm.hasDestructiveAction = true
+    alert.beginSheetModal(for: window) { [weak self] response in
+      guard response == .alertSecondButtonReturn, let self else {
+        return
+      }
+      if needsAnother {
+        presentDeletionConfirmation(request, final: true, window: window)
+      } else {
+        do {
+          try AppModel.shared.delete(ids: request.ids)
+          toggleSelection()
+        } catch {
+          MacAlerts.error(error)
+        }
+      }
+    }
   }
 
   /// 以最小卡片宽度计算列数，文档高度至少填满视口，以保持空态与滚动布局稳定。
@@ -251,14 +348,23 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
   }
 
   @objc func addAccount() {
+    guard !selecting else {
+      return
+    }
     edit(nil)
   }
 
   @objc func importAccounts() {
+    guard !selecting else {
+      return
+    }
     transfer.chooseImport()
   }
 
   @objc func exportAccounts() {
+    guard !selecting else {
+      return
+    }
     transfer.chooseExport()
   }
 
@@ -270,5 +376,38 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
     let editor = MacTokenEditor(token: token)
     self.editor = editor
     presentAsSheet(editor)
+  }
+}
+
+// MARK: - MacAppearanceBackgroundView
+
+/// 动态颜色必须在视图当前外观中解析；外观变化主动使图层失效，无需等待窗口缩放。
+internal final class MacAppearanceBackgroundView: NSView {
+  private let color: NSColor
+
+  init(color: NSColor) {
+    self.color = color
+    super.init(frame: .zero)
+    wantsLayer = true
+  }
+
+  @available(*, unavailable)
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  override var wantsUpdateLayer: Bool {
+    true
+  }
+
+  override func viewDidChangeEffectiveAppearance() {
+    super.viewDidChangeEffectiveAppearance()
+    needsDisplay = true
+  }
+
+  override func updateLayer() {
+    effectiveAppearance.performAsCurrentDrawingAppearance {
+      layer?.backgroundColor = color.cgColor
+    }
   }
 }
