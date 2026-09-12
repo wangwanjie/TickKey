@@ -6,13 +6,14 @@
 - 手机相机扫描标准 `otpauth://totp` 二维码，扫码后核对账户再保存。
 - 每行一条 otpauth URI 的文本导入导出；密码加密 `.tickkey` 备份，跨平台通用，按内容识别格式。
 - 完全一致的发行方、账户、规范化密钥、算法、位数、周期才去重；不同密钥保留。
+- 兼容浏览器 Authenticator 插件导出的 otpauth 文本，包括有发行方但未填写账户名称的条目。
 - 单个账户二维码或全部账户二维码翻页，供其他验证器连续扫码。
 - 简体中文、繁体中文、English，语言和外观热切换。
 - macOS Sparkle 自动更新集成，通过 `SPARKLE_ENABLED` 隔离；已配置仓库更新源和专用公钥，首次发行后可实际检查更新。
 
 ## 构建
 
-需要 Xcode 26.0 或更高版本（MMKV 的 SPM 清单要求 Swift 6.2）和 XcodeGen。保留初始工程的 iOS 14 / macOS 12 最低部署版本和 Catalyst 支持；Mac 推荐使用原生 `TickKeyMac` scheme。
+需要 Xcode 26.0 或更高版本（MMKV 的 SPM 清单要求 Swift 6.2）和 XcodeGen。最低部署版本为 iOS 15 / macOS 12，并保留 Catalyst 支持；Mac 推荐使用原生 `TickKeyMac` scheme。
 
 ```sh
 xcodegen generate
@@ -27,7 +28,9 @@ xcodebuild -project TickKey.xcodeproj -scheme TickKeyMac -destination 'platform=
 xcodebuild -project TickKey.xcodeproj -scheme TickKey -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
 ```
 
-本机 Xcode 27 已移除 iOS 14 构建支持。当前工程暂保留原始最低版本，正式调整待作者确认；在 Xcode 27 下可在上述 iOS 测试命令后追加 `IPHONEOS_DEPLOYMENT_TARGET=15.0` 进行临时验证。验证范围见 [验证记录](Docs/Validation.md)。
+最低 iOS 版本已确认更新到 15.0，无需额外覆盖构建参数。验证范围见 [验证记录](Docs/Validation.md)。
+
+首次构建前安装 SwiftFormat 和 SwiftLint，并通过 `Scripts/check_swift.sh`。详细约定及配置兼容说明见 [Swift 代码规范](Docs/CodingStyle.md)。
 
 ## 数据与安全
 

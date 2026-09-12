@@ -1,22 +1,34 @@
-# 本轮验证记录
+# 验证记录
 
-验证日期：2026-09-12。开发工具：Xcode 27.0。
+验证日期：2026-09-12。工具：Xcode 27.0、SwiftFormat 0.63.0、SwiftLint 0.65.1。
 
-- 原生 macOS Debug 编译成功；10 项 XCTest 通过。
-- iOS 模拟器编译成功；11 项 XCTest 通过，包含 Core Image 反解生成二维码。
-- iPhone 16 Pro / iOS 18.5：添加账户、单击复制、搜索过滤、打开编辑并核对账户的 UI 测试通过。
-- iPad Pro 11-inch (M4) / iOS 18.5：同一 UI 流程通过，宽屏布局截图已导出检查。
+## 1.0.1 导入与代码规范修复
+
+- 复现：浏览器 Authenticator 文本备份包含 50 条记录，其中 10 条账户名为空，旧版在第 1 行停止导入。
+- 修复后，在本机内存中验证全部 50 条记录成功解析、生成验证码、文本往返及加密备份往返，空账户名原样保留。真实备份没有加入仓库、测试资源或构建产物。
+- macOS：13 项核心测试通过，包含新增的空账户名导入、无效数据拒绝、去重与持久化回归测试。
+- iOS：14 项核心/二维码测试通过，iPhone 16 Pro / iOS 18.5 的添加、复制、搜索和编辑 UI 流程通过。
+- 30 个自有 Swift 文件通过 SwiftFormat `--lint` 和 SwiftLint `--strict`，0 违规；两个 Xcode target 均执行同一检查脚本。
+- 移除强制解包、强制类型转换和隐式解包；拆分复杂备份解码和过长布局方法，卡片与绘图组件独立成文件。
+- 补充类型职责、业务方法和关键安全边界的简体中文注释，方法内部按步骤分段留白。
+- 最低 iOS 版本已按作者确认更新为 15.0，测试不再使用临时覆盖参数；macOS 最低版本仍为 12.0。
+- Shell 语法、工程生成配置、资源引用及 git diff 空白检查通过。
+
+## 编译器分析的限制
+
+额外执行了配置中的 `unused_declaration` 和 `unused_import` 编译器分析：iOS 的 20 个编译单元达到 0 诊断。当前 SwiftLint / Xcode 27 组合对 macOS 的 `@main ApplicationMain.main()` 报告“未引用”；该方法由 Swift 生成的系统入口调用，不是可删除的死代码。分析共享测试文件时，还在非当前平台的条件导入分支报告模块不存在，而相同文件的两平台实际编译与测试均成功。
+
+没有为这些诊断添加行级豁免、规则基线或公开无用 API 来避开检查。不能把这部分编译器分析报告为完整零诊断；常规严格 lint、格式检查和实际构建/测试均独立执行。
+
+iOS 场景入口已在 AppDelegate 中直接绑定 `SceneDelegate.self`，增强程序化初始化的类型关系，并避免仅靠 plist 类名字符串识别场景。
+
+## 已有功能验证
+
 - RFC 6238 三种算法共 18 个标准样例全部匹配。
-- 使用独立 Python cryptography 实现生成的加密备份，可由 Swift 解密；错误密码、篡改、未知版本和无效文本行被拒绝。
-- 数据库重开、错误设备密钥、完整字段去重、导入 UUID 冲突、编辑去重的持久化测试通过。
-- 原生 Mac 实际界面检查采用 macOS accessibility / 截图，未接入 LookInside：添加、复制、加密文件内容识别与导入、二维码、设置和语言热切换已检查。
-- Mac Release 包包含 x86_64 / arm64，Developer ID 签名验证通过；Apple 公证 Accepted，DMG staple / validate 通过。
-- Sparkle appcast 的文件长度和 Ed25519 签名已用独立 Python 实现和配置中的公钥验证。
-- Shell 语法、plist、图标资源引用和 git diff 空白检查通过。
-- 保留并同步了工作期间新增的 Code Lint 构建阶段及格式配置；本机没有 SwiftLint / SwiftFormat，构建按该脚本的既有行为跳过这两项检查并提示警告。当前 SwiftLint 的 included 仍是作者配置的 Sources / Tests，正式启用前需映射到实际源码目录。
+- 独立 Python cryptography 实现生成的备份可由 Swift 解密；错误密码、篡改、未知版本和无效文本行均被拒绝。
+- 数据库重开、错误设备密钥、完整字段去重、UUID 冲突及编辑持久化测试通过。
+- 1.0.0 时已检查 iPad Pro 11-inch (M4) / iOS 18.5 的宽屏布局及相同 UI 流程。
+- 原生 Mac 实际界面采用 accessibility / 截图检查，未接入 LookInside：添加、复制、文件内容识别与加密导入、二维码、设置和语言热切换已验证。
+- Mac 分发包包含 x86_64 / arm64，使用 Developer ID 签名及 `vanjay_mac_stapler` 公证；更新包的 Ed25519 签名可用项目公钥独立验证。
 
-## 版本与尚未验证的范围
-
-初始工程的最低 iOS 14 / macOS 12 设置仍然保留。由于本机 Xcode 27 要求 iOS 15 起，iOS 编译和测试命令临时添加了 `IPHONEOS_DEPLOYMENT_TARGET=15.0`，没有据此宣称验证过 iOS 14 设备。正式提升最低版本仍待项目作者确认。
-
-相机扫码需 iPhone 真机确认。首次公开 Release 尚未发布，所以未验证 Sparkle 从已安装旧版本到新版本的完整下载、替换和重启过程。未进行独立安全审计。测试工具的 AppIntents 元数据提示和 XCTest SDK 最低系统版本链接提示仍存在，应用源码没有 MainActor 隔离警告。
+相机扫码仍需 iPhone 真机确认。尚未公开 GitHub Release，因此没有验证 Sparkle 从已安装旧版本到新版本的完整下载、替换与重启过程。项目尚未经过独立安全审计。
