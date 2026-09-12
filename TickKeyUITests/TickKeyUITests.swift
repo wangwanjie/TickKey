@@ -55,6 +55,8 @@ internal final class TickKeyUITests: XCTestCase {
     app.secureTextFields["secret"].typeText("JBSWY3DPEHPK3PXP")
     app.buttons["save-account"].tap()
     XCTAssertTrue(app.cells["token-alice@example.com"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["GitHub · alice@example.com"].exists)
+    XCTAssertLessThan(app.cells["token-alice@example.com"].frame.height, 100)
     let screen = XCTAttachment(screenshot: app.screenshot())
     screen.name = "Accounts"
     screen.lifetime = .keepAlways
@@ -66,8 +68,9 @@ internal final class TickKeyUITests: XCTestCase {
     search.typeText("no-such-account")
     XCTAssertTrue(app.staticTexts["No matching accounts"].waitForExistence(timeout: 3))
     search.buttons.firstMatch.tap()
-    app.buttons["Cancel"].tap()
-    app.buttons["Edit alice@example.com"].tap()
+    let cancelSearch = app.buttons["Cancel"].exists ? app.buttons["Cancel"] : app.buttons["close"]
+    cancelSearch.tap()
+    app.cells["token-alice@example.com"].swipeLeft()
     app.buttons["Edit"].tap()
     XCTAssertEqual(app.textFields["account"].value as? String, "alice@example.com")
     app.buttons["Cancel"].tap()
@@ -78,11 +81,37 @@ internal final class TickKeyUITests: XCTestCase {
     XCTAssertTrue(app.staticTexts["1 / 1"].exists)
     XCTAssertFalse(app.buttons["next-qr"].isEnabled)
     app.buttons["Close"].tap()
-    app.buttons["Edit alice@example.com"].tap()
+    app.cells["token-alice@example.com"].swipeLeft()
+    let menu = XCTAttachment(screenshot: app.screenshot())
+    menu.name = "Account swipe actions"
+    menu.lifetime = .keepAlways
+    add(menu)
     app.buttons["Show QR code"].tap()
     XCTAssertTrue(app.images["export-qr-image"].waitForExistence(timeout: 5))
     app.buttons["Close"].tap()
     verifyFileExports(app)
+    verifySwipeDeletion(app)
+  }
+
+  /// 左滑只展开菜单，取消删除保持账户，确认后才真正移除。
+  @MainActor
+  private func verifySwipeDeletion(_ app: XCUIApplication) {
+    let cell = app.cells["token-alice@example.com"]
+    cell.swipeLeft()
+    app.buttons["Delete"].tap()
+    let confirmation = app.alerts["Delete"]
+    XCTAssertTrue(confirmation.waitForExistence(timeout: 3))
+    confirmation.buttons["Cancel"].tap()
+    XCTAssertTrue(cell.exists)
+    cell.swipeLeft()
+    app.buttons["Delete"].tap()
+    confirmation.buttons["Continue"].tap()
+    // UITableView 的复用缓存可能仍出现在 XCTest 层级中，按实际空态验证删除结果。
+    XCTAssertTrue(app.staticTexts["Your keys, in one place"].waitForExistence(timeout: 5))
+    let empty = XCTAttachment(screenshot: app.screenshot())
+    empty.name = "Accounts after deletion"
+    empty.lifetime = .keepAlways
+    add(empty)
   }
 
   /// 编码、文件写入和密码弹窗衔接完成后应打开文件面板；测试取消保存以免写入用户目录。

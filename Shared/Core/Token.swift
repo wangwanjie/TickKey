@@ -114,6 +114,27 @@ internal struct Token: Codable, Identifiable, Equatable {
     issuer.isEmpty ? account : issuer
   }
 
+  /// 仅为列表合并名称，去掉账户中完整的发行方前缀，不修改存储和导出的原始字段。
+  var displayName: String {
+    let name = issuer.trimmingCharacters(in: .whitespacesAndNewlines)
+    var detail = account.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !name.isEmpty else {
+      return detail
+    }
+    while let prefix = detail.range(of: name, options: [.anchored, .caseInsensitive]) {
+      let remainder = detail[prefix.upperBound...].trimmingCharacters(in: .whitespacesAndNewlines)
+      if remainder.isEmpty {
+        detail = ""
+        break
+      }
+      guard remainder.first == ":" || remainder.first == "：" else {
+        break
+      }
+      detail = remainder.dropFirst().trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    return detail.isEmpty ? name : name + " · " + detail
+  }
+
   /// 只搜索发行方和账户名称，避免把密钥暴露到搜索行为中。
   func matches(_ query: String) -> Bool {
     query.isEmpty || issuer.localizedStandardContains(query) || account.localizedStandardContains(query)

@@ -4,14 +4,13 @@ import UIKit
 
 // MARK: - AccountsViewController
 
-/// 展示自适应账户卡片，协调搜索、复制、编辑和导入导出入口。
-internal final class AccountsViewController: UIViewController, UICollectionViewDataSource,
-  UICollectionViewDelegateFlowLayout,
+/// 展示紧凑的账户列表，协调搜索、复制、左滑操作和导入导出入口。
+internal final class AccountsViewController: UIViewController, UITableViewDataSource,
+  UITableViewDelegate,
   UISearchResultsUpdating, UISearchBarDelegate {
   private let model = AppModel.shared
   private let search = UISearchController(searchResultsController: nil)
-  private let layout = UICollectionViewFlowLayout()
-  private lazy var collection = UICollectionView(frame: .zero, collectionViewLayout: layout)
+  private let table = UITableView(frame: .zero, style: .plain)
   private let empty = UIStackView()
   private let emptyTitle = UILabel()
   private let emptyBody = UILabel()
@@ -21,15 +20,13 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
   private var filterID = UUID()
   private var filterWork: DispatchWorkItem?
   private let filterQueue = DispatchQueue(label: "cn.vanjay.TickKey.search", qos: .userInitiated)
-  private var lastLayoutWidth: CGFloat = 0
-  private var lastHeadlineSize: CGFloat = 0
   private lazy var transfer = IOSTransferCoordinator(presenter: self)
   private lazy var photoImport = PhotoImportCoordinator(presenter: self)
   var onSettings: (() -> Void)?
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    view.backgroundColor = .systemGroupedBackground
+    view.backgroundColor = .systemBackground
 
     // 系统搜索栏在 iPhone 与 iPad 上自动采用合适的位置。
     navigationController?.navigationBar.prefersLargeTitles = true
@@ -47,16 +44,18 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
     navigationItem.hidesSearchBarWhenScrolling = false
     definesPresentationContext = true
 
-    // 卡片网格只展示筛选后的账户，条目原始数据由 AppModel 持有。
-    collection.backgroundColor = .clear
-    collection.dataSource = self
-    collection.delegate = self
-    collection.alwaysBounceVertical = true
-    collection.register(TokenCell.self, forCellWithReuseIdentifier: TokenCell.reuseID)
-    view.addSubview(collection)
+    // 原生列表按内容自适应行高，并承载行内左滑菜单。
+    table.backgroundColor = .clear
+    table.dataSource = self
+    table.delegate = self
+    table.rowHeight = UITableView.automaticDimension
+    table.estimatedRowHeight = 84
+    table.tableFooterView = UIView()
+    table.register(TokenCell.self, forCellReuseIdentifier: TokenCell.reuseID)
+    view.addSubview(table)
     // 滚动视图由 UIKit 调整安全区内边距，避免搜索/键盘转场的临时安全区高度产生约束冲突。
-    collection.snp.makeConstraints { $0.edges.equalToSuperview() }
-    collection.keyboardDismissMode = .onDrag
+    table.snp.makeConstraints { $0.edges.equalToSuperview() }
+    table.keyboardDismissMode = .onDrag
 
     let icon = UIImageView(image: UIImage(systemName: "lock.shield"))
     icon.contentMode = .scaleAspectFit
@@ -87,7 +86,7 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
     reload()
   }
 
-  /// 发布变更后再读取模型；倒计时只更新当前可见的卡片。
+  /// 发布变更后再读取模型；倒计时只更新当前可见的行。
   private func bindUpdates() {
     searchChanges
       .debounce(for: .milliseconds(120), scheduler: DispatchQueue.main)
@@ -113,7 +112,7 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
               UIApplication.shared.applicationState == .active else {
           return
         }
-        self?.collection.visibleCells.compactMap { $0 as? TokenCell }.forEach { $0.tick() }
+        self?.table.visibleCells.compactMap { $0 as? TokenCell }.forEach { $0.tick() }
       }
       .store(in: &subscriptions)
   }
@@ -124,23 +123,6 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
     if let error = model.startupError {
       showError(error)
     }
-  }
-
-  override func viewDidLayoutSubviews() {
-    super.viewDidLayoutSubviews()
-    let width = contentWidth
-    let headlineSize = UIFont.preferredFont(forTextStyle: .headline).pointSize
-    guard width != lastLayoutWidth || headlineSize != lastHeadlineSize else {
-      return
-    }
-    lastLayoutWidth = width
-    lastHeadlineSize = headlineSize
-    layout.invalidateLayout()
-  }
-
-  /// 横屏刘海和 iPad 安全区由滚动视图调整，卡片宽度必须减去对应内边距。
-  private var contentWidth: CGFloat {
-    collection.bounds.width - collection.adjustedContentInset.left - collection.adjustedContentInset.right
   }
 
   /// 重新生成导航文案和操作入口，使语言修改立即反映到主界面。
@@ -209,7 +191,8 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
   private func applyResults(_ result: [Token], hasAccounts: Bool) {
     PerformanceDiagnostics.measure("accounts.reload", count: result.count) {
       shown = result
-      collection.reloadData()
+      table.setEditing(false, animated: false)
+      table.reloadData()
       empty.isHidden = !shown.isEmpty
       emptyTitle.text = Localization.text(hasAccounts ? "empty.search" : "empty.title")
       emptyBody.text = Localization.text(hasAccounts ? "search" : "empty.body")
@@ -266,62 +249,29 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
       animated: true)
   }
 
-  func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+  func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     shown.count
   }
 
-  func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-    guard let cell = collectionView.dequeueReusableCell(
-      withReuseIdentifier: TokenCell.reuseID,
+  func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    guard let cell = tableView.dequeueReusableCell(
+      withIdentifier: TokenCell.reuseID,
       for: indexPath) as? TokenCell else {
-      assertionFailure("账户卡片的注册类型与复用类型不一致")
+      assertionFailure("账户行的注册类型与复用类型不一致")
 
-      return UICollectionViewCell()
+      return UITableViewCell()
     }
 
-    let token = shown[indexPath.item]
+    let token = shown[indexPath.row]
     cell.configure(token)
-    cell.onMore = { [weak self, weak cell] in self?.itemMenu(token, source: cell) }
 
     return cell
   }
 
-  func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    sizeForItemAt indexPath: IndexPath) -> CGSize {
-    let width = max(1, contentWidth - 40)
-    let columns = max(1, Int((width + 16) / 330))
-
-    return CGSize(
-      width: floor((width - CGFloat(columns - 1) * 16) / CGFloat(columns)),
-      height: 160 + max(0, UIFont.preferredFont(forTextStyle: .headline).pointSize - 17) * 2)
-  }
-
-  func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    insetForSectionAt section: Int) -> UIEdgeInsets {
-    UIEdgeInsets(top: 18, left: 20, bottom: 24, right: 20)
-  }
-
-  func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-    16
-  }
-
-  func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-    16
-  }
-
-  func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+  func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    tableView.deselectRow(at: indexPath, animated: true)
     do {
-      let code = try TOTP.code(for: shown[indexPath.item])
+      let code = try TOTP.code(for: shown[indexPath.row])
       UIPasteboard.general.setItems(
         [["public.utf8-plain-text": code]],
         options: [.localOnly: true, .expirationDate: Date().addingTimeInterval(30)])
@@ -333,18 +283,26 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
     }
   }
 
-  /// 管理单个账户的编辑、二维码和删除操作，删除前提示登录恢复风险。
-  private func itemMenu(_ token: Token, source: UIView?) {
-    let sheet = UIAlertController(title: token.title, message: token.account, preferredStyle: .actionSheet)
-    sheet
-      .addAction(UIAlertAction(title: Localization.text("edit"), style: .default) { [weak self] _ in
-        self?.edit(token)
-      })
-    sheet
-      .addAction(UIAlertAction(title: Localization.text("qr"), style: .default) { [weak self] _ in
-        self?.transfer.showQR([token])
-      })
-    sheet.addAction(UIAlertAction(title: Localization.text("delete"), style: .destructive) { [weak self] _ in
+  /// 使用系统行内操作并禁用整段滑动直接执行，删除仍需独立确认。
+  func tableView(
+    _ tableView: UITableView,
+    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+    let token = shown[indexPath.row]
+    let edit = UIContextualAction(style: .normal, title: Localization.text("edit")) { [weak self] _, _, done in
+      done(true)
+      self?.edit(token)
+    }
+    edit.image = UIImage(systemName: "pencil")
+    edit.backgroundColor = view.tintColor
+    let qr = UIContextualAction(style: .normal, title: Localization.text("qr")) { [weak self] _, _, done in
+      done(true)
+      self?.transfer.showQR([token])
+    }
+    qr.image = UIImage(systemName: "qrcode")
+    qr.backgroundColor = .systemGray
+    let delete = UIContextualAction(style: .normal, title: Localization.text("delete")) { [weak self] _, _, done in
+      // 此操作只打开确认框，使用普通完成流程，避免系统提前进入删除行的过渡状态。
+      done(true)
       self?.confirm(
         title: Localization.text("delete"),
         message: Localization.text("delete.warning"),
@@ -355,11 +313,12 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
             self?.showError(error)
           }
         }
-    })
-    sheet.addAction(UIAlertAction(title: Localization.text("cancel"), style: .cancel))
-    sheet.popoverPresentationController?.sourceView = source ?? view
-    sheet.popoverPresentationController?.sourceRect = source?.bounds ?? view.bounds
-    present(sheet, animated: true)
+    }
+    delete.image = UIImage(systemName: "trash")
+    delete.backgroundColor = .systemRed
+    let configuration = UISwipeActionsConfiguration(actions: [delete, qr, edit])
+    configuration.performsFirstActionWithFullSwipe = false
+    return configuration
   }
 }
 

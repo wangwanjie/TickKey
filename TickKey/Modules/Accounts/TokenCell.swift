@@ -1,69 +1,59 @@
 import SnapKit
 import UIKit
 
-/// 呈现账户标识和验证码，保留独立操作按钮，整张卡片用于复制。
-internal final class TokenCell: UICollectionViewCell {
+/// 用紧凑的两行布局呈现账户和验证码，整行用于复制，系统承载左滑操作。
+internal final class TokenCell: UITableViewCell {
   static let reuseID = "TokenCell"
-  private let issuer = UILabel()
-  private let account = UILabel()
+  private let name = UILabel()
   private let code = UILabel()
   private let badge = UILabel()
   private let countdown = CountdownView()
-  private let more = UIButton(type: .system)
-  var onMore: (() -> Void)?
   var token: Token?
   private var lastStep: Int?
   private var lastCode = "—"
 
-  override init(frame: CGRect) {
-    super.init(frame: frame)
-    contentView.backgroundColor = .secondarySystemGroupedBackground
-    contentView.layer.cornerRadius = 20
-    contentView.layer.borderWidth = 1
+  override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+    super.init(style: style, reuseIdentifier: reuseIdentifier)
+    backgroundColor = .systemBackground
     badge.textAlignment = .center
     badge.font = .systemFont(ofSize: 20, weight: .bold)
     badge.textColor = tintColor
     badge.backgroundColor = tintColor.withAlphaComponent(0.1)
-    badge.layer.cornerRadius = 12
+    badge.layer.cornerRadius = 10
     badge.clipsToBounds = true
-    issuer.font = .preferredFont(forTextStyle: .headline)
-    account.font = .preferredFont(forTextStyle: .caption1)
-    account.textColor = .secondaryLabel
-    code.font = .monospacedDigitSystemFont(ofSize: 34, weight: .semibold)
+    name.font = UIFontMetrics(forTextStyle: .subheadline)
+      .scaledFont(for: .systemFont(ofSize: 15, weight: .medium))
+    name.lineBreakMode = .byTruncatingMiddle
+    code.font = UIFontMetrics(forTextStyle: .title1)
+      .scaledFont(for: .monospacedDigitSystemFont(ofSize: 30, weight: .semibold))
     code.textColor = tintColor
-    issuer.adjustsFontForContentSizeCategory = true
-    account.adjustsFontForContentSizeCategory = true
-    more.setImage(UIImage(systemName: "ellipsis"), for: .normal)
-    more.addTarget(self, action: #selector(menu), for: .touchUpInside)
+    name.adjustsFontForContentSizeCategory = true
+    code.adjustsFontForContentSizeCategory = true
     countdown.backgroundColor = .clear
-    [badge, issuer, account, code, countdown, more].forEach(contentView.addSubview)
+    [badge, name, code, countdown].forEach(contentView.addSubview)
     badge.snp.makeConstraints {
-      $0.top.leading.equalToSuperview().inset(18)
-      $0.size.equalTo(42)
+      $0.leading.equalTo(contentView.safeAreaLayoutGuide).offset(20)
+      $0.centerY.equalToSuperview()
+      $0.size.equalTo(40)
     }
-    more.snp.makeConstraints {
-      $0.top.trailing.equalToSuperview().inset(8)
-      $0.size.equalTo(44)
-    }
-    issuer.snp.makeConstraints {
+    name.snp.makeConstraints {
       $0.leading.equalTo(badge.snp.trailing).offset(12)
-      $0.top.equalTo(badge)
-      $0.trailing.lessThanOrEqualTo(more.snp.leading)
-    }
-    account.snp.makeConstraints {
-      $0.leading.trailing.equalTo(issuer)
-      $0.top.equalTo(issuer.snp.bottom).offset(5)
+      $0.top.equalToSuperview().inset(12)
+      $0.trailing.equalTo(contentView.safeAreaLayoutGuide).inset(20)
     }
     code.snp.makeConstraints {
-      $0.leading.equalTo(badge)
-      $0.bottom.equalToSuperview().inset(18)
+      $0.leading.equalTo(name)
+      $0.top.equalTo(name.snp.bottom).offset(4)
+      $0.bottom.equalToSuperview().inset(12)
       $0.trailing.lessThanOrEqualTo(countdown.snp.leading).offset(-8)
     }
     countdown.snp.makeConstraints {
-      $0.trailing.bottom.equalToSuperview().inset(20)
-      $0.size.equalTo(26)
+      $0.trailing.equalTo(name)
+      $0.centerY.equalTo(code)
+      $0.size.equalTo(24)
     }
     code.adjustsFontSizeToFitWidth = true
+    separatorInset = UIEdgeInsets(top: 0, left: 72, bottom: 0, right: 20)
   }
 
   @available(*, unavailable)
@@ -71,18 +61,13 @@ internal final class TokenCell: UICollectionViewCell {
     fatalError("init(coder:) has not been implemented")
   }
 
-  @objc private func menu() {
-    onMore?()
-  }
-
   /// 复用到新账户时清除验证码缓存，避免显示上一个账户的结果。
   func configure(_ token: Token) {
     self.token = token
     lastStep = nil
-    issuer.text = token.title
-    account.text = token.account
+    name.text = token.displayName
+    name.accessibilityLabel = token.displayName
     badge.text = String(token.title.prefix(1)).uppercased()
-    more.accessibilityLabel = Localization.text("edit") + " " + token.account
     accessibilityIdentifier = "token-" + token.account
     tick()
   }
@@ -105,10 +90,5 @@ internal final class TokenCell: UICollectionViewCell {
     if countdown.accessibilityLabel != remaining {
       countdown.accessibilityLabel = remaining
     }
-  }
-
-  override func layoutSubviews() {
-    super.layoutSubviews()
-    contentView.layer.borderColor = UIColor.separator.withAlphaComponent(0.25).cgColor
   }
 }

@@ -9,6 +9,28 @@ import XCTest
 
 /// 使用公开样例验证算法、备份协议、身份比较和事务持久化。
 internal final class CoreTests: XCTestCase {
+  /// 去重只影响展示，保留真实账户中的相似前缀、邮箱和原始身份。
+  func testDisplayNameDeduplicatesOnlyCompleteIssuerPrefixes() throws {
+    let examples = [
+      ("OpenList", "OpenList:VanJay", "OpenList · VanJay"),
+      ("OpenList", " openlist : OpenList：VanJay ", "OpenList · VanJay"),
+      ("Gate", "Gate:", "Gate"),
+      ("Gate", "gate", "Gate"),
+      ("Gate", "", "Gate"),
+      ("", "alice@example.com", "alice@example.com"),
+      ("GitHub", "GitHubber", "GitHub · GitHubber"),
+      ("GitHub", "GitHub@example.com", "GitHub · GitHub@example.com"),
+      ("GitHub", "alice:GitHub", "GitHub · alice:GitHub"),
+      ("公司: A", "公司: A:账户", "公司: A · 账户")
+    ]
+    for (issuer, account, expected) in examples {
+      let token = try Token(issuer: issuer, account: account, secret: "JBSWY3DPEHPK3PXP")
+      let original = token
+      XCTAssertEqual(token.displayName, expected)
+      XCTAssertEqual(token, original)
+    }
+  }
+
   func testRFC6238AllAlgorithms() throws {
     let times: [TimeInterval] = [59, 1_111_111_109, 1_111_111_111, 1_234_567_890, 2_000_000_000, 20_000_000_000]
     let expected = [

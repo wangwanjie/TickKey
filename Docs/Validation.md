@@ -2,6 +2,16 @@
 
 验证日期：2026-09-12。工具：Xcode 27.0、SwiftFormat 0.63.0、SwiftLint 0.65.1。
 
+## iOS 紧凑账户列表
+
+- 移除独立卡片外框和卡片间距，改为原生自适应高度列表；默认字号实测每行约 83pt，原布局为 160pt 卡片加 16pt 间距。
+- 发行方和账户合为一行，处理重复发行方前缀、大小写、空白和中英文冒号；保留邮箱、相似名称和原始存储字段。
+- 左滑展示编辑、二维码和删除操作，关闭完整滑动直接执行；删除继续使用确认框。
+- 21 项单元测试通过，包含名称去重边界用例。UI 回归增加行高、合并名称、左滑编辑/二维码、取消删除和确认删除后的空态验证。
+- XCTest 可能把 UITableView 复用缓存中的旧 cell 留在层级中；删除验证以实际空态及截图为准。
+- iPhone 16 Pro / iOS 18.5 与 iPhone 17 Pro / iOS 26.5 的完整账户 UI 流程均通过，包含复制、搜索、左滑编辑/二维码、文件导出和删除确认。结果位于 `build/Validation/Compact-Accounts-Final.xcresult`，无运行时警告。
+- 已检查普通行、左滑菜单和删除后空态截图；预览位于 `build/Validation/Compact-Accounts-Final-Screenshots/compact-accounts-preview.png`。严格 SwiftFormat / SwiftLint 和 `git diff --check` 通过。
+
 ## iOS 卡顿与二维码崩溃修复
 
 第二轮真机日志跟进：
