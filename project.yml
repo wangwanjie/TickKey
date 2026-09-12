@@ -1,0 +1,116 @@
+name: TickKey
+options:
+  bundleIdPrefix: cn.vanjay
+  deploymentTarget:
+    iOS: '14.0'
+    macOS: '12.0'
+  knownRegions: [en, zh-Hans, zh-Hant, Base]
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+    DEVELOPMENT_TEAM: X6B6C6U6QV
+    MARKETING_VERSION: '1.0.0'
+    CURRENT_PROJECT_VERSION: 1
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+packages:
+  MMKV:
+    url: https://github.com/Tencent/MMKV.git
+    exactVersion: 2.4.2
+  SnapKit:
+    url: https://github.com/SnapKit/SnapKit.git
+    exactVersion: 5.7.1
+  GRDB:
+    url: https://github.com/groue/GRDB.swift.git
+    exactVersion: 6.29.3
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle.git
+    exactVersion: 2.9.0
+targets:
+  TickKey:
+    type: application
+    platform: iOS
+    sources:
+      - path: TickKey
+        excludes: [Info.plist, Base.lproj/Main.storyboard]
+      - path: Shared
+    dependencies:
+      - package: SnapKit
+      - package: GRDB
+      - package: MMKV
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: cn.vanjay.TickKey
+        INFOPLIST_FILE: TickKey/Info.plist
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: '1,2'
+        SUPPORTS_MACCATALYST: YES
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+        INFOPLIST_KEY_UILaunchStoryboardName: LaunchScreen
+    configFiles:
+      Debug: Configuration/Release.xcconfig
+      Release: Configuration/Release.xcconfig
+  TickKeyMac:
+    type: application
+    platform: macOS
+    sources: [TickKeyMac, Shared]
+    dependencies:
+      - package: SnapKit
+      - package: GRDB
+      - package: MMKV
+      - package: Sparkle
+    settings:
+      base:
+        PRODUCT_NAME: TickKey
+        PRODUCT_MODULE_NAME: TickKeyMac
+        PRODUCT_BUNDLE_IDENTIFIER: cn.vanjay.TickKey.mac
+        INFOPLIST_FILE: Configuration/Mac-Info.plist
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_ENTITLEMENTS: Configuration/Mac.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: '$(inherited) SPARKLE_ENABLED'
+    configFiles:
+      Debug: Configuration/Release.xcconfig
+      Release: Configuration/Release.xcconfig
+  TickKeyTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [TickKeyTests, CoreTests]
+    dependencies:
+      - target: TickKey
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+  TickKeyMacTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [CoreTests]
+    dependencies:
+      - target: TickKeyMac
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: '$(BUILT_PRODUCTS_DIR)/TickKey.app/Contents/MacOS/TickKey'
+  TickKeyUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [TickKeyUITests]
+    dependencies:
+      - target: TickKey
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  TickKey:
+    build:
+      targets:
+        TickKey: all
+    test:
+      targets: [TickKeyTests, TickKeyUITests]
+  TickKeyMac:
+    build:
+      targets:
+        TickKeyMac: all
+    test:
+      targets: [TickKeyMacTests]

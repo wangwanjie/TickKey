@@ -1,43 +1,27 @@
-//
-//  TickKeyUITests.swift
-//  TickKeyUITests
-//
-//  Created by VanJay on 2026/9/12.
-//
-
 import XCTest
 
 final class TickKeyUITests: XCTestCase {
-
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
+    @MainActor
+    func testAddSearchAndEdit() throws {
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
-        let app = XCUIApplication()
-        app.launch()
-
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
-    }
-
-    @MainActor
-    func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
-        measure(metrics: [XCTApplicationLaunchMetric()]) {
-            XCUIApplication().launch()
-        }
+        let app = XCUIApplication(); app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)"]; app.launch()
+        app.buttons["add-account"].tap(); app.buttons["Enter manually"].tap()
+        XCTAssertTrue(app.textFields["issuer"].waitForExistence(timeout: 5))
+        app.textFields["issuer"].tap()
+        let form = XCTAttachment(screenshot: app.screenshot()); form.name = "Account editor"; form.lifetime = .keepAlways; add(form)
+        app.textFields["issuer"].typeText("GitHub")
+        app.textFields["account"].tap(); app.textFields["account"].typeText("alice@example.com")
+        app.secureTextFields["secret"].tap(); app.secureTextFields["secret"].typeText("JBSWY3DPEHPK3PXP")
+        app.buttons["save-account"].tap()
+        XCTAssertTrue(app.cells["token-alice@example.com"].waitForExistence(timeout: 5))
+        let screen = XCTAttachment(screenshot: app.screenshot()); screen.name = "Accounts"; screen.lifetime = .keepAlways; add(screen)
+        app.cells["token-alice@example.com"].tap()
+        XCTAssertTrue(app.staticTexts["Copied · clears in 30 seconds"].waitForExistence(timeout: 3))
+        let search = app.searchFields.firstMatch; search.tap(); search.typeText("no-such-account")
+        XCTAssertTrue(app.staticTexts["No matching accounts"].waitForExistence(timeout: 3))
+        search.buttons.firstMatch.tap(); app.buttons["Cancel"].tap()
+        app.buttons["Edit alice@example.com"].tap(); app.buttons["Edit"].tap()
+        XCTAssertEqual(app.textFields["account"].value as? String, "alice@example.com")
+        app.buttons["Cancel"].tap()
     }
 }

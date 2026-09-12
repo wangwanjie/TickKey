@@ -1,0 +1,4 @@
+// 公开仓库地址和 Sparkle 公钥不是秘密；签名私钥只能保留在发布者机器。
+TICKKEY_REPOSITORY_URL = https:/$()/github.com/wangwanjie/TickKey
+SPARKLE_FEED_URL = https:/$()/github.com/wangwanjie/TickKey/releases/latest/download/appcast.xml
+SPARKLE_PUBLIC_KEY = PDETMdAraTSyH5QMwFfRhaZRDbKGry6TZOO5R5xZSxo=
