@@ -11,13 +11,15 @@ if [[ $# -gt 0 ]]; then
   exit 1
 fi
 
+bash "$SCRIPT_DIR/install_pods.sh" --deployment
+
 # 两个平台共用同一个包依赖图，Mac scheme 包含 Sparkle 等全部依赖。
 # 不指定 clonedSourcePackagesDirPath 或 derivedDataPath，让 Xcode 界面直接复用解析结果。
 xcodebuild \
   -resolvePackageDependencies \
-  -project "$ROOT/TickKey.xcodeproj" \
+  -workspace "$ROOT/TickKey.xcworkspace" \
   -scheme TickKeyMac \
   -onlyUsePackageVersionsFromResolvedFile \
   -skipPackageUpdates
 
-echo '依赖解析完成。重新打开 TickKey.xcodeproj 后即可构建。'
+echo '依赖解析完成。重新打开 TickKey.xcworkspace 后即可构建。'

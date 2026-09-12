@@ -1,0 +1,31 @@
+PODS:
+  - LookinServer (0.1.0):
+    - LookinServer/Server (= 0.1.0)
+  - LookinServer/Base (0.1.0)
+  - LookinServer/Core (0.1.0):
+    - LookinServer/Base
+  - LookinServer/Server (0.1.0):
+    - LookinServer/Shared
+  - LookinServer/Shared (0.1.0):
+    - LookinServer/Base
+    - LookinServer/Core
+
+DEPENDENCIES:
+  - LookinServer (from `https://github.com/wangwanjie/LookInside.git`, commit `026e36f9b51202aac51e82c213c1cc4f86fc844a`)
+
+EXTERNAL SOURCES:
+  LookinServer:
+    :commit: 026e36f9b51202aac51e82c213c1cc4f86fc844a
+    :git: https://github.com/wangwanjie/LookInside.git
+
+CHECKOUT OPTIONS:
+  LookinServer:
+    :commit: 026e36f9b51202aac51e82c213c1cc4f86fc844a
+    :git: https://github.com/wangwanjie/LookInside.git
+
+SPEC CHECKSUMS:
+  LookinServer: a90654c25fe36c1bc67bf750ab3ee7178166e1f3
+
+PODFILE CHECKSUM: e817129484cc4c6eeedd22d983b4f12577a080b3
+
+COCOAPODS: 1.16.2

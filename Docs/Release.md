@@ -12,6 +12,8 @@
 
 ## 打包与草稿 Release
 
+首次准备工程执行 `xcodegen generate`，自动安装 CocoaPods。IPA/DMG 打包脚本会先执行 `pod install --deployment` 校验锁定依赖，再从 `TickKey.xcworkspace` 使用 Release 配置归档；LookinServer 仅链接到 Debug。`build_ipa.sh debugging` 指定导出签名方式，归档配置仍为 Release。
+
 ```sh
 Scripts/build_dmg.sh
 # 可用 PRETTY_DMG_SCRIPT 指定 create_pretty_dmg.sh；没有该工具时用标准 DMG 布局。

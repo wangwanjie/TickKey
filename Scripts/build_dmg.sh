@@ -15,9 +15,10 @@ while [[ $# -gt 0 ]]; do
     *) echo "未知参数: $1" >&2; exit 1 ;;
   esac
 done
+bash "$SCRIPT_DIR/install_pods.sh" --deployment
 OUT="$ROOT/build/release/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$OUT"
-xcodebuild -project "$ROOT/TickKey.xcodeproj" -scheme TickKeyMac -configuration Release \
+xcodebuild -workspace "$ROOT/TickKey.xcworkspace" -scheme TickKeyMac -configuration Release \
   -destination 'generic/platform=macOS' -archivePath "$OUT/TickKey.xcarchive" \
   -derivedDataPath "$ROOT/build/ReleaseDerivedData" -clonedSourcePackagesDirPath "$ROOT/build/SourcePackages" \
   DEVELOPMENT_TEAM=X6B6C6U6QV CODE_SIGN_STYLE=Manual 'CODE_SIGN_IDENTITY=Developer ID Application' archive

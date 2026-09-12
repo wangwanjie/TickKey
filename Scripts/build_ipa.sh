@@ -10,9 +10,10 @@ case "$METHOD" in
   release-testing|debugging|app-store-connect) ;;
   *) echo '不支持的导出类型' >&2; exit 1 ;;
 esac
+bash "$SCRIPT_DIR/install_pods.sh" --deployment
 OUT="$ROOT/build/ipa/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$OUT"
-xcodebuild -project "$ROOT/TickKey.xcodeproj" -scheme TickKey -configuration Release \
+xcodebuild -workspace "$ROOT/TickKey.xcworkspace" -scheme TickKey -configuration Release \
   -destination 'generic/platform=iOS' -archivePath "$OUT/TickKey.xcarchive" -allowProvisioningUpdates archive
 python3 - "$METHOD" "$OUT/ExportOptions.plist" <<'PY'
 import plistlib,sys

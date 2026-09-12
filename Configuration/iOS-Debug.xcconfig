@@ -1,0 +1,2 @@
+#include "../Pods/Target Support Files/Pods-TickKey/Pods-TickKey.debug.xcconfig"
+#include "Release.xcconfig"

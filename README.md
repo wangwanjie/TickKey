@@ -13,19 +13,19 @@
 
 ## 构建
 
-需要 Xcode 26.0 或更高版本（MMKV 的 SPM 清单要求 Swift 6.2）和 XcodeGen。最低部署版本为 iOS 15 / macOS 12，并保留 Catalyst 支持；Mac 推荐使用原生 `TickKeyMac` scheme。
+需要 Xcode 26.0 或更高版本（MMKV 的 SPM 清单要求 Swift 6.2）、XcodeGen 和 CocoaPods。最低部署版本为 iOS 15 / macOS 12，并保留 Catalyst 支持；Mac 推荐使用原生 `TickKeyMac` scheme。
 
 ```sh
 xcodegen generate
-open TickKey.xcodeproj
+open TickKey.xcworkspace
 # 在 Xcode 中选择自己的签名团队，再运行 TickKey 或 TickKeyMac。
 ```
 
-依赖版本固定在 `project.yml`，解析锁文件一并入库：SnapKit 5.7.1、GRDB 6.29.3、MMKV 2.4.2、Sparkle 2.9.0。自己的 Swift 源码不依赖 SwiftUI。轻量设置使用 MMKV，账户使用 GRDB。
+SPM 依赖版本固定在 `project.yml`，workspace 下的解析锁文件一并入库：SnapKit 5.7.1、GRDB 6.29.3、MMKV 2.4.2、Sparkle 2.9.0。Debug UI 调试使用 CocoaPods 的 LookinServer，提交固定在 `Podfile` 和 `Podfile.lock`。`xcodegen generate` 会自动执行 `Scripts/install_pods.sh`，重新生成工程后可直接打开 workspace。自己的 Swift 源码不依赖 SwiftUI。轻量设置使用 MMKV，账户使用 GRDB。
 
 ```sh
-xcodebuild -project TickKey.xcodeproj -scheme TickKeyMac -destination 'platform=macOS' test
-xcodebuild -project TickKey.xcodeproj -scheme TickKey -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
+xcodebuild -workspace TickKey.xcworkspace -scheme TickKeyMac -destination 'platform=macOS' test
+xcodebuild -workspace TickKey.xcworkspace -scheme TickKey -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
 ```
 
 最低 iOS 版本已确认更新到 15.0，无需额外覆盖构建参数。验证范围见 [验证记录](Docs/Validation.md)。
@@ -34,12 +34,29 @@ xcodebuild -project TickKey.xcodeproj -scheme TickKey -destination 'platform=iOS
 
 ```sh
 bash Scripts/resolve_packages.sh
-open TickKey.xcodeproj
+open TickKey.xcworkspace
 ```
 
 脚本优先使用本机 `127.0.0.1:7890` 代理，按 `Package.resolved` 解析依赖，并写入 Xcode 界面使用的默认缓存。不要在这条修复命令中追加 `-clonedSourcePackagesDirPath build/SourcePackages`，否则只会修好另一份命令行缓存。
 
 首次构建前安装 SwiftFormat 和 SwiftLint，并通过 `Scripts/check_swift.sh`。详细约定及配置兼容说明见 [Swift 代码规范](Docs/CodingStyle.md)。
+
+## LookInside UI 调试
+
+从 `TickKey.xcworkspace` 以 Debug 运行 `TickKey` 或 `TickKeyMac`，LookinServer 会自动启动，再使用 LookInside 连接应用。Release 链接中排除 LookinServer；Mac 的本地监听权限仅配置在 `Mac-Debug.entitlements`。
+
+默认从 GitHub 的维护者 fork 获取固定提交。需要联调本地 LookInside 源码时，可使用与 ZiYa 相同的 checkout：
+
+```sh
+kUse_Local_Lookin=1 bash Scripts/install_pods.sh
+# 默认路径为 ../LookInsideWorkspace/LookInside，可通过 LOOKIN_LOCAL_PATH 覆盖。
+# 切回固定远端版本：
+bash Scripts/install_pods.sh
+```
+
+本地模式会改变 `Podfile.lock` 的来源；切回远端后再提交锁文件。MCP 调试时使用 `LOOKIN_MCP_TARGET_BUNDLE_ID=cn.vanjay.TickKey`（iOS）或 `cn.vanjay.TickKey.mac`（原生 Mac），并先断开 LookInside GUI 与同一应用的连接。
+
+构建、连接及 Release 隔离结果见 [接入验证](Docs/LookInside.md)。
 
 ## 数据与安全
 

@@ -1,6 +1,7 @@
 name: TickKey
 options:
   preGenCommand: python3 Scripts/generate_swift_inputs.py
+  postGenCommand: bash Scripts/install_pods.sh
   bundleIdPrefix: cn.vanjay
   deploymentTarget:
     iOS: '15.0'
@@ -56,8 +57,8 @@ targets:
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
         INFOPLIST_KEY_UILaunchStoryboardName: LaunchScreen
     configFiles:
-      Debug: Configuration/Release.xcconfig
-      Release: Configuration/Release.xcconfig
+      Debug: Configuration/iOS-Debug.xcconfig
+      Release: Configuration/iOS-Release.xcconfig
   TickKeyMac:
     type: application
     productName: TickKey
@@ -84,9 +85,12 @@ targets:
         CODE_SIGN_ENTITLEMENTS: Configuration/Mac.entitlements
         ENABLE_HARDENED_RUNTIME: YES
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: '$(inherited) SPARKLE_ENABLED'
+      configs:
+        Debug:
+          CODE_SIGN_ENTITLEMENTS: Configuration/Mac-Debug.entitlements
     configFiles:
-      Debug: Configuration/Release.xcconfig
-      Release: Configuration/Release.xcconfig
+      Debug: Configuration/Mac-Debug.xcconfig
+      Release: Configuration/Mac-Release.xcconfig
   TickKeyTests:
     type: bundle.unit-test
     platform: iOS

@@ -2,6 +2,7 @@
 build/
 .build/
 DerivedData/
+Pods/
 *.xcuserstate
 xcuserdata/
 *.dmg
