@@ -30,6 +30,15 @@ xcodebuild -project TickKey.xcodeproj -scheme TickKey -destination 'platform=iOS
 
 最低 iOS 版本已确认更新到 15.0，无需额外覆盖构建参数。验证范围见 [验证记录](Docs/Validation.md)。
 
+如果 Xcode 提示 `Missing package product`，先关闭本工程窗口，再在项目目录执行：
+
+```sh
+bash Scripts/resolve_packages.sh
+open TickKey.xcodeproj
+```
+
+脚本优先使用本机 `127.0.0.1:7890` 代理，按 `Package.resolved` 解析依赖，并写入 Xcode 界面使用的默认缓存。不要在这条修复命令中追加 `-clonedSourcePackagesDirPath build/SourcePackages`，否则只会修好另一份命令行缓存。
+
 首次构建前安装 SwiftFormat 和 SwiftLint，并通过 `Scripts/check_swift.sh`。详细约定及配置兼容说明见 [Swift 代码规范](Docs/CodingStyle.md)。
 
 ## 数据与安全
