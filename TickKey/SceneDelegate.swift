@@ -13,7 +13,7 @@ internal final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     let window = UIWindow(windowScene: scene)
-    window.rootViewController = UINavigationController(rootViewController: AccountsViewController())
+    window.rootViewController = SettingsDrawerController()
     window.tintColor = UIColor(named: "AccentColor")
     self.window = window
     observation = AppModel.shared.$preferences.sink { [weak window] value in

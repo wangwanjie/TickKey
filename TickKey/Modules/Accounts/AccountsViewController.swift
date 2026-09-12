@@ -19,6 +19,7 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
   private var shown: [Token] = []
   private lazy var transfer = IOSTransferCoordinator(presenter: self)
   private lazy var photoImport = PhotoImportCoordinator(presenter: self)
+  var onSettings: (() -> Void)?
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -174,10 +175,9 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
   }
 
   @objc private func settings() {
-    let controller = SettingsViewController()
-    controller.modalPresentationStyle = .custom
-    controller.transitioningDelegate = controller
-    present(controller, animated: true)
+    search.isActive = false
+    view.endEditing(true)
+    onSettings?()
   }
 
   /// 以独立导航页面编辑账户，扫码预填条目仍按新增账户保存。

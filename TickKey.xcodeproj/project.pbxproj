@@ -43,6 +43,7 @@
 		86FFD1A7FBE0362BEC067CE0 /* MacQRViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64A90979EE6D553B7778D927 /* MacQRViewController.swift */; };
 		87F94734851844E24ED3D648 /* CountdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D784E26B84E9CC760A8436 /* CountdownView.swift */; };
 		8B7FE9976946767E55592696 /* PhotoImportCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27481E3E74DD0AE47B76D0CE /* PhotoImportCoordinator.swift */; };
+		8E7390DAC8D13FEE953D5A71 /* SettingsDrawerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784D577F6D98EACDC08FFC5F /* SettingsDrawerController.swift */; };
 		8EDD1396AB15B8AF3CC1D1C7 /* v1-backup.txt in Resources */ = {isa = PBXBuildFile; fileRef = C70404C1A4C48CB26DB17FFA /* v1-backup.txt */; };
 		991F6F682B2637D5073CE95C /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 443BCF4D70C160F975211E34 /* Token.swift */; };
 		9A49B6C1CC6FF001DBCD8362 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93EC8E76C7EF814D0AABDB11 /* Localization.swift */; };
@@ -116,6 +117,7 @@
 		60F30E94C1F636CB4CA216D7 /* TokenEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenEditorViewController.swift; sourceTree = "<group>"; };
 		64A90979EE6D553B7778D927 /* MacQRViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacQRViewController.swift; sourceTree = "<group>"; };
 		6B98A6BFA2AAF840CDA673B9 /* ScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerViewController.swift; sourceTree = "<group>"; };
+		784D577F6D98EACDC08FFC5F /* SettingsDrawerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDrawerController.swift; sourceTree = "<group>"; };
 		820149AF64615B7DA4507781 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		82FF67E531A6CEDD862E8E27 /* UpdateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateController.swift; sourceTree = "<group>"; };
 		841EBCF13F4D3AD251594059 /* TickKeyUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = TickKeyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -247,6 +249,7 @@
 		89399228A7CE4ED71EA547C6 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				784D577F6D98EACDC08FFC5F /* SettingsDrawerController.swift */,
 				09B5EB6F763B338AB50BC4AC /* SettingsViewController.swift */,
 			);
 			path = Settings;
@@ -709,6 +712,7 @@
 				21D9A4F5BDA1B594E0EBAD14 /* QRViewController.swift in Sources */,
 				0600EC5B5B6F9F02898E89B5 /* ScannerViewController.swift in Sources */,
 				37401430041823D03BE8DA40 /* SceneDelegate.swift in Sources */,
+				8E7390DAC8D13FEE953D5A71 /* SettingsDrawerController.swift in Sources */,
 				610441C48BBFA945E96B0818 /* SettingsViewController.swift in Sources */,
 				4F5E5A0FAD2C849C433BD6D1 /* TOTP.swift in Sources */,
 				991F6F682B2637D5073CE95C /* Token.swift in Sources */,

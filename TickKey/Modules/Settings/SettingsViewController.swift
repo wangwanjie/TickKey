@@ -5,20 +5,21 @@ import UIKit
 // MARK: - SettingsViewController
 
 /// 提供侧边抽屉设置，保存偏好后同步刷新控件和界面文案。
-internal final class SettingsViewController: UIViewController, UIViewControllerTransitioningDelegate {
+internal final class SettingsViewController: UIViewController {
+  var onClose: (() -> Void)?
   private let stack = UIStackView()
   private var observation: AnyCancellable?
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    view.backgroundColor = .systemBackground
+    view.backgroundColor = .systemGroupedBackground
 
     let scroll = UIScrollView()
     view.addSubview(scroll)
     scroll.addSubview(stack)
     scroll.snp.makeConstraints { $0.edges.equalTo(view.safeAreaLayoutGuide) }
     stack.axis = .vertical
-    stack.spacing = 24
+    stack.spacing = 20
     stack.snp.makeConstraints {
       $0.edges.equalTo(scroll.contentLayoutGuide).inset(24)
       $0.width.equalTo(scroll.frameLayoutGuide).offset(-48)
@@ -35,29 +36,30 @@ internal final class SettingsViewController: UIViewController, UIViewControllerT
     let title = UILabel()
     title.text = Localization.text("settings")
     title.font = .preferredFont(forTextStyle: .largeTitle)
+    title.adjustsFontForContentSizeCategory = true
+    title.numberOfLines = 0
 
     let close = UIButton(type: .system)
-    close.setTitle(Localization.text("close"), for: .normal)
+    close.setImage(UIImage(systemName: "xmark"), for: .normal)
+    close.accessibilityLabel = Localization.text("close")
+    close.accessibilityIdentifier = "close-settings"
     close.addTarget(self, action: #selector(done), for: .touchUpInside)
-    stack.addArrangedSubview(title)
-    stack.addArrangedSubview(close)
+    close.snp.makeConstraints { $0.width.height.equalTo(44) }
+    let header = UIStackView(arrangedSubviews: [title, close])
+    header.alignment = .center
+    header.spacing = 12
+    stack.addArrangedSubview(header)
 
-    let appearance = UISegmentedControl(items: [
-      Localization.text("system"),
-      Localization.text("light"),
-      Localization.text("dark")
-    ])
-    appearance.selectedSegmentIndex = AppModel.shared.preferences.appearance
-    appearance.addTarget(self, action: #selector(theme(_:)), for: .valueChanged)
     addLabel("appearance")
-    stack.addArrangedSubview(appearance)
-
-    let language = UISegmentedControl(items: [Localization.text("system"), "简体", "繁體", "EN"])
-    language.selectedSegmentIndex = ["system", "zh-Hans", "zh-Hant", "en"]
-      .firstIndex(of: AppModel.shared.preferences.language) ?? 0
-    language.addTarget(self, action: #selector(language(_:)), for: .valueChanged)
+    addOptions(
+      [Localization.text("system"), Localization.text("light"), Localization.text("dark")],
+      selected: AppModel.shared.preferences.appearance,
+      action: #selector(theme(_:)))
     addLabel("language")
-    stack.addArrangedSubview(language)
+    addOptions(
+      [Localization.text("system"), "简体中文", "繁體中文", "English"],
+      selected: ["system", "zh-Hans", "zh-Hant", "en"].firstIndex(of: AppModel.shared.preferences.language) ?? 0,
+      action: #selector(language(_:)))
     addLabel("version", suffix: " " + AppInfo.version)
 
     let feedback = UIButton(type: .system)
@@ -67,6 +69,34 @@ internal final class SettingsViewController: UIViewController, UIViewControllerT
     stack.addArrangedSubview(feedback)
     addLabel("privacy")
     addLabel("local")
+  }
+
+  /// 将选项竖排并允许标题换行，窄抽屉和大字体下不截断语言名称。
+  private func addOptions(_ titles: [String], selected: Int, action: Selector) {
+    let options = UIStackView()
+    options.axis = .vertical
+    options.spacing = 4
+    for (index, title) in titles.enumerated() {
+      let button = UIButton(type: .system)
+      var configuration = UIButton.Configuration.plain()
+      configuration.title = title
+      configuration.image = UIImage(systemName: index == selected ? "checkmark.circle.fill" : "circle")
+      configuration.imagePadding = 12
+      configuration.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
+      configuration.background.backgroundColor = .secondarySystemGroupedBackground
+      configuration.background.cornerRadius = 10
+      button.configuration = configuration
+      button.contentHorizontalAlignment = .leading
+      button.titleLabel?.numberOfLines = 0
+      button.titleLabel?.adjustsFontForContentSizeCategory = true
+      button.tag = index
+      if index == selected {
+        button.accessibilityTraits.insert(.selected)
+      }
+      button.addTarget(self, action: action, for: .touchUpInside)
+      options.addArrangedSubview(button)
+    }
+    stack.addArrangedSubview(options)
   }
 
   private func addLabel(_ key: String, suffix: String = "") {
@@ -79,12 +109,12 @@ internal final class SettingsViewController: UIViewController, UIViewControllerT
   }
 
   @objc private func done() {
-    dismiss(animated: true)
+    onClose?()
   }
 
-  @objc private func theme(_ sender: UISegmentedControl) {
+  @objc private func theme(_ sender: UIButton) {
     var value = AppModel.shared.preferences
-    value.appearance = sender.selectedSegmentIndex
+    value.appearance = sender.tag
 
     do {
       try AppModel.shared.setPreferences(value)
@@ -93,9 +123,9 @@ internal final class SettingsViewController: UIViewController, UIViewControllerT
     }
   }
 
-  @objc private func language(_ sender: UISegmentedControl) {
+  @objc private func language(_ sender: UIButton) {
     var value = AppModel.shared.preferences
-    value.language = ["system", "zh-Hans", "zh-Hant", "en"][sender.selectedSegmentIndex]
+    value.language = ["system", "zh-Hans", "zh-Hant", "en"][sender.tag]
 
     do {
       try AppModel.shared.setPreferences(value)
@@ -112,50 +142,8 @@ internal final class SettingsViewController: UIViewController, UIViewControllerT
     UIApplication.shared.open(url)
   }
 
-  func presentationController(
-    forPresented presented: UIViewController,
-    presenting: UIViewController?,
-    source: UIViewController) -> UIPresentationController? {
-    DrawerPresentationController(presentedViewController: presented, presenting: presenting)
-  }
-}
-
-// MARK: - DrawerPresentationController
-
-/// 按可用宽度呈现设置抽屉，并用背景遮罩支持点击关闭。
-internal final class DrawerPresentationController: UIPresentationController {
-  private let dimming = UIControl()
-  override var frameOfPresentedViewInContainerView: CGRect {
-    guard let containerView else {
-      return .zero
-    }
-
-    return CGRect(x: 0, y: 0, width: min(containerView.bounds.width * 0.9, 440), height: containerView.bounds.height)
-  }
-
-  override func presentationTransitionWillBegin() {
-    guard let containerView else {
-      return
-    }
-    dimming.backgroundColor = UIColor.label.withAlphaComponent(0.2)
-    dimming.frame = containerView.bounds
-    dimming.addTarget(self, action: #selector(close), for: .touchUpInside)
-    containerView.insertSubview(dimming, at: 0)
-  }
-
-  override func containerViewWillLayoutSubviews() {
-    super.containerViewWillLayoutSubviews()
-    presentedView?.frame = frameOfPresentedViewInContainerView
-    dimming.frame = containerView?.bounds ?? .zero
-  }
-
-  override func dismissalTransitionDidEnd(_ completed: Bool) {
-    if completed {
-      dimming.removeFromSuperview()
-    }
-  }
-
-  @objc private func close() {
-    presentedViewController.dismiss(animated: true)
+  override func accessibilityPerformEscape() -> Bool {
+    onClose?()
+    return true
   }
 }

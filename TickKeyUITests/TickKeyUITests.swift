@@ -2,6 +2,36 @@ import XCTest
 
 /// 在独立临时保险库中覆盖添加、复制、搜索和编辑的用户流程。
 internal final class TickKeyUITests: XCTestCase {
+  /// 验证侧边抽屉推开主界面、点击遮罩复位及图片选择器可取消。
+  @MainActor
+  func testSettingsDrawerAndPhotoPicker() {
+    continueAfterFailure = false
+    let app = XCUIApplication()
+    app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)"]
+    app.launch()
+    let addButton = app.buttons["add-account"]
+    let originalFrame = addButton.frame
+    app.buttons["Settings"].tap()
+    let close = app.buttons["close-settings"]
+    XCTAssertTrue(close.waitForExistence(timeout: 5))
+    let dimming = app.otherElements["dismiss-settings"]
+    XCTAssertGreaterThan(dimming.frame.minX, app.frame.width * 0.7)
+    let screen = XCTAttachment(screenshot: app.screenshot())
+    screen.name = "Settings drawer"
+    screen.lifetime = .keepAlways
+    add(screen)
+    dimming.tap()
+    XCTAssertTrue(addButton.waitForExistence(timeout: 3))
+    XCTAssertEqual(addButton.frame.minX, originalFrame.minX, accuracy: 1)
+    app.buttons["Settings"].tap()
+    close.tap()
+    addButton.tap()
+    app.buttons["Import from photos"].tap()
+    XCTAssertTrue(app.buttons["Cancel"].waitForExistence(timeout: 5))
+    app.buttons["Cancel"].tap()
+    XCTAssertTrue(addButton.waitForExistence(timeout: 3))
+  }
+
   /// 测试使用虚构账户，并保留关键页面截图供布局验收。
   @MainActor
 
