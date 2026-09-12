@@ -77,3 +77,8 @@
 "cut" = "Cut";
 "undo" = "Undo";
 "redo" = "Redo";
+
+"import.photos" = "Import from photos";
+"import.photos.progress" = "Reading image %d of %d…";
+"import.photos.empty" = "No supported authenticator QR codes were found in the selected images.";
+"import.photos.skipped" = "%d images yielded no accounts (unreadable or no supported QR code); %d invalid or unsupported QR codes were skipped.";

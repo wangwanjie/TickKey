@@ -19,6 +19,7 @@ $(SRCROOT)/TickKey/Modules/Accounts/TokenEditorViewController.swift
 $(SRCROOT)/TickKey/Modules/Scanner/ScannerViewController.swift
 $(SRCROOT)/TickKey/Modules/Settings/SettingsViewController.swift
 $(SRCROOT)/TickKey/Modules/Transfer/IOSTransferCoordinator.swift
+$(SRCROOT)/TickKey/Modules/Transfer/PhotoImportCoordinator.swift
 $(SRCROOT)/TickKey/Modules/Transfer/QRViewController.swift
 $(SRCROOT)/TickKey/SceneDelegate.swift
 $(SRCROOT)/TickKeyMac/Accounts/MacAccountsViewController.swift

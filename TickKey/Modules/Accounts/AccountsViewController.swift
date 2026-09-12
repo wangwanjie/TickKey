@@ -18,6 +18,7 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
   private var subscriptions = Set<AnyCancellable>()
   private var shown: [Token] = []
   private lazy var transfer = IOSTransferCoordinator(presenter: self)
+  private lazy var photoImport = PhotoImportCoordinator(presenter: self)
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -139,7 +140,7 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
     emptyBody.text = Localization.text(model.tokens.isEmpty ? "empty.body" : "search")
   }
 
-  /// 提供手动添加、扫码与文件导入入口，并为 iPad 指定弹出锚点。
+  /// 提供手动添加、扫码、图片与文件导入入口，并为 iPad 指定弹出锚点。
   @objc private func add() {
     let sheet = UIAlertController(title: Localization.text("add"), message: nil, preferredStyle: .actionSheet)
     sheet
@@ -156,6 +157,9 @@ internal final class AccountsViewController: UIViewController, UICollectionViewD
         present(UINavigationController(rootViewController: scanner), animated: true)
       })
     #endif
+    sheet.addAction(UIAlertAction(title: Localization.text("import.photos"), style: .default) { [weak self] _ in
+      self?.photoImport.choosePhotos()
+    })
     sheet
       .addAction(UIAlertAction(title: Localization.text("import"), style: .default) { [weak self] _ in
         self?.transfer.chooseImport()

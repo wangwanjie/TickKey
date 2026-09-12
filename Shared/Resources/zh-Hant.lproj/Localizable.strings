@@ -77,3 +77,8 @@
 "cut" = "剪下";
 "undo" = "復原";
 "redo" = "重做";
+
+"import.photos" = "從圖片匯入";
+"import.photos.progress" = "正在辨識第 %d / %d 張圖片…";
+"import.photos.empty" = "所選圖片中未找到支援的驗證碼 QR Code。";
+"import.photos.skipped" = "%d 張圖片未辨識出帳號（無法讀取或無支援的 QR Code）；已略過 %d 個無效或不支援的 QR Code。";

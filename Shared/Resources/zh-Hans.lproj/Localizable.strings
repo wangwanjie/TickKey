@@ -77,3 +77,8 @@
 "cut" = "剪切";
 "undo" = "撤销";
 "redo" = "重做";
+
+"import.photos" = "从图片导入";
+"import.photos.progress" = "正在识别第 %d / %d 张图片…";
+"import.photos.empty" = "所选图片中未找到支持的验证码二维码。";
+"import.photos.skipped" = "%d 张图片未识别出账户（无法读取或无支持的二维码）；已跳过 %d 个无效或不支持的二维码。";
