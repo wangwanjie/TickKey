@@ -67,7 +67,7 @@ internal final class MacTransferCoordinator {
     let alert = NSAlert()
     alert.messageText = Localization.text("export")
     alert.informativeText = Localization.text("export.scope")
-    ["encrypted.format", "text.format", "qr.batch", "cancel"]
+    ["encrypted.format", "text.format", "qr.batch", "google.format", "cancel"]
       .forEach { alert.addButton(withTitle: Localization.text($0)) }
 
     switch alert.runModal() {
@@ -94,6 +94,8 @@ internal final class MacTransferCoordinator {
       }
     case .alertThirdButtonReturn:
       showQR(tokens)
+    case let response where response.rawValue == NSApplication.ModalResponse.alertThirdButtonReturn.rawValue + 1:
+      showGoogleQR(tokens)
     default:
       break
     }
@@ -163,6 +165,18 @@ internal final class MacTransferCoordinator {
     let qr = MacQRViewController(tokens: tokens)
     self.qr = qr
     presenter?.presentAsSheet(qr)
+  }
+
+  private func showGoogleQR(_ tokens: [Token]) {
+    work({ try GoogleMigration.encode(tokens) }, completion: { [weak self] result in
+      do {
+        let qr = try MacQRViewController(migration: result.get())
+        self?.qr = qr
+        self?.presenter?.presentAsSheet(qr)
+      } catch {
+        MacAlerts.error(error)
+      }
+    })
   }
 
   /// 处理任务期间阻止进度提示被提前关闭，后台完成后在主线程反馈结果。

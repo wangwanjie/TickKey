@@ -7,12 +7,16 @@ internal enum QRCode {
   private static let context = CIContext(options: [.useSoftwareRenderer: true, .cacheIntermediates: false])
   /// 使用整数缩放并留出四模块静区，避免插值影响扫码。
   static func image(for token: Token) throws -> CGImage {
+    try image(for: OTPURI.encode(token))
+  }
+
+  static func image(for payload: String) throws -> CGImage {
     guard let filter = PerformanceDiagnostics.measure("qr.filter.create", {
       CIFilter(name: "CIQRCodeGenerator")
     }) else {
       throw TickKeyError.invalidURI
     }
-    try filter.setValue(Data(OTPURI.encode(token).utf8), forKey: "inputMessage")
+    filter.setValue(Data(payload.utf8), forKey: "inputMessage")
     filter.setValue("M", forKey: "inputCorrectionLevel")
 
     guard let output = PerformanceDiagnostics.measure("qr.filter.output", { filter.outputImage }) else {

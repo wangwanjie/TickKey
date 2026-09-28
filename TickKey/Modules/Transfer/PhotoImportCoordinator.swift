@@ -37,8 +37,9 @@ internal enum PhotoTokenDecoder {
     }
     var result = Result()
     for payload in payloads {
-      if let payload, let token = try? OTPURI.parse(payload) {
-        result.tokens.append(token)
+      if let payload, let tokens = try? (GoogleMigration.isMigration(payload)
+        ? GoogleMigration.parse(payload).tokens : [OTPURI.parse(payload)]) {
+        result.tokens.append(contentsOf: tokens)
       } else {
         result.rejectedCodes += 1
       }

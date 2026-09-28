@@ -26,6 +26,8 @@
 "copied" = "已复制 · 30 秒后清理";
 "qr" = "显示二维码";
 "qr.batch" = "批量二维码";
+"google.format" = "谷歌验证器二维码";
+"import.google.confirm" = "导入此二维码中的 %d 个账户？第 %d / %d 页。";
 "qr.warning" = "二维码包含密钥，仅使用可信的验证器扫描。";
 "previous" = "上一个";
 "next" = "下一个";
@@ -42,6 +44,7 @@
 "error.token" = "请至少填写发行方或账户名称，并检查位数（6–8）和周期（1–300 秒）。";
 "error.uri" = "不是支持的 TOTP 二维码或 otpauth 链接。";
 "error.format" = "不支持的格式、空文件或文件超过 16 MB。";
+"error.google.export" = "谷歌验证器导出仅支持 30 秒周期、6 位或 8 位验证码。";
 "error.password" = "请输入至少 10 个字符的密码。";
 "error.backup" = "密码错误或备份已损坏，账户未发生更改。";
 "error.storage" = "无法打开或保存保险库，原有数据未被替换。";

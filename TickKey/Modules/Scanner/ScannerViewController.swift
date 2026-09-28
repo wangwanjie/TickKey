@@ -4,6 +4,11 @@ import UIKit
 
 /// 管理相机授权与二维码识别，识别成功后返回表单供用户确认。
 internal final class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
+  enum Result {
+    case token(Token)
+    case migration(GoogleMigration.Batch)
+  }
+
   private let pipeline = CameraSessionPipeline()
   private var preview: AVCaptureVideoPreviewLayer?
   private var previewConnection: AVCaptureConnection?
@@ -11,9 +16,9 @@ internal final class ScannerViewController: UIViewController, AVCaptureMetadataO
   private var completed = false
   private var requestID = UUID()
   private var visible = false
-  private let completion: (Token) -> Void
+  private let completion: (Result) -> Void
 
-  init(completion: @escaping (Token) -> Void) {
+  init(completion: @escaping (Result) -> Void) {
     self.completion = completion
     super.init(nibName: nil, bundle: nil)
   }
@@ -154,8 +159,30 @@ internal final class ScannerViewController: UIViewController, AVCaptureMetadataO
     completed = true
 
     do {
-      let token = try OTPURI.parse(text)
-      dismiss(animated: true) { self.completion(token) }
+      if GoogleMigration.isMigration(text) {
+        let batch = try GoogleMigration.parse(text)
+        let alert = UIAlertController(
+          title: Localization.text("google.format"),
+          message: String(
+            format: Localization.text("import.google.confirm"),
+            batch.tokens.count,
+            batch.index + 1,
+            batch.size),
+          preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: Localization.text("cancel"), style: .cancel) { [weak self] _ in
+          self?.completed = false
+        })
+        alert.addAction(UIAlertAction(title: Localization.text("import"), style: .default) { [weak self] _ in
+          guard let self else {
+            return
+          }
+          dismiss(animated: true) { self.completion(.migration(batch)) }
+        })
+        present(alert, animated: true)
+      } else {
+        let token = try OTPURI.parse(text)
+        dismiss(animated: true) { self.completion(.token(token)) }
+      }
     } catch {
       let alert = UIAlertController(
         title: Localization.text("error"),

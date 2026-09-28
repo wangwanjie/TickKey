@@ -26,6 +26,8 @@
 "copied" = "已複製 · 30 秒後清除";
 "qr" = "顯示 QR 碼";
 "qr.batch" = "批次 QR 碼";
+"google.format" = "Google 驗證器 QR 碼";
+"import.google.confirm" = "匯入此 QR 碼中的 %d 個帳戶？第 %d / %d 頁。";
 "qr.warning" = "QR 碼包含密鑰，僅使用可信的驗證器掃描。";
 "previous" = "上一個";
 "next" = "下一個";
@@ -42,6 +44,7 @@
 "error.token" = "請至少填寫發行方或帳戶名稱，並檢查位數（6–8）和週期（1–300 秒）。";
 "error.uri" = "不是支援的 TOTP QR 碼或 otpauth 連結。";
 "error.format" = "不支援的格式、空檔案或檔案超過 16 MB。";
+"error.google.export" = "Google 驗證器匯出僅支援 30 秒週期、6 位或 8 位驗證碼。";
 "error.password" = "請輸入至少 10 個字元的密碼。";
 "error.backup" = "密碼錯誤或備份已損壞，帳戶未發生變更。";
 "error.storage" = "無法開啟或儲存保險庫，原有資料未被取代。";

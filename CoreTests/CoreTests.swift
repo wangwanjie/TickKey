@@ -95,6 +95,87 @@ internal final class CoreTests: XCTestCase {
     }
   }
 
+  func testGoogleMigrationRoundTripAndTextImport() throws {
+    let tokens = try (0 ..< 23).map { index in
+      try Token(
+        issuer: "Example \(index)",
+        account: "用户+\(index)@example.com",
+        secret: "JBSWY3DPEHPK3PXP",
+        algorithm: index.isMultiple(of: 2) ? .sha1 : .sha256,
+        digits: index.isMultiple(of: 3) ? 8 : 6)
+    }
+    let pages = try GoogleMigration.encode(tokens)
+    XCTAssertGreaterThan(pages.count, 1)
+    for page in pages {
+      XCTAssertLessThanOrEqual(page.utf8.count, 2000)
+      XCTAssertNoThrow(try QRCode.image(for: page))
+    }
+    let batches = try pages.map(GoogleMigration.parse)
+    XCTAssertTrue(batches.enumerated().allSatisfy { offset, batch in
+      batch.size == pages.count && batch.index == offset && batch.id == batches[0].id
+    })
+    let restored = batches.flatMap(\.tokens)
+    XCTAssertEqual(restored.count, tokens.count)
+    XCTAssertTrue(zip(tokens, restored).allSatisfy { $0.sameIdentity(as: $1) })
+    let mixed = try BackupCodec.text([tokens[0]]) + Data((pages.joined(separator: "\n") + "\n").utf8)
+    XCTAssertEqual(try BackupCodec.decode(mixed).count, tokens.count + 1)
+  }
+
+  func testGoogleMigrationRejectsUnsupportedAndMalformedData() throws {
+    let token = try fixture()
+    var nonstandard = token
+    nonstandard.period = 60
+    XCTAssertThrowsError(try GoogleMigration.encode([nonstandard]))
+    let valid = try XCTUnwrap(GoogleMigration.encode([token]).first)
+    XCTAssertThrowsError(try GoogleMigration.parse(valid + "&data=AA=="))
+    XCTAssertThrowsError(try GoogleMigration.parse("otpauth-migration://offline?data=!!!"))
+
+    // 公开测试密钥构造的最小 protobuf，type=1 表示 HOTP，不能作为 TOTP 导入。
+    let hotp = Data([
+      10,
+      15,
+      10,
+      1,
+      72,
+      18,
+      1,
+      97,
+      26,
+      1,
+      98,
+      32,
+      1,
+      40,
+      1,
+      48,
+      1,
+      16,
+      1,
+      24,
+      1,
+      32,
+      0,
+      40,
+      1
+    ])
+    let uri = "otpauth-migration://offline?data=" + hotp.base64EncodedString()
+    XCTAssertThrowsError(try GoogleMigration.parse(uri))
+    XCTAssertThrowsError(try BackupCodec.decode(Data(uri.utf8)))
+    var totp = hotp
+    totp[16] = 2
+    let parsed = try GoogleMigration.parse("otpauth-migration://offline?data=" + totp.base64EncodedString())
+    XCTAssertEqual(parsed.tokens[0].account, "a")
+    XCTAssertEqual(parsed.tokens[0].issuer, "b")
+    XCTAssertEqual(parsed.tokens[0].secret, "JA")
+    totp[18] = 2
+    totp.removeLast(2)
+    let versionTwo = try GoogleMigration.parse("otpauth-migration://offline?data=" + totp.base64EncodedString())
+    XCTAssertEqual(versionTwo.tokens.count, 1)
+    XCTAssertEqual(versionTwo.size, 1)
+    XCTAssertEqual(versionTwo.index, 0)
+    XCTAssertEqual(versionTwo.id, 0)
+  }
+
   func testEncryptedRoundTripAndAuthentication() throws {
     let token = try fixture()
     let firstBackup = try BackupCodec.encrypt([token], password: "正确的密码🔑123456")

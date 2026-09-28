@@ -26,6 +26,8 @@
 "copied" = "Copied · clears in 30 seconds";
 "qr" = "Show QR code";
 "qr.batch" = "Account QR codes";
+"google.format" = "Google Authenticator QR codes";
+"import.google.confirm" = "Import %d accounts from this QR code? Page %d of %d.";
 "qr.warning" = "QR codes contain secret keys. Only scan them with a trusted authenticator.";
 "previous" = "Previous";
 "next" = "Next";
@@ -42,6 +44,7 @@
 "error.token" = "Enter an issuer or account name, and check the digits (6–8) and period (1–300 seconds).";
 "error.uri" = "Not a supported TOTP QR code or otpauth URI.";
 "error.format" = "Unsupported, empty or oversized file (maximum 16 MB).";
+"error.google.export" = "Google Authenticator export supports only 30-second codes with 6 or 8 digits.";
 "error.password" = "Enter a password of at least 10 characters.";
 "error.backup" = "Incorrect password or damaged backup. No accounts were changed.";
 "error.storage" = "Unable to open or save the vault. Your existing data has not been replaced.";

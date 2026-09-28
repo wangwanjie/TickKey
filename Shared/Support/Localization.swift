@@ -21,8 +21,8 @@ internal enum Localization {
 /// 从已构建应用的 Info.plist 读取版本和公开仓库配置。
 internal enum AppInfo {
   static var version: String {
-    let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.1"
-    let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "2"
+    let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.2"
+    let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "3"
 
     return "\(version) (\(build))"
   }

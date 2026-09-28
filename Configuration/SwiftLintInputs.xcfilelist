@@ -5,6 +5,7 @@ $(SRCROOT)/Configuration/SwiftLintInputs.xcfilelist
 $(SRCROOT)/CoreTests/CoreTests.swift
 $(SRCROOT)/Scripts/make_app_icon.swift
 $(SRCROOT)/Shared/Core/BackupCodec.swift
+$(SRCROOT)/Shared/Core/GoogleMigration.swift
 $(SRCROOT)/Shared/Core/OTPURI.swift
 $(SRCROOT)/Shared/Core/TOTP.swift
 $(SRCROOT)/Shared/Core/Token.swift

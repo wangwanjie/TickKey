@@ -4,6 +4,7 @@ import UIKit
 /// 逐页显示完整大小的账户二维码，供其他验证器连续扫码。
 internal final class QRViewController: UIViewController {
   private let tokens: [Token]
+  private let migration: [String]
   private var index = 0
   private let image = UIImageView()
   private let account = UILabel()
@@ -16,6 +17,13 @@ internal final class QRViewController: UIViewController {
 
   init(tokens: [Token]) {
     self.tokens = tokens
+    migration = []
+    super.init(nibName: nil, bundle: nil)
+  }
+
+  init(migration: [String]) {
+    tokens = []
+    self.migration = migration
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -27,7 +35,7 @@ internal final class QRViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = .systemBackground
-    title = Localization.text("qr.batch")
+    title = Localization.text(migration.isEmpty ? "qr.batch" : "google.format")
     navigationItem.rightBarButtonItem = UIBarButtonItem(
       title: Localization.text("close"),
       style: .done,
@@ -96,20 +104,35 @@ internal final class QRViewController: UIViewController {
 
   /// 同步当前账户、二维码与页码，并禁止越过首尾页面。
   private func refresh() {
-    guard tokens.indices.contains(index) else {
+    let count = migration.isEmpty ? tokens.count : migration.count
+    guard index < count else {
       previous.isEnabled = false
       nextButton.isEnabled = false
       return
     }
-    let token = tokens[index]
-    account.text = token.title + "\n" + token.account
+    if migration.isEmpty {
+      let token = tokens[index]
+      account.text = token.title + "\n" + token.account
+    } else {
+      account.text = Localization.text("google.format")
+    }
+    let token = migration.isEmpty ? tokens[index] : nil
+    let payload = migration.isEmpty ? nil : migration[index]
     image.image = nil
     activity.startAnimating()
     let identifier = UUID()
     renderID = identifier
     renderQueue.async { [weak self] in
       let result = Result {
-        try PerformanceDiagnostics.measure("qr.render") { try QRCode.image(for: token) }
+        try PerformanceDiagnostics.measure("qr.render") {
+          if let payload {
+            return try QRCode.image(for: payload)
+          }
+          guard let token else {
+            throw TickKeyError.invalidToken
+          }
+          return try QRCode.image(for: token)
+        }
       }
       DispatchQueue.main.async { [weak self] in
         guard let self, renderID == identifier else {
@@ -125,9 +148,9 @@ internal final class QRViewController: UIViewController {
         }
       }
     }
-    counter.text = "\(index + 1) / \(tokens.count)"
+    counter.text = "\(index + 1) / \(count)"
     previous.isEnabled = index > 0
-    nextButton.isEnabled = index + 1 < tokens.count
+    nextButton.isEnabled = index + 1 < count
   }
 
   @objc private func back() {
@@ -139,7 +162,7 @@ internal final class QRViewController: UIViewController {
   }
 
   @objc private func forward() {
-    guard index + 1 < tokens.count else {
+    guard index + 1 < (migration.isEmpty ? tokens.count : migration.count) else {
       return
     }
     index += 1

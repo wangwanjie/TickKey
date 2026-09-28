@@ -145,6 +145,18 @@ internal final class IOSTransferCoordinator: NSObject, UIDocumentPickerDelegate 
       .addAction(UIAlertAction(title: Localization.text("qr.batch"), style: .default) { [weak self] _ in
         self?.showQR(AppModel.shared.tokens)
       })
+    sheet.addAction(UIAlertAction(title: Localization.text("google.format"), style: .default) { [weak self] _ in
+      let tokens = AppModel.shared.tokens
+      self?.work("export.google.prepare", { try GoogleMigration.encode(tokens) }, completion: { [weak self] result in
+        do {
+          let pages = try result.get()
+          self?.presenter?.present(
+            UINavigationController(rootViewController: QRViewController(migration: pages)), animated: true)
+        } catch {
+          self?.presenter?.showError(error)
+        }
+      })
+    })
     sheet.addAction(UIAlertAction(title: Localization.text("cancel"), style: .cancel))
     sheet.popoverPresentationController?.barButtonItem = anchor
     presenter?.present(sheet, animated: true)

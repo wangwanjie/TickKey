@@ -228,7 +228,21 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
           return
         }
 
-        let scanner = ScannerViewController { [weak self] token in self?.edit(token, isNew: true) }
+        let scanner = ScannerViewController { [weak self] result in
+          switch result {
+          case let .token(token):
+            self?.edit(token, isNew: true)
+          case let .migration(batch):
+            AppModel.shared.importTokens(batch.tokens) { [weak self] result in
+              switch result {
+              case let .success(message):
+                self?.showMessage(message)
+              case let .failure(error):
+                self?.showError(error)
+              }
+            }
+          }
+        }
         present(UINavigationController(rootViewController: scanner), animated: true)
       })
     #endif

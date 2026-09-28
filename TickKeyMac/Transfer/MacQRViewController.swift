@@ -4,6 +4,7 @@ import SnapKit
 /// 将单个与批量二维码统一为分页表单，不向外部服务上传密钥。
 internal final class MacQRViewController: NSViewController {
   private let tokens: [Token]
+  private let migration: [String]
   private var index = 0
   private let image = NSImageView()
   private let account = NSTextField(wrappingLabelWithString: "")
@@ -13,6 +14,13 @@ internal final class MacQRViewController: NSViewController {
 
   init(tokens: [Token]) {
     self.tokens = tokens
+    migration = []
+    super.init(nibName: nil, bundle: nil)
+  }
+
+  init(migration: [String]) {
+    tokens = []
+    self.migration = migration
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -67,17 +75,23 @@ internal final class MacQRViewController: NSViewController {
 
   /// 更新二维码、账户名称和翻页状态，首尾页面禁用相应按钮。
   private func refresh() {
-    let token = tokens[index]
-    account.stringValue = token.title + "\n" + token.account
+    if migration.isEmpty {
+      let token = tokens[index]
+      account.stringValue = token.title + "\n" + token.account
+    } else {
+      account.stringValue = Localization.text("google.format")
+    }
 
     do {
-      image.image = try NSImage(cgImage: QRCode.image(for: token), size: .zero)
+      let code = try migration.isEmpty ? QRCode.image(for: tokens[index]) : QRCode.image(for: migration[index])
+      image.image = NSImage(cgImage: code, size: .zero)
     } catch {
       MacAlerts.error(error)
     }
-    counter.stringValue = "\(index + 1) / \(tokens.count)"
+    let count = migration.isEmpty ? tokens.count : migration.count
+    counter.stringValue = "\(index + 1) / \(count)"
     previous.isEnabled = index > 0
-    next.isEnabled = index + 1 < tokens.count
+    next.isEnabled = index + 1 < count
   }
 
   @objc private func back() {

@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		00E5D58B0AAEA8717ACA56BA /* MacAccountsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D3D348A3253A2C39DDD942 /* MacAccountsViewController.swift */; };
-		040198672E3DB448717BC68B /* Pods_TickKeyTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52825E899F750048DACF0737 /* Pods_TickKeyTests.framework */; };
 		0600EC5B5B6F9F02898E89B5 /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B98A6BFA2AAF840CDA673B9 /* ScannerViewController.swift */; };
 		06BD463C434F0FC7C1E97DFC /* PerformanceDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21492D218E6B71BBB2BE118B /* PerformanceDiagnostics.swift */; };
 		06F56189D72448AAA648C8C0 /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89506548F613E3AD3E1C6DC /* PreferencesWindowController.swift */; };
@@ -25,24 +24,26 @@
 		28CEC8D861139C7ADD907090 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 787E00D83A74B7DF2179B154 /* SnapKit */; };
 		2BE7AEE8861635F98914FD6C /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = A48BCF1ABB1EE46F3D81FFE7 /* GRDB */; };
 		2C22CEE87A1940BBA9957F1D /* TickKeyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 313DD658FBF6903A75128D8C /* TickKeyUITests.swift */; };
+		347C12A5A8B9783D82A2533A /* GoogleMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 276C962D57A21A73D3BFBD2B /* GoogleMigration.swift */; };
 		3595455C7F5306FB1E8E7C31 /* IOSTransferCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87899629862C22A151A53E9E /* IOSTransferCoordinator.swift */; };
 		36602B4DF75EAC82D169F00E /* OTPURI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940242A45BABC514829D320F /* OTPURI.swift */; };
-		372CDB8AC427AD3CC18071F9 /* Pods_TickKey.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B1423ABAB0BBA5E9D5D8A6 /* Pods_TickKey.framework */; };
 		37401430041823D03BE8DA40 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 981092109ADBDB281A7723CA /* SceneDelegate.swift */; };
 		398601BBABAFD18B917A810C /* Theme.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27F91E8DE7D430ED0E77D255 /* Theme.xcassets */; };
 		3A8C0D17C127818A93DF337D /* MacCountdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EDD720FA50B20D5D6F90AE2 /* MacCountdownView.swift */; };
 		3ACB75E49C89BA98EF109CA2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5C74B1100F5B7CABF745A6EB /* SnapKit */; };
-		3AD44D245A4BE2FAA778D623 /* Pods_TickKeyMac.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 900CBBD932D642AF7B7F59F4 /* Pods_TickKeyMac.framework */; };
 		3C8E69723DE15D53AE23D85C /* TOTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBF671870B357D9C7E5AC5E7 /* TOTP.swift */; };
 		3D9C5726D9A532251D26C3AA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F04AADF18BB926C4721FC8A2 /* PrivacyInfo.xcprivacy */; };
 		3F9FA6E28869A856A3EDA8FC /* TokenCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA48EBCD10998E1A5C0D1FA /* TokenCell.swift */; };
+		41F3F1A250906122FD750DBA /* Pods_TickKeyMacTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E81DCF58235F0CFC7DC8E8 /* Pods_TickKeyMacTests.framework */; };
 		4AE1D72CEE41E539558675E1 /* MacTransferCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28EB91D0E30545E7B146FCBC /* MacTransferCoordinator.swift */; };
+		4C7BED79AA29FD0CD84ED3D9 /* Pods_TickKeyTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A107277A869DA691371C6AF5 /* Pods_TickKeyTests.framework */; };
 		4F5E5A0FAD2C849C433BD6D1 /* TOTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBF671870B357D9C7E5AC5E7 /* TOTP.swift */; };
 		502E3B2F6109CB500254F2BF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA9D5AE93E8019BE542D5D74 /* Assets.xcassets */; };
 		51F4BB48444668A44C2CBAB1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A2575CB58B8C76EC0D8892BD /* Localizable.strings */; };
-		5D9A79150397D821D28C11E2 /* Pods_TickKeyMacTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EA20F22192C58D8A0648C851 /* Pods_TickKeyMacTests.framework */; };
+		5FC1529D44363184BD5BFB03 /* Pods_TickKeyMac.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE1BE56E0587F6CFF1EE347D /* Pods_TickKeyMac.framework */; };
 		610441C48BBFA945E96B0818 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B5EB6F763B338AB50BC4AC /* SettingsViewController.swift */; };
 		61ED9CD415677517430B2D03 /* QRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F9DCCE1C20D54CAB1BB1FF3 /* QRCode.swift */; };
+		63221DD3684680AE73B6F2EF /* GoogleMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 276C962D57A21A73D3BFBD2B /* GoogleMigration.swift */; };
 		6327DE70F321B369E239EC12 /* ApplicationMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1F6188B188E8728DF79AEF1 /* ApplicationMain.swift */; };
 		6D13F6A97675E8668645ABBC /* Theme.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27F91E8DE7D430ED0E77D255 /* Theme.xcassets */; };
 		847BF3455F5F35ECA7A44143 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F04AADF18BB926C4721FC8A2 /* PrivacyInfo.xcprivacy */; };
@@ -74,6 +75,7 @@
 		EA2CBE4A588499CEABFBDAC5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 76C88A297AAA0F8322B4DE53 /* LaunchScreen.storyboard */; };
 		EB5DA83073DBB7F4CDF8C03C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 13DAA77DE54B503E089964F4 /* InfoPlist.strings */; };
 		EF24C0773196744B31E35C30 /* MainThreadMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6EE9929C25925DC0CBEAFC8 /* MainThreadMonitor.swift */; };
+		FFFA97F06EAA3B521C18E6B2 /* Pods_TickKey.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3140D00573BFDA911EEACE0 /* Pods_TickKey.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -101,20 +103,19 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		006D5B1CD8495E845903300B /* Pods-TickKeyMacTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKeyMacTests.release.xcconfig"; path = "Target Support Files/Pods-TickKeyMacTests/Pods-TickKeyMacTests.release.xcconfig"; sourceTree = "<group>"; };
 		09B5EB6F763B338AB50BC4AC /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		0F9DCCE1C20D54CAB1BB1FF3 /* QRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCode.swift; sourceTree = "<group>"; };
 		11E0528BE627C42A685596F4 /* TickKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TickKeyTests.swift; sourceTree = "<group>"; };
-		1748958BFA54CE1C85339352 /* Pods-TickKeyTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKeyTests.debug.xcconfig"; path = "Target Support Files/Pods-TickKeyTests/Pods-TickKeyTests.debug.xcconfig"; sourceTree = "<group>"; };
 		18015B304E92513C3B26C7F3 /* TickKeyTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = TickKeyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		182CEB606C7CB5D84D21AE99 /* TickKey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = TickKey.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		190B12C47566C0C53EB176AF /* Pods-TickKeyTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKeyTests.release.xcconfig"; path = "Target Support Files/Pods-TickKeyTests/Pods-TickKeyTests.release.xcconfig"; sourceTree = "<group>"; };
 		1C30AB5800A2B7BADD7C6B18 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		1D14AD1DB4E4BF60B19BCF63 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		21492D218E6B71BBB2BE118B /* PerformanceDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceDiagnostics.swift; sourceTree = "<group>"; };
+		22172B415943F4A18A2EAD17 /* Pods-TickKeyMacTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKeyMacTests.debug.xcconfig"; path = "Target Support Files/Pods-TickKeyMacTests/Pods-TickKeyMacTests.debug.xcconfig"; sourceTree = "<group>"; };
 		2632B1EA7B6779120ACB194E /* Mac-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Mac-Debug.xcconfig"; sourceTree = "<group>"; };
 		26D3D348A3253A2C39DDD942 /* MacAccountsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAccountsViewController.swift; sourceTree = "<group>"; };
 		27481E3E74DD0AE47B76D0CE /* PhotoImportCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoImportCoordinator.swift; sourceTree = "<group>"; };
+		276C962D57A21A73D3BFBD2B /* GoogleMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleMigration.swift; sourceTree = "<group>"; };
 		278B2D14042F3F28AA3E40F0 /* QRViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRViewController.swift; sourceTree = "<group>"; };
 		27F91E8DE7D430ED0E77D255 /* Theme.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Theme.xcassets; sourceTree = "<group>"; };
 		28CD5A0BEB6B967DD7E87F1B /* MacTokenEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTokenEditor.swift; sourceTree = "<group>"; };
@@ -126,15 +127,15 @@
 		422BE5C6566C16DD2E2D0DEC /* CameraSessionPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSessionPipeline.swift; sourceTree = "<group>"; };
 		424E5C3B9C04207771D3132C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		443BCF4D70C160F975211E34 /* Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
-		49C2140E8E4CE2A0CBEC954D /* Pods-TickKeyMac.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKeyMac.release.xcconfig"; path = "Target Support Files/Pods-TickKeyMac/Pods-TickKeyMac.release.xcconfig"; sourceTree = "<group>"; };
-		52825E899F750048DACF0737 /* Pods_TickKeyTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TickKeyTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		577314F495F8C37340F92E57 /* Pods-TickKeyMac.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKeyMac.release.xcconfig"; path = "Target Support Files/Pods-TickKeyMac/Pods-TickKeyMac.release.xcconfig"; sourceTree = "<group>"; };
 		58F35817C0A5223739F672F9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		5D42DED254B60DB4FCE5A0C7 /* Pods-TickKeyTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKeyTests.release.xcconfig"; path = "Target Support Files/Pods-TickKeyTests/Pods-TickKeyTests.release.xcconfig"; sourceTree = "<group>"; };
 		60F30E94C1F636CB4CA216D7 /* TokenEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenEditorViewController.swift; sourceTree = "<group>"; };
 		64A90979EE6D553B7778D927 /* MacQRViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacQRViewController.swift; sourceTree = "<group>"; };
 		6B98A6BFA2AAF840CDA673B9 /* ScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerViewController.swift; sourceTree = "<group>"; };
+		75E81DCF58235F0CFC7DC8E8 /* Pods_TickKeyMacTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TickKeyMacTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		784D577F6D98EACDC08FFC5F /* SettingsDrawerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDrawerController.swift; sourceTree = "<group>"; };
 		7C14B0A6DC13C90A2B050F26 /* Mac-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Mac-Release.xcconfig"; sourceTree = "<group>"; };
-		810256AE2CD72F03AE4A4745 /* Pods-TickKeyMac.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKeyMac.debug.xcconfig"; path = "Target Support Files/Pods-TickKeyMac/Pods-TickKeyMac.debug.xcconfig"; sourceTree = "<group>"; };
 		820149AF64615B7DA4507781 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		82FF67E531A6CEDD862E8E27 /* UpdateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateController.swift; sourceTree = "<group>"; };
 		833B6E7A86103EB1A4F422C5 /* iOS-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "iOS-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -142,16 +143,17 @@
 		87899629862C22A151A53E9E /* IOSTransferCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSTransferCoordinator.swift; sourceTree = "<group>"; };
 		8BC44BDB6D567C3B6752449F /* CoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTests.swift; sourceTree = "<group>"; };
 		8CA48EBCD10998E1A5C0D1FA /* TokenCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCell.swift; sourceTree = "<group>"; };
-		900CBBD932D642AF7B7F59F4 /* Pods_TickKeyMac.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TickKeyMac.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		93EC8E76C7EF814D0AABDB11 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 		940242A45BABC514829D320F /* OTPURI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTPURI.swift; sourceTree = "<group>"; };
 		981092109ADBDB281A7723CA /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		9FD152AF5F7B31D34CF39364 /* AccountsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsViewController.swift; sourceTree = "<group>"; };
-		A5362B57347B41352FDDC514 /* Pods-TickKey.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKey.debug.xcconfig"; path = "Target Support Files/Pods-TickKey/Pods-TickKey.debug.xcconfig"; sourceTree = "<group>"; };
+		A107277A869DA691371C6AF5 /* Pods_TickKeyTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TickKeyTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA907854CEA5B55E6FF92781 /* TickKeyMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TickKeyMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		AF3EAB508ACABC6DE07AC591 /* Pods-TickKey.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKey.release.xcconfig"; path = "Target Support Files/Pods-TickKey/Pods-TickKey.release.xcconfig"; sourceTree = "<group>"; };
+		AE1BE56E0587F6CFF1EE347D /* Pods_TickKeyMac.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TickKeyMac.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B9F2B6CFF3E55EE5C6A7AFF4 /* Pods-TickKeyMacTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKeyMacTests.release.xcconfig"; path = "Target Support Files/Pods-TickKeyMacTests/Pods-TickKeyMacTests.release.xcconfig"; sourceTree = "<group>"; };
 		C031BF8D0672E33EDAB51BC0 /* MacTokenCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTokenCard.swift; sourceTree = "<group>"; };
-		C4B1423ABAB0BBA5E9D5D8A6 /* Pods_TickKey.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TickKey.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3140D00573BFDA911EEACE0 /* Pods_TickKey.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TickKey.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C56772A5A2C635D652651FEB /* Pods-TickKeyMac.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKeyMac.debug.xcconfig"; path = "Target Support Files/Pods-TickKeyMac/Pods-TickKeyMac.debug.xcconfig"; sourceTree = "<group>"; };
 		C6EE9929C25925DC0CBEAFC8 /* MainThreadMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainThreadMonitor.swift; sourceTree = "<group>"; };
 		C70404C1A4C48CB26DB17FFA /* v1-backup.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "v1-backup.txt"; sourceTree = "<group>"; };
 		C73021E47D25ED4A7D2FD332 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -162,20 +164,29 @@
 		DA9D5AE93E8019BE542D5D74 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DB4CEBF256554D1232013CE3 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		DF168CFAAF2FBF87F6DCE391 /* TickKey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TickKey.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E169BFE954A4158E40A90FA6 /* Pods-TickKeyTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKeyTests.debug.xcconfig"; path = "Target Support Files/Pods-TickKeyTests/Pods-TickKeyTests.debug.xcconfig"; sourceTree = "<group>"; };
 		E6673FBAE6D0A3EB37A5FBEE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		EA20F22192C58D8A0648C851 /* Pods_TickKeyMacTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TickKeyMacTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EBF671870B357D9C7E5AC5E7 /* TOTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOTP.swift; sourceTree = "<group>"; };
 		ED0E6ED3BAD1CCDC78C5F552 /* BackupCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupCodec.swift; sourceTree = "<group>"; };
-		EF4002AA522F0C5DA59AC6C7 /* Pods-TickKeyMacTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKeyMacTests.debug.xcconfig"; path = "Target Support Files/Pods-TickKeyMacTests/Pods-TickKeyMacTests.debug.xcconfig"; sourceTree = "<group>"; };
 		F04AADF18BB926C4721FC8A2 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		F4A8F96152570F1A60A546CF /* Pods-TickKey.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKey.debug.xcconfig"; path = "Target Support Files/Pods-TickKey/Pods-TickKey.debug.xcconfig"; sourceTree = "<group>"; };
+		FBBD9C55A5D4FAC0C0BC9A8D /* Pods-TickKey.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TickKey.release.xcconfig"; path = "Target Support Files/Pods-TickKey/Pods-TickKey.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		466EF7ECC0AC76532EF4BE33 /* Frameworks */ = {
+		461F68E1BD96ED5235A0052D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				040198672E3DB448717BC68B /* Pods_TickKeyTests.framework in Frameworks */,
+				4C7BED79AA29FD0CD84ED3D9 /* Pods_TickKeyTests.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BC17AA09C3C44194712EE0E6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				41F3F1A250906122FD750DBA /* Pods_TickKeyMacTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -186,7 +197,7 @@
 				28CEC8D861139C7ADD907090 /* SnapKit in Frameworks */,
 				2BE7AEE8861635F98914FD6C /* GRDB in Frameworks */,
 				1097746AC3219DAB0FEB30E9 /* MMKV in Frameworks */,
-				372CDB8AC427AD3CC18071F9 /* Pods_TickKey.framework in Frameworks */,
+				FFFA97F06EAA3B521C18E6B2 /* Pods_TickKey.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -198,15 +209,7 @@
 				D0A2F09F2352227FF6FC0B7A /* GRDB in Frameworks */,
 				B99C5F54A3E9087CD6CBAD5A /* MMKV in Frameworks */,
 				BE41C2F543A0F2FD996894A6 /* Sparkle in Frameworks */,
-				3AD44D245A4BE2FAA778D623 /* Pods_TickKeyMac.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E5CF64225EEDBC0133D231DF /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				5D9A79150397D821D28C11E2 /* Pods_TickKeyMacTests.framework in Frameworks */,
+				5FC1529D44363184BD5BFB03 /* Pods_TickKeyMac.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -224,8 +227,8 @@
 				D1D899DAC307C4A02F379025 /* TickKeyTests */,
 				C7AC7C138D99A2C5E7D99F53 /* TickKeyUITests */,
 				D75BE66292336D7620800277 /* Products */,
-				875169CC0C1F7CD32EDB3185 /* Pods */,
-				6C40900B1B2B08402F4BD310 /* Frameworks */,
+				D0A0BEEBAD929F39CBDC9BF9 /* Pods */,
+				7829F553FD817AA4894F5CEF /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -268,13 +271,13 @@
 			path = Configuration;
 			sourceTree = "<group>";
 		};
-		6C40900B1B2B08402F4BD310 /* Frameworks */ = {
+		7829F553FD817AA4894F5CEF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				C4B1423ABAB0BBA5E9D5D8A6 /* Pods_TickKey.framework */,
-				900CBBD932D642AF7B7F59F4 /* Pods_TickKeyMac.framework */,
-				EA20F22192C58D8A0648C851 /* Pods_TickKeyMacTests.framework */,
-				52825E899F750048DACF0737 /* Pods_TickKeyTests.framework */,
+				C3140D00573BFDA911EEACE0 /* Pods_TickKey.framework */,
+				AE1BE56E0587F6CFF1EE347D /* Pods_TickKeyMac.framework */,
+				75E81DCF58235F0CFC7DC8E8 /* Pods_TickKeyMacTests.framework */,
+				A107277A869DA691371C6AF5 /* Pods_TickKeyTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -295,26 +298,11 @@
 			path = Fixtures;
 			sourceTree = "<group>";
 		};
-		875169CC0C1F7CD32EDB3185 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				A5362B57347B41352FDDC514 /* Pods-TickKey.debug.xcconfig */,
-				AF3EAB508ACABC6DE07AC591 /* Pods-TickKey.release.xcconfig */,
-				810256AE2CD72F03AE4A4745 /* Pods-TickKeyMac.debug.xcconfig */,
-				49C2140E8E4CE2A0CBEC954D /* Pods-TickKeyMac.release.xcconfig */,
-				EF4002AA522F0C5DA59AC6C7 /* Pods-TickKeyMacTests.debug.xcconfig */,
-				006D5B1CD8495E845903300B /* Pods-TickKeyMacTests.release.xcconfig */,
-				1748958BFA54CE1C85339352 /* Pods-TickKeyTests.debug.xcconfig */,
-				190B12C47566C0C53EB176AF /* Pods-TickKeyTests.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		87AC8EACA22FAA2F1632091D /* Core */ = {
 			isa = PBXGroup;
 			children = (
 				ED0E6ED3BAD1CCDC78C5F552 /* BackupCodec.swift */,
+				276C962D57A21A73D3BFBD2B /* GoogleMigration.swift */,
 				940242A45BABC514829D320F /* OTPURI.swift */,
 				443BCF4D70C160F975211E34 /* Token.swift */,
 				EBF671870B357D9C7E5AC5E7 /* TOTP.swift */,
@@ -409,6 +397,22 @@
 				313DD658FBF6903A75128D8C /* TickKeyUITests.swift */,
 			);
 			path = TickKeyUITests;
+			sourceTree = "<group>";
+		};
+		D0A0BEEBAD929F39CBDC9BF9 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				F4A8F96152570F1A60A546CF /* Pods-TickKey.debug.xcconfig */,
+				FBBD9C55A5D4FAC0C0BC9A8D /* Pods-TickKey.release.xcconfig */,
+				C56772A5A2C635D652651FEB /* Pods-TickKeyMac.debug.xcconfig */,
+				577314F495F8C37340F92E57 /* Pods-TickKeyMac.release.xcconfig */,
+				22172B415943F4A18A2EAD17 /* Pods-TickKeyMacTests.debug.xcconfig */,
+				B9F2B6CFF3E55EE5C6A7AFF4 /* Pods-TickKeyMacTests.release.xcconfig */,
+				E169BFE954A4158E40A90FA6 /* Pods-TickKeyTests.debug.xcconfig */,
+				5D42DED254B60DB4FCE5A0C7 /* Pods-TickKeyTests.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		D1D899DAC307C4A02F379025 /* TickKeyTests */ = {
@@ -506,7 +510,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2BB3843EB9CEBB197B9C979E /* Build configuration list for PBXNativeTarget "TickKeyMac" */;
 			buildPhases = (
-				DCA2C7DF6BF23D7F5227C968 /* [CP] Check Pods Manifest.lock */,
+				D5CF93D507D69F99244816F4 /* [CP] Check Pods Manifest.lock */,
 				191FDBE49E5BFCD8E0F47A05 /* Code Lint */,
 				E715FD85ABA67F25FD0382B2 /* Sources */,
 				BF578FE6CE3F231542A7E1A3 /* Resources */,
@@ -531,7 +535,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4677F33F9792605171BAE4BC /* Build configuration list for PBXNativeTarget "TickKey" */;
 			buildPhases = (
-				410BA71F60B62B5D17CB15D5 /* [CP] Check Pods Manifest.lock */,
+				4D82BABE6BA11A19F5E6E0AE /* [CP] Check Pods Manifest.lock */,
 				CA5FEAD38829D1B22C973194 /* Code Lint */,
 				E9312E1423E38436778A5FA3 /* Sources */,
 				2080080D2BAF7E72E76F1E1C /* Resources */,
@@ -555,10 +559,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7B5FCCC9C0F4CBE015BB7FB8 /* Build configuration list for PBXNativeTarget "TickKeyTests" */;
 			buildPhases = (
-				2B4ABBF56E64D892FD2A1F9A /* [CP] Check Pods Manifest.lock */,
+				43D83D2E79ED9256D4550E05 /* [CP] Check Pods Manifest.lock */,
 				3FDCF827D93F0C7FAD82AD49 /* Sources */,
 				B26C1BD9280BCDCB5089C6B3 /* Resources */,
-				466EF7ECC0AC76532EF4BE33 /* Frameworks */,
+				461F68E1BD96ED5235A0052D /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -574,10 +578,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9E7BF82FC889DCF6E7F7957F /* Build configuration list for PBXNativeTarget "TickKeyMacTests" */;
 			buildPhases = (
-				D5239CAAA7980B99B2EB5A6D /* [CP] Check Pods Manifest.lock */,
+				36944139214135607E10FEAD /* [CP] Check Pods Manifest.lock */,
 				E65CED1A154A6C2FCDACE581 /* Sources */,
 				88CEC2EDECDA17245C289323 /* Resources */,
-				E5CF64225EEDBC0133D231DF /* Frameworks */,
+				BC17AA09C3C44194712EE0E6 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -640,8 +644,8 @@
 			targets = (
 				D7F219A50F651166FBCD41AB /* TickKey */,
 				C640D5807DE04A7AC9F2BECE /* TickKeyMac */,
-				F91C9944958B81E8B7C2411A /* TickKeyMacTests */,
 				EC77F2EE9FC9FF17554273D8 /* TickKeyTests */,
+				F91C9944958B81E8B7C2411A /* TickKeyMacTests */,
 				B0DB41CD78ACD48466FDC7D5 /* TickKeyUITests */,
 			);
 		};
@@ -712,7 +716,29 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Scripts/check_swift.sh\"";
 		};
-		2B4ABBF56E64D892FD2A1F9A /* [CP] Check Pods Manifest.lock */ = {
+		36944139214135607E10FEAD /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-TickKeyMacTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		43D83D2E79ED9256D4550E05 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -734,7 +760,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		410BA71F60B62B5D17CB15D5 /* [CP] Check Pods Manifest.lock */ = {
+		4D82BABE6BA11A19F5E6E0AE /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -776,29 +802,7 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Scripts/check_swift.sh\"";
 		};
-		D5239CAAA7980B99B2EB5A6D /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-TickKeyMacTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		DCA2C7DF6BF23D7F5227C968 /* [CP] Check Pods Manifest.lock */ = {
+		D5CF93D507D69F99244816F4 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -846,6 +850,7 @@
 			files = (
 				6327DE70F321B369E239EC12 /* ApplicationMain.swift in Sources */,
 				CECCD83DDBCECB5C5BA06C31 /* BackupCodec.swift in Sources */,
+				63221DD3684680AE73B6F2EF /* GoogleMigration.swift in Sources */,
 				9A49B6C1CC6FF001DBCD8362 /* Localization.swift in Sources */,
 				00E5D58B0AAEA8717ACA56BA /* MacAccountsViewController.swift in Sources */,
 				3A8C0D17C127818A93DF337D /* MacCountdownView.swift in Sources */,
@@ -873,6 +878,7 @@
 				E9E2BE0418855278FDFA5035 /* BackupCodec.swift in Sources */,
 				E240217DB6A03115895DD0A5 /* CameraSessionPipeline.swift in Sources */,
 				87F94734851844E24ED3D648 /* CountdownView.swift in Sources */,
+				347C12A5A8B9783D82A2533A /* GoogleMigration.swift in Sources */,
 				3595455C7F5306FB1E8E7C31 /* IOSTransferCoordinator.swift in Sources */,
 				0914756C0B6C51FF963CB514 /* Localization.swift in Sources */,
 				EF24C0773196744B31E35C30 /* MainThreadMonitor.swift in Sources */,
@@ -955,7 +961,7 @@
 /* Begin XCBuildConfiguration section */
 		246E94015BD30084BDEB2B3D /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 006D5B1CD8495E845903300B /* Pods-TickKeyMacTests.release.xcconfig */;
+			baseConfigurationReference = B9F2B6CFF3E55EE5C6A7AFF4 /* Pods-TickKeyMacTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -1011,7 +1017,7 @@
 		};
 		75515D232FBD894A1D10B592 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1748958BFA54CE1C85339352 /* Pods-TickKeyTests.debug.xcconfig */;
+			baseConfigurationReference = E169BFE954A4158E40A90FA6 /* Pods-TickKeyTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1029,7 +1035,7 @@
 		};
 		929CF10A2ADB93C6DD1F4C16 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 190B12C47566C0C53EB176AF /* Pods-TickKeyTests.release.xcconfig */;
+			baseConfigurationReference = 5D42DED254B60DB4FCE5A0C7 /* Pods-TickKeyTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1081,7 +1087,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = X6B6C6U6QV;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1103,7 +1109,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -1154,7 +1160,7 @@
 		};
 		BB03E5D6F5368CECD4F00512 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EF4002AA522F0C5DA59AC6C7 /* Pods-TickKeyMacTests.debug.xcconfig */;
+			baseConfigurationReference = 22172B415943F4A18A2EAD17 /* Pods-TickKeyMacTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -1206,7 +1212,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = X6B6C6U6QV;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1222,7 +1228,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -128,7 +128,11 @@ internal enum BackupCodec {
       }
 
       do {
-        try tokens.append(OTPURI.parse(trimmed))
+        if GoogleMigration.isMigration(trimmed) {
+          try tokens.append(contentsOf: GoogleMigration.parse(trimmed).tokens)
+        } else {
+          try tokens.append(OTPURI.parse(trimmed))
+        }
       } catch {
         throw TickKeyError.invalidLine(index + 1)
       }

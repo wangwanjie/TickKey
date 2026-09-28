@@ -11,7 +11,9 @@ internal enum OTPAlgorithm: String, Codable, CaseIterable {
 
 /// 统一业务错误，只提供本地化说明，不在提示中泄露密钥或备份内容。
 internal enum TickKeyError: LocalizedError {
-  case invalidSecret, invalidToken, invalidURI, unsupportedFormat, invalidPassword, damagedBackup, storage, duplicate
+  case invalidSecret, invalidToken, invalidURI, unsupportedFormat, googleExport, invalidPassword, damagedBackup,
+       storage,
+       duplicate
   case invalidLine(Int)
 
   var errorDescription: String? {
@@ -24,6 +26,8 @@ internal enum TickKeyError: LocalizedError {
       Localization.text("error.uri")
     case .unsupportedFormat:
       Localization.text("error.format")
+    case .googleExport:
+      Localization.text("error.google.export")
     case .invalidPassword:
       Localization.text("error.password")
     case .damagedBackup:
