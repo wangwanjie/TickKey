@@ -14,6 +14,10 @@ xcrun stapler validate "$DMG"
 OUT="$ROOT/build/appcast"
 mkdir -p "$OUT"
 cp "$DMG" "$OUT/"
+NOTES="$ROOT/Docs/ReleaseNotes-$VERSION.md"
+if [[ -f "$NOTES" ]]; then
+  cp "$NOTES" "$OUT/TickKey-$VERSION.md"
+fi
 # generate_appcast 从 Keychain 读取 Sparkle 私钥；切勿把私钥写入仓库。
 "$SPARKLE_BIN/generate_appcast" --account cn.vanjay.TickKey.Sparkle --download-url-prefix "https://github.com/wangwanjie/TickKey/releases/download/v$VERSION/" "$OUT"
 (cd "$OUT" && shasum -a 256 "$(basename "$DMG")" > SHA256SUMS)

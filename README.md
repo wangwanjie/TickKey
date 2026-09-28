@@ -10,7 +10,7 @@
 - 兼容浏览器 Authenticator 插件导出的 otpauth 文本，包括有发行方但未填写账户名称的条目。
 - 单个账户二维码、全部账户二维码和分页的 Google Authenticator 迁移二维码导出。
 - 简体中文、繁体中文、English，语言和外观热切换。
-- macOS Sparkle 自动更新集成，通过 `SPARKLE_ENABLED` 隔离；已配置仓库更新源和专用公钥，首次发行后可实际检查更新。
+- macOS 通过公开 GitHub Release 的 Sparkle appcast 自动检查更新；`SPARKLE_ENABLED` 隔离商店和直接分发构建。
 
 ## 构建
 
