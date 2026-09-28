@@ -41,6 +41,8 @@ else
   hdiutil create -volname "TickKey $VERSION" -srcfolder "$STAGING" -ov -format UDZO "$DMG"
 fi
 hdiutil verify "$DMG"
+codesign --force --sign 'Developer ID Application: Wan Jie Wang (X6B6C6U6QV)' --timestamp "$DMG"
+codesign --verify --verbose=2 "$DMG"
 if [[ "$NOTARIZE" == true ]]; then
   xcrun notarytool submit "$DMG" --keychain-profile "$PROFILE" --wait --output-format json > "$OUT/notary.json"
   python3 - "$OUT/notary.json" <<'PY'
