@@ -1,5 +1,13 @@
 # 验证记录
 
+## 2026-10-23 1.1.2 系统打开 .tickkey 备份
+
+工具：Xcode 27.1、SwiftFormat、SwiftLint（`Scripts/check_swift.sh` 40 个文件 0 违规）。
+
+- macOS：30 项单元测试通过；LaunchServices 将 `cn.vanjay.tickkey.backup` 的默认打开方式指向 TickKey，冷启动与运行中双击备份均弹出备份密码框。
+- iPhone 18 Pro 模拟器 / iOS 27：34 项单元测试与 6 项 UI 流程全部通过；冷启动时系统打开备份弹出密码框；运行中且设置抽屉展开时打开备份，抽屉收起并成功导入 1 个账户，`Documents/Inbox` 副本已删除、原文件保留。
+- 未验证：开启解锁保护时的排队导入（需真机身份验证）。
+
 ## 2026-10-22 1.1.1 设置页重构
 
 工具：Xcode 27.1、SwiftFormat、SwiftLint（`Scripts/check_swift.sh` 40 个文件 0 违规）。

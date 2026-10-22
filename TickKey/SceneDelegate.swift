@@ -8,6 +8,8 @@ internal final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   private var lockObservation: AnyCancellable?
   private var privacyCover: UIView?
   private var lockView: LockOverlayView?
+  /// 通过「用 TickKey 打开」传入但尚未导入的备份文件；锁定期间暂存，解锁后再导入。
+  private var pendingFiles: [URL] = []
 
   func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options: UIScene.ConnectionOptions) {
     guard let scene = scene as? UIWindowScene else {
@@ -24,6 +26,37 @@ internal final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     window.makeKeyAndVisible()
     // 锁定状态先于首帧建立，开启解锁保护时启动画面之后不会闪现验证码。
     lockObservation = AppLock.shared.$isLocked.sink { [weak self] locked in self?.updateLock(locked) }
+    // 冷启动时打开的文件随连接选项一起传入，不会再回调 openURLContexts；
+    // 延后一轮等窗口真正上屏后再弹出密码框，避免在视图层级建立前 present。
+    let urls = options.urlContexts.map(\.url)
+    DispatchQueue.main.async { [weak self] in
+      self?.openFiles(urls)
+    }
+  }
+
+  /// 应用已在运行时，从「文件」或分享菜单选择用 TickKey 打开备份文件。
+  func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    openFiles(URLContexts.map(\.url))
+  }
+
+  private func openFiles(_ urls: [URL]) {
+    let files = urls.filter(\.isFileURL)
+
+    guard !files.isEmpty else {
+      return
+    }
+    pendingFiles += files
+    flushPendingFiles()
+  }
+
+  /// 解锁后才交给账户列表导入，避免绕过解锁保护。
+  private func flushPendingFiles() {
+    guard !pendingFiles.isEmpty, !AppLock.shared.isLocked else {
+      return
+    }
+    let urls = pendingFiles
+    pendingFiles = []
+    (window?.rootViewController as? SettingsDrawerController)?.openFiles(urls)
   }
 
   /// 进入后台即上锁；控制中心、通知中心或面容 ID 弹窗只会失去活动状态，不触发上锁。
@@ -40,6 +73,10 @@ internal final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     guard locked else {
       lockView?.removeFromSuperview()
       lockView = nil
+      // @Published 在值写入前发出通知，延后一轮等解锁状态生效后再导入暂存的文件。
+      DispatchQueue.main.async { [weak self] in
+        self?.flushPendingFiles()
+      }
       return
     }
 

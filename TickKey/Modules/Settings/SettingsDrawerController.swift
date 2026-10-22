@@ -92,6 +92,12 @@ internal final class SettingsDrawerController: UIViewController {
       })
   }
 
+  /// 打开备份文件时先收起设置抽屉，让导入流程在账户列表上展示。
+  func openFiles(_ urls: [URL]) {
+    setOpen(false)
+    accounts.openFiles(urls)
+  }
+
   @objc private func close() {
     setOpen(false)
   }

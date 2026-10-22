@@ -578,3 +578,29 @@ extension UIViewController {
     present(alert, animated: true)
   }
 }
+
+// MARK: - 系统打开文件
+
+extension AccountsViewController {
+  /// 系统打开文件入口：退出多选、关闭已弹出的页面后再导入，保证密码框和进度提示能正常展示。
+  /// 与文件选择器一致，每次只导入一份备份。
+  func openFiles(_ urls: [URL]) {
+    guard let url = urls.first else {
+      return
+    }
+
+    if selecting {
+      toggleSelection()
+    }
+    // 搜索控制器本身也算弹出页面，先收起搜索，剩下的才是需要关闭的表单或二维码页。
+    search.isActive = false
+
+    guard let presented = presentedViewController else {
+      transfer.importFile(url)
+      return
+    }
+    presented.dismiss(animated: true) { [weak self] in
+      self?.transfer.importFile(url)
+    }
+  }
+}

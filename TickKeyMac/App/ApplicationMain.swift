@@ -24,6 +24,8 @@ internal final class MacAppDelegate: NSObject, NSApplicationDelegate {
   private var window: NSWindow?
   private var preferences: PreferencesWindowController?
   private var observation: AnyCancellable?
+  /// 双击备份文件冷启动时，系统会在主窗口创建前回调打开文件，先暂存到窗口就绪后再导入。
+  private var pendingFiles: [URL] = []
 
   func applicationDidFinishLaunching(_ notification: Notification) {
     let window = NSWindow(
@@ -45,6 +47,26 @@ internal final class MacAppDelegate: NSObject, NSApplicationDelegate {
     UpdateController.shared.start()
     observeSystemLock()
     NSApp.activate(ignoringOtherApps: true)
+
+    if !pendingFiles.isEmpty {
+      let urls = pendingFiles
+      pendingFiles = []
+      openFiles(urls)
+    }
+  }
+
+  /// 在访达中双击 .tickkey 备份或拖到 Dock 图标时由系统调用，转交账户列表按导入流程处理。
+  func application(_ application: NSApplication, open urls: [URL]) {
+    guard window != nil else {
+      pendingFiles += urls
+      return
+    }
+    openFiles(urls)
+  }
+
+  private func openFiles(_ urls: [URL]) {
+    showMainWindow()
+    (window?.contentViewController as? MacAccountsViewController)?.openFiles(urls)
   }
 
   /// 系统睡眠、关闭显示器或锁屏时同步上锁；未开启解锁保护时 AppLock 不做任何事。

@@ -27,6 +27,8 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
   private var selectionButtons: [(NSButton, String)] = []
   private var normalButtons: [NSButton] = []
   private let lockView = MacLockView()
+  /// 锁定期间通过访达打开的备份文件，解锁后再导入，避免绕过解锁保护。
+  private var pendingFiles: [URL] = []
 
   override func loadView() {
     let root = MacAppearanceBackgroundView(color: .windowBackgroundColor)
@@ -87,6 +89,11 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
           presentedViewControllers?.forEach { self.dismiss($0) }
           lockView.localize()
           view.window?.makeFirstResponder(lockView)
+        } else if !pendingFiles.isEmpty {
+          // @Published 在值写入前发出通知，延后一轮等解锁状态生效后再导入。
+          DispatchQueue.main.async { [weak self] in
+            self?.flushPendingFiles()
+          }
         }
       }
       .store(in: &subscriptions)
@@ -510,5 +517,33 @@ internal final class MacAppearanceBackgroundView: NSView {
     let options: [NSPasteboard.ReadingOptionKey: Any] = [.urlReadingFileURLsOnly: true]
     let urls = sender.draggingPasteboard.readObjects(forClasses: [NSURL.self], options: options) as? [URL] ?? []
     return urls.filter { !$0.hasDirectoryPath }
+  }
+}
+
+// MARK: - 系统打开文件
+
+extension MacAccountsViewController {
+  /// 系统打开文件入口：锁定时排队等待解锁，多选模式下先退出选择再导入。
+  func openFiles(_ urls: [URL]) {
+    pendingFiles += urls
+
+    guard !AppLock.shared.isLocked else {
+      requestUnlock(automatic: false)
+      return
+    }
+    flushPendingFiles()
+  }
+
+  private func flushPendingFiles() {
+    guard !pendingFiles.isEmpty, !AppLock.shared.isLocked else {
+      return
+    }
+
+    if selecting {
+      toggleSelection()
+    }
+    let urls = pendingFiles
+    pendingFiles = []
+    transfer.importFiles(urls)
   }
 }

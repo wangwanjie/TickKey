@@ -32,22 +32,27 @@ internal final class IOSTransferCoordinator: NSObject, UIDocumentPickerDelegate 
     }
 
     controller.dismiss(animated: true) { [weak self] in
-      self?.work("import.file.read", { try Self.readImport(url) }, completion: { [weak self] result in
-        guard let self else {
-          return
-        }
-        do {
-          let data = try result.get()
-          if BackupCodec.isEncrypted(data) {
-            password(exporting: false) { [weak self] in self?.decode(data, password: $0) }
-          } else {
-            decode(data, password: nil)
-          }
-        } catch {
-          presenter?.showError(error)
-        }
-      })
+      self?.importFile(url)
     }
+  }
+
+  /// 文件选择器和系统「用 TickKey 打开」共用：后台读取文件，加密备份先询问密码再解码。
+  func importFile(_ url: URL) {
+    work("import.file.read", { try Self.readImport(url) }, completion: { [weak self] result in
+      guard let self else {
+        return
+      }
+      do {
+        let data = try result.get()
+        if BackupCodec.isEncrypted(data) {
+          password(exporting: false) { [weak self] in self?.decode(data, password: $0) }
+        } else {
+          decode(data, password: nil)
+        }
+      } catch {
+        presenter?.showError(error)
+      }
+    })
   }
 
   /// 后台限定最大读取量，文件大小缺失或读取期间变化时也不会无界分配内存。
@@ -57,6 +62,7 @@ internal final class IOSTransferCoordinator: NSObject, UIDocumentPickerDelegate 
       if access {
         url.stopAccessingSecurityScopedResource()
       }
+      removeInboxCopy(url)
     }
     guard let stream = InputStream(url: url) else {
       throw TickKeyError.unsupportedFormat
@@ -79,6 +85,19 @@ internal final class IOSTransferCoordinator: NSObject, UIDocumentPickerDelegate 
       data.append(contentsOf: buffer.prefix(count))
     }
     return data
+  }
+
+  /// 其他应用分享过来的备份会被系统复制到 Documents/Inbox，读取后立即删除，避免备份副本留在沙盒里。
+  /// 在「文件」中原位打开的文件不在 Inbox 内，不会被删除。
+  private nonisolated static func removeInboxCopy(_ url: URL) {
+    guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+      return
+    }
+    let inbox = documents.appendingPathComponent("Inbox", isDirectory: true).standardizedFileURL.path + "/"
+
+    if url.standardizedFileURL.path.hasPrefix(inbox) {
+      try? FileManager.default.removeItem(at: url)
+    }
   }
 
   func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
