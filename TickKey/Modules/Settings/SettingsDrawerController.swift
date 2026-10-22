@@ -5,25 +5,32 @@ internal final class SettingsDrawerController: UIViewController {
   private let accounts = AccountsViewController()
   private lazy var navigation = UINavigationController(rootViewController: accounts)
   private let settings = SettingsViewController()
+  /// 设置页放进独立导航栈，使用系统大标题和关闭按钮。
+  private lazy var settingsNavigation: UINavigationController = {
+    let controller = UINavigationController(rootViewController: settings)
+    controller.navigationBar.prefersLargeTitles = true
+    return controller
+  }()
+
   private let dismissOverlay = UIControl()
   private var isOpen = false
   private var isAnimating = false
 
   override var childForStatusBarStyle: UIViewController? {
-    isOpen ? settings : navigation
+    isOpen ? settingsNavigation : navigation
   }
 
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = .systemBackground
     view.clipsToBounds = true
-    for controller in [settings, navigation] {
+    for controller in [settingsNavigation, navigation] {
       addChild(controller)
       view.addSubview(controller.view)
       controller.didMove(toParent: self)
     }
-    settings.view.accessibilityIdentifier = "settings-drawer"
-    settings.view.isHidden = true
+    settingsNavigation.view.accessibilityIdentifier = "settings-drawer"
+    settingsNavigation.view.isHidden = true
     // 透明覆盖层仅拦截点击以关闭抽屉，不改变主界面的颜色。
     dismissOverlay.backgroundColor = .clear
     dismissOverlay.accessibilityIdentifier = "dismiss-settings"
@@ -51,7 +58,7 @@ internal final class SettingsDrawerController: UIViewController {
     let bounds = view.bounds
     let width = min(bounds.width * 0.86, 440)
     let offset = isOpen ? width : 0
-    settings.view.frame = CGRect(x: offset - width, y: 0, width: width, height: bounds.height)
+    settingsNavigation.view.frame = CGRect(x: offset - width, y: 0, width: width, height: bounds.height)
     navigation.view.frame = bounds.offsetBy(dx: offset, dy: 0)
     dismissOverlay.frame = navigation.view.frame
   }
@@ -64,11 +71,11 @@ internal final class SettingsDrawerController: UIViewController {
     view.endEditing(true)
     isOpen = open
     isAnimating = true
-    settings.view.isHidden = false
+    settingsNavigation.view.isHidden = false
     dismissOverlay.isHidden = false
     dismissOverlay.accessibilityLabel = Localization.text("close")
     navigation.view.accessibilityElementsHidden = open
-    settings.view.accessibilityElementsHidden = !open
+    settingsNavigation.view.accessibilityElementsHidden = !open
     setNeedsStatusBarAppearanceUpdate()
     UIView.animate(
       withDuration: UIAccessibility.isReduceMotionEnabled ? 0 : 0.3,
@@ -77,9 +84,11 @@ internal final class SettingsDrawerController: UIViewController {
       animations: { self.layoutDrawer() },
       completion: { _ in
         self.isAnimating = false
-        self.settings.view.isHidden = !open
+        self.settingsNavigation.view.isHidden = !open
         self.dismissOverlay.isHidden = !open
-        UIAccessibility.post(notification: .screenChanged, argument: open ? self.settings.view : self.accounts.view)
+        UIAccessibility.post(
+          notification: .screenChanged,
+          argument: open ? self.settingsNavigation.view : self.accounts.view)
       })
   }
 

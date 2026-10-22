@@ -121,3 +121,6 @@
 "close.window" = "关闭窗口";
 "find" = "查找";
 "main.window" = "TickKey 主窗口";
+
+"general" = "通用";
+"label.format" = "%@：";

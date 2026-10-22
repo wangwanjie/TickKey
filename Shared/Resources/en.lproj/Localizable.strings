@@ -121,3 +121,6 @@
 "close.window" = "Close Window";
 "find" = "Find";
 "main.window" = "TickKey Main Window";
+
+"general" = "General";
+"label.format" = "%@:";
