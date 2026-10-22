@@ -94,6 +94,7 @@ internal final class TokenEditorViewController: UIViewController {
     secret.text = original?.secret
 
     // 密钥按敏感输入处理，禁止在表单中直接展示完整字符。
+    // 标记为一次性代码，阻止系统把安全输入框识别为密码并提示存入钥匙串。
     secret.isSecureTextEntry = true
     secret.textContentType = .oneTimeCode
     digits.keyboardType = .numberPad
@@ -124,7 +125,13 @@ internal final class TokenEditorViewController: UIViewController {
   }
 
   @objc private func cancel() {
+    clearSecret()
     dismiss(animated: true)
+  }
+
+  /// 关闭表单前清空安全输入框，系统就不会把 TOTP 密钥当作密码提示存入 iCloud 钥匙串。
+  private func clearSecret() {
+    secret.text = nil
   }
 
   /// 先构造有效账户，再区分新增和编辑；失败时保留表单供用户修改。
@@ -148,6 +155,7 @@ internal final class TokenEditorViewController: UIViewController {
           throw TickKeyError.duplicate
         }
       }
+      clearSecret()
       dismiss(animated: true)
     } catch {
       showError(error)

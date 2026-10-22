@@ -1,10 +1,31 @@
 # TickKey
 
-免费开源的本地 TOTP 验证器，MIT 许可。iPhone / iPad 使用 UIKit，Mac 使用原生 AppKit；共用验证码、存储及备份实现。无账户注册、广告、分析 SDK 或服务端。
+免费开源的本地 TOTP 两步验证器（类似 Google Authenticator），MIT 许可。iPhone / iPad 使用 UIKit，Mac 使用原生 AppKit；共用验证码、存储及备份实现。无账户注册、广告、分析 SDK 或服务端，验证码完全在本机生成。
+
+<p align="center">
+  <img src="Docs/Screenshots/mac-main.png" alt="TickKey Mac 主界面" width="760">
+</p>
+<p align="center">
+  <img src="Docs/Screenshots/ios-main.png" alt="TickKey iPhone 主界面" width="300">
+</p>
+
+## 下载
+
+在 [GitHub Releases](https://github.com/wangwanjie/TickKey/releases/latest) 按 Mac 芯片选择安装包：
+
+| 安装包 | 适用设备 |
+| --- | --- |
+| `TickKey-x.y.z-arm64.dmg` | Apple 芯片（M1 及更新）Mac |
+| `TickKey-x.y.z-x86_64.dmg` | Intel 芯片 Mac |
+
+不确定时可在「关于本机」查看「芯片」或「处理器」。安装包均经 Developer ID 签名和 Apple 公证，安装后通过 Sparkle 自动获取与本机架构一致的更新。最低系统要求为 macOS 12 / iOS 15。
+
+## 功能
 
 - 自适应账户卡片，搜索、单击复制、编辑、删除与圆饼倒计时。
+- 可选解锁保护：启动、回到前台或锁屏后需通过面容 ID、触控 ID 或设备密码解锁；Mac 可用 ⌘L 立即锁定。
 - iOS 和 Mac 均支持多选、全选和反选，批量操作仅限删除；选择范围为当前搜索结果。超过 5 项或全选删除时，提醒不可恢复及提前备份，并要求两次确认。
-- 手机相机扫描标准 `otpauth://totp` 与 Google Authenticator 迁移二维码；图片导入同样支持这两种格式。
+- 手机相机扫描标准 `otpauth://totp` 与 Google Authenticator 迁移二维码；两端都可从二维码图片和剪贴板（链接或截图）导入，Mac 支持把文件或图片直接拖进窗口。
 - 文本文件支持逐行导入 otpauth URI 或 Google Authenticator 迁移链接；支持 otpauth 文本导出和跨平台密码加密 `.tickkey` 备份。
 - 完全一致的发行方、账户、规范化密钥、算法、位数、周期才去重；不同密钥保留。
 - 兼容浏览器 Authenticator 插件导出的 otpauth 文本，包括有发行方但未填写账户名称的条目。
@@ -40,6 +61,8 @@ open TickKey.xcworkspace
 
 脚本优先使用本机 `127.0.0.1:7890` 代理，按 `Package.resolved` 解析依赖，并写入 Xcode 界面使用的默认缓存。不要在这条修复命令中追加 `-clonedSourcePackagesDirPath build/SourcePackages`，否则只会修好另一份命令行缓存。
 
+README 截图使用 Debug 构建的 `--ui-testing --screenshot-demo` 启动参数生成，只包含临时保险库中的虚构账户。
+
 首次构建前安装 SwiftFormat 和 SwiftLint，并通过 `Scripts/check_swift.sh`。详细约定及配置兼容说明见 [Swift 代码规范](Docs/CodingStyle.md)。
 
 ## LookInside UI 调试
@@ -63,7 +86,7 @@ bash Scripts/install_pods.sh
 
 账户整体使用 AES-256-GCM 加密后存入 SQLite；随机设备密钥保存在 Keychain，不同步到 iCloud。账户数据库排除系统文件备份，换设备请主动导出加密备份。软件不会保存备份密码，遗失密码无法恢复。正常系统时钟是正确验证码的前提。
 
-剪贴板验证码 30 秒后清理；Mac 仅在剪贴板没有被其他内容覆盖时清理。iOS 禁止验证码通过通用剪贴板跨设备传播；失去活动状态时遮挡界面。文本和二维码包含真实密钥，应像密码一样保管。
+剪贴板验证码 30 秒后清理；Mac 仅在剪贴板没有被其他内容覆盖时清理，并标记为敏感临时内容，遵循约定的剪贴板管理工具不会记录。开启解锁保护后，身份验证由系统完成，应用不保存生物特征或设备密码。iOS 禁止验证码通过通用剪贴板跨设备传播；失去活动状态时遮挡界面。文本和二维码包含真实密钥，应像密码一样保管。
 
 支持标准 TOTP URI（SHA-1 / SHA-256 / SHA-512，6–8 位，1–300 秒）和 Google Authenticator migration 批量二维码；不支持 HOTP。Google 格式仅能导出 30 秒周期的 6 位或 8 位账户，遇到无法表示的账户会明确报错。文本文件中的任何无效行都会使整个导入失败。批量导出始终包含所有账户，搜索不会改变导出范围。
 
@@ -73,6 +96,6 @@ bash Scripts/install_pods.sh
 
 GitHub：<https://github.com/wangwanjie/TickKey>。反馈入口直接打开 Issues。
 
-参考 [发布说明](Docs/Release.md) 核对签名和发布配置，再执行 `Scripts/build_dmg.sh`。默认公证 profile 为 `vanjay_mac_stapler`。iOS 可用 `Scripts/build_ipa.sh`，安装或分发仍受 Apple 的签名规则约束。
+参考 [发布说明](Docs/Release.md) 核对签名和发布配置，再执行 `Scripts/build_dmg.sh`，默认分别生成 arm64 与 x86_64 两个 DMG。默认公证 profile 为 `vanjay_mac_stapler`。iOS 可用 `Scripts/build_ipa.sh`，安装或分发仍受 Apple 的签名规则约束。
 
 项目维护者发布 TickKey 时承诺所有功能免费；MIT 许可证允许第三方再分发或销售派生作品。

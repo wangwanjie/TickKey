@@ -10,18 +10,27 @@
 
 仓库、更新源和公钥已配置；首次发行包含 appcast.xml 的公开 Release 后，更新源才会实际可用。Debug 构建不自动发起检查，手动检查仍可用。`SPARKLE_ENABLED` 只在 Mac target 中开启。Mac App Store 发行时须移除该宏、Sparkle 链接依赖和对应 mach-lookup entitlement，并使用商店签名配置。
 
-## 打包与草稿 Release
+## 打包与发布
 
 首次准备工程执行 `xcodegen generate`，自动安装 CocoaPods。IPA/DMG 打包脚本会先执行 `pod install --deployment` 校验锁定依赖，再从 `TickKey.xcworkspace` 使用 Release 配置归档；LookinServer 仅链接到 Debug。`build_ipa.sh debugging` 指定导出签名方式，归档配置仍为 Release。
 
+Mac 版按架构分别归档和分发：
+
+| 文件 | 适用设备 | 更新源 |
+| --- | --- | --- |
+| `TickKey-x.y.z-arm64.dmg` | Apple 芯片 Mac | `appcast-arm64.xml` |
+| `TickKey-x.y.z-x86_64.dmg` | Intel Mac | `appcast-x86_64.xml` |
+
+`build_dmg.sh` 每个架构使用独立的 DerivedData，通过 `ARCHS` 只编译目标架构，并在构建时把 `SPARKLE_FEED_URL` 指向对应 appcast；脚本会检查主程序架构和更新源，任何一项不符即中止。`appcast.xml` 继续保留，供 1.0.2 及更早的通用版本升级：其中 arm64 条目声明 `sparkle:hardwareRequirements`，Intel 机器会跳过它而选择 x86_64 条目。
+
 ```sh
-Scripts/build_dmg.sh
+Scripts/build_dmg.sh                    # 默认同时构建 arm64 与 x86_64；可用 --arch arm64 单独构建
 # 可用 PRETTY_DMG_SCRIPT 指定 create_pretty_dmg.sh；没有该工具时用标准 DMG 布局。
-Scripts/prepare_release.sh /path/to/Sparkle/bin build/release/<时间>/TickKey-1.0.0.dmg
-Scripts/publish_release.sh v1.0.0 Docs/ReleaseNotes-1.0.0.md
+Scripts/prepare_release.sh /path/to/Sparkle/bin build/release/<时间>/TickKey-1.1.0-arm64.dmg build/release/<时间>/TickKey-1.1.0-x86_64.dmg
+Scripts/publish_release.sh v1.1.0 Docs/ReleaseNotes-1.1.0.md [--ipa 路径] [--publish]
 ```
 
-先更新版本号和构建号，测试并提交源码，再创建并推送对应 Git tag。`publish_release.sh` 只创建草稿，检查 DMG、签名 appcast、版本和说明后，在 GitHub 上公开发行。脚本不会创建或覆盖 Git tag。发布前请自行编写对应 ReleaseNotes 文件。
+先更新版本号和构建号，测试并提交源码，再创建并推送对应 Git tag。`prepare_release.sh` 用 `sign_update` 为每个 DMG 生成 EdDSA 签名，写出三个 appcast、按版本固定链接的发布说明和 `SHA256SUMS`。`publish_release.sh` 默认只创建草稿；检查资源后加 `--publish` 公开发行。脚本不会创建或覆盖 Git tag。发布前请自行编写对应 ReleaseNotes 文件。
 
 `prepare_release.sh` 要求 DMG 已通过 staple 校验；Sparkle 自动更新包的签名与 Apple 公证相互独立，两者都必须成功。首次安装后，发布一个构建号更高的版本，验证检查更新、下载、验证签名、替换与重启的完整流程。
 

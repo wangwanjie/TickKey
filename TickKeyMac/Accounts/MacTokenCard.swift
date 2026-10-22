@@ -3,6 +3,8 @@ import SnapKit
 
 /// 处理单个账户的显示、键盘操作和复制反馈，验证码与倒计时分别更新。
 internal final class MacTokenCard: NSView {
+  private static let concealedType = NSPasteboard.PasteboardType("org.nspasteboard.ConcealedType")
+  private static let transientType = NSPasteboard.PasteboardType("org.nspasteboard.TransientType")
   let token: Token
   var onEdit: (() -> Void)?
   var onQR: (() -> Void)?
@@ -27,7 +29,7 @@ internal final class MacTokenCard: NSView {
     layer?.borderWidth = 1
     issuer.stringValue = token.title
     issuer.font = .systemFont(ofSize: 15, weight: .semibold)
-    account.stringValue = token.account
+    account.stringValue = subtitle
     account.font = .systemFont(ofSize: 12)
     account.textColor = .secondaryLabelColor
     code.font = .monospacedDigitSystemFont(ofSize: 32, weight: .semibold)
@@ -38,7 +40,7 @@ internal final class MacTokenCard: NSView {
     more.bezelStyle = .inline
     more.target = self
     more.action = #selector(showMenu)
-    more.setAccessibilityLabel(Localization.text("edit") + " " + token.account)
+    more.setAccessibilityLabel(Localization.text("edit") + " " + token.displayName)
     issuer.snp.makeConstraints {
       $0.leading.top.equalToSuperview().inset(20)
       $0.trailing.lessThanOrEqualTo(more.snp.leading).offset(-6)
@@ -62,8 +64,13 @@ internal final class MacTokenCard: NSView {
     }
     setAccessibilityElement(true)
     setAccessibilityRole(.button)
-    setAccessibilityLabel(token.title + ", " + token.account + ", " + Localization.text("copy"))
+    setAccessibilityLabel(token.displayName + ", " + Localization.text("copy"))
     tick(hidden: false)
+  }
+
+  /// 副标题去掉与标题重复的发行方前缀；无发行方时标题已是账户名，副标题留空。
+  private var subtitle: String {
+    token.issuer.isEmpty ? "" : token.detail
   }
 
   @available(*, unavailable)
@@ -137,7 +144,11 @@ internal final class MacTokenCard: NSView {
       let value = try TOTP.code(for: token)
       let board = NSPasteboard.general
       board.clearContents()
+      // 按 nspasteboard.org 约定标记为敏感且临时的内容，剪贴板管理工具不应记录验证码。
+      board.declareTypes([.string, Self.concealedType, Self.transientType], owner: nil)
       board.setString(value, forType: .string)
+      board.setData(Data(), forType: Self.concealedType)
+      board.setData(Data(), forType: Self.transientType)
 
       // changeCount 不变才说明剪贴板仍属于本次复制，不清理后来复制的其他内容。
       let change = board.changeCount
@@ -162,7 +173,7 @@ internal final class MacTokenCard: NSView {
       lastCode = (try? TOTP.code(for: token)).map(TOTP.display) ?? "—"
     }
     code.stringValue = hidden ? "••• •••" : lastCode
-    account.stringValue = Date() < copiedUntil ? Localization.text("copied") : token.account
+    account.stringValue = Date() < copiedUntil ? Localization.text("copied") : subtitle
     pie.fraction = TOTP.remainingFraction(for: token)
     let accent = NSColor(named: "AccentColor") ?? .controlAccentColor
     code.textColor = accent

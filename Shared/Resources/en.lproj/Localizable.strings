@@ -97,3 +97,27 @@
 "selection.delete.final" = "Confirm permanent deletion";
 "selection.delete.final.warning" = "Final confirmation: permanently delete the selected accounts (%d)? This cannot be undone. Make sure you have exported a backup and can restore it before deleting.";
 "selection.delete.confirm" = "Delete permanently";
+
+"error.busy" = "Accounts are being imported. Try again in a moment.";
+"error.no.accounts" = "No supported authenticator QR code or otpauth link was found.";
+"error.lock.unavailable" = "This device has no passcode or does not support authentication, so unlock protection cannot be turned on.";
+"lock.reason" = "Unlock to view your codes";
+"lock.enable.reason" = "Authenticate to turn on unlock protection";
+"lock.disable.reason" = "Authenticate to turn off unlock protection";
+"lock.title" = "TickKey is locked";
+"lock.body" = "Authenticate to view your codes.";
+"lock.unlock" = "Unlock";
+"lock.now" = "Lock Now";
+"lock.setting" = "Require authentication";
+"lock.setting.help" = "After launch, returning to the app, or locking the screen, unlock with Face ID, Touch ID, or your device password.";
+"security" = "Security";
+"import.clipboard" = "Import from clipboard";
+"import.skipped.codes" = "Skipped %d invalid or unsupported QR codes.";
+"import.files.help" = "You can also drop backup files or QR code images onto the window.";
+"about.app" = "About TickKey";
+"hide" = "Hide TickKey";
+"hide.others" = "Hide Others";
+"show.all" = "Show All";
+"close.window" = "Close Window";
+"find" = "Find";
+"main.window" = "TickKey Main Window";

@@ -97,3 +97,27 @@
 "selection.delete.final" = "再次确认永久删除";
 "selection.delete.final.warning" = "最后确认：永久删除 %d 个账户？删除后不可恢复。请确认已提前导出备份，并能够使用备份恢复账户。";
 "selection.delete.confirm" = "永久删除";
+
+"error.busy" = "正在导入账户，请稍候再试。";
+"error.no.accounts" = "未找到支持的验证码二维码或 otpauth 链接。";
+"error.lock.unavailable" = "此设备未设置密码或不支持身份验证，无法开启解锁保护。";
+"lock.reason" = "解锁以查看验证码";
+"lock.enable.reason" = "验证身份以开启解锁保护";
+"lock.disable.reason" = "验证身份以关闭解锁保护";
+"lock.title" = "TickKey 已锁定";
+"lock.body" = "验证身份后查看验证码。";
+"lock.unlock" = "解锁";
+"lock.now" = "立即锁定";
+"lock.setting" = "需要身份验证";
+"lock.setting.help" = "启动、回到前台或锁屏后，需要通过面容 ID、触控 ID 或设备密码解锁。";
+"security" = "安全";
+"import.clipboard" = "从剪贴板导入";
+"import.skipped.codes" = "已跳过 %d 个无效或不支持的二维码。";
+"import.files.help" = "也可以把备份文件或二维码图片拖到窗口中导入。";
+"about.app" = "关于 TickKey";
+"hide" = "隐藏 TickKey";
+"hide.others" = "隐藏其他";
+"show.all" = "全部显示";
+"close.window" = "关闭窗口";
+"find" = "查找";
+"main.window" = "TickKey 主窗口";

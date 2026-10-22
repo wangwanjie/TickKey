@@ -13,7 +13,10 @@ internal enum OTPAlgorithm: String, Codable, CaseIterable {
 internal enum TickKeyError: LocalizedError {
   case invalidSecret, invalidToken, invalidURI, unsupportedFormat, googleExport, invalidPassword, damagedBackup,
        storage,
-       duplicate
+       duplicate,
+       busy,
+       noAccountsFound,
+       authenticationUnavailable
   case invalidLine(Int)
 
   var errorDescription: String? {
@@ -36,6 +39,12 @@ internal enum TickKeyError: LocalizedError {
       Localization.text("error.storage")
     case .duplicate:
       Localization.text("error.duplicate")
+    case .busy:
+      Localization.text("error.busy")
+    case .noAccountsFound:
+      Localization.text("error.no.accounts")
+    case .authenticationUnavailable:
+      Localization.text("error.lock.unavailable")
     case let .invalidLine(line):
       String(format: Localization.text("error.line"), line)
     }
@@ -121,6 +130,16 @@ internal struct Token: Codable, Identifiable, Equatable {
   /// 仅为列表合并名称，去掉账户中完整的发行方前缀，不修改存储和导出的原始字段。
   var displayName: String {
     let name = issuer.trimmingCharacters(in: .whitespacesAndNewlines)
+    let detail = detail
+    if name.isEmpty {
+      return detail
+    }
+    return detail.isEmpty ? name : name + " · " + detail
+  }
+
+  /// 去掉账户名中重复的发行方前缀，供卡片副标题显示；只剩发行方时返回空字符串。
+  var detail: String {
+    let name = issuer.trimmingCharacters(in: .whitespacesAndNewlines)
     var detail = account.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !name.isEmpty else {
       return detail
@@ -136,7 +155,7 @@ internal struct Token: Codable, Identifiable, Equatable {
       }
       detail = remainder.dropFirst().trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    return detail.isEmpty ? name : name + " · " + detail
+    return detail
   }
 
   /// 只搜索发行方和账户名称，避免把密钥暴露到搜索行为中。

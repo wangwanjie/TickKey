@@ -88,6 +88,41 @@ internal final class IOSTransferCoordinator: NSObject, UIDocumentPickerDelegate 
     }
   }
 
+  /// 读取剪贴板中的 otpauth 链接或二维码截图；读取在主线程，识别和保存在后台完成。
+  func importFromClipboard() {
+    let board = UIPasteboard.general
+    let text = board.hasStrings ? board.string : nil
+    let image = board.hasImages ? board.image?.pngData() : nil
+
+    process { finish in
+      DispatchQueue.global(qos: .userInitiated).async {
+        let result = Result { try ImportDecoder.decodePasteboard(text: text, image: image) }
+        DispatchQueue.main.async {
+          switch result {
+          case let .success(decoded):
+            AppModel.shared.importTokens(decoded.tokens) { imported in
+              finish(imported.map { $0 + Self.skippedMessage(decoded.rejectedCodes) })
+            }
+          case let .failure(error):
+            finish(.failure(error))
+          }
+        }
+      }
+    } completion: { [weak self] (result: Result<String, Error>) in
+      switch result {
+      case let .success(message):
+        self?.presenter?.showMessage(message)
+      case let .failure(error):
+        self?.presenter?.showError(error)
+      }
+    }
+  }
+
+  /// 图片中有无法识别的二维码时附加跳过数量，全部有效时不显示。
+  private nonisolated static func skippedMessage(_ count: Int) -> String {
+    count > 0 ? "\n\n" + String(format: Localization.text("import.skipped.codes"), count) : ""
+  }
+
   /// 解码与持久化均在后台进行，整个过程保留进度提示，完成后再反馈结果。
   private func decode(_ data: Data, password: String?) {
     process { finish in
@@ -173,7 +208,7 @@ internal final class IOSTransferCoordinator: NSObject, UIDocumentPickerDelegate 
           .appendingPathComponent("TickKey-export-" + UUID().uuidString)
         do {
           try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-          let url = folder.appendingPathComponent("TickKey-backup." + ext)
+          let url = folder.appendingPathComponent(BackupCodec.fileName(extension: ext))
           try content.write(to: url, options: [.atomic, .completeFileProtection])
           return url
         } catch {

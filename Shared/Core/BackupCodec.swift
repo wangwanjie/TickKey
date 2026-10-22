@@ -16,6 +16,15 @@ internal enum BackupCodec {
     let sealed: Data
   }
 
+  /// 导出文件名带本地日期，多次备份不会在同一目录中互相覆盖。
+  static func fileName(extension ext: String, date: Date = Date()) -> String {
+    let formatter = DateFormatter()
+    formatter.calendar = Calendar(identifier: .gregorian)
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.dateFormat = "yyyyMMdd-HHmm"
+    return "TickKey-backup-" + formatter.string(from: date) + "." + ext
+  }
+
   /// 根据文件内容识别 TickKey 容器，不依赖扩展名；未知版本交给解码器明确拒绝。
   static func isEncrypted(_ data: Data) -> Bool {
     data.starts(with: Data("TickKey/".utf8))

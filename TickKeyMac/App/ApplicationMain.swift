@@ -43,13 +43,35 @@ internal final class MacAppDelegate: NSObject, NSApplicationDelegate {
       self?.buildMenu()
     }
     UpdateController.shared.start()
+    observeSystemLock()
     NSApp.activate(ignoringOtherApps: true)
   }
 
+  /// 系统睡眠、关闭显示器或锁屏时同步上锁；未开启解锁保护时 AppLock 不做任何事。
+  private func observeSystemLock() {
+    let workspace = NSWorkspace.shared.notificationCenter
+    for name in [NSWorkspace.willSleepNotification, NSWorkspace.screensDidSleepNotification] {
+      workspace.addObserver(self, selector: #selector(lockNow), name: name, object: nil)
+    }
+    DistributedNotificationCenter.default().addObserver(
+      self,
+      selector: #selector(lockNow),
+      name: NSNotification.Name("com.apple.screenIsLocked"),
+      object: nil)
+  }
+
   func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-    window?.makeKeyAndOrderFront(nil)
+    showMainWindow()
 
     return true
+  }
+
+  @objc func showMainWindow() {
+    window?.makeKeyAndOrderFront(nil)
+  }
+
+  @objc func lockNow() {
+    AppLock.shared.lock()
   }
 
   @objc func showPreferences() {
@@ -79,6 +101,12 @@ internal final class MacAppDelegate: NSObject, NSApplicationDelegate {
     }
 
     let app = submenu("TickKey")
+    add(
+      Localization.text("about.app"),
+      #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
+      "",
+      to: app)
+    app.addItem(.separator())
     add(Localization.text("settings") + "…", #selector(showPreferences), ",", to: app, target: self)
     add(
       Localization.text("check.updates") + "…",
@@ -86,21 +114,34 @@ internal final class MacAppDelegate: NSObject, NSApplicationDelegate {
       "",
       to: app,
       target: UpdateController.shared)
+    add(Localization.text("lock.now"), #selector(lockNow), "l", to: app, target: self)
+    app.addItem(.separator())
+    add(Localization.text("hide"), #selector(NSApplication.hide(_:)), "h", to: app)
+    add(Localization.text("hide.others"), #selector(NSApplication.hideOtherApplications(_:)), "h", to: app)
+    app.items.last?.keyEquivalentModifierMask = [.command, .option]
+    add(Localization.text("show.all"), #selector(NSApplication.unhideAllApplications(_:)), "", to: app)
     app.addItem(.separator())
     add(Localization.text("quit"), #selector(NSApplication.terminate(_:)), "q", to: app)
     let file = submenu(Localization.text("file"))
     add(Localization.text("add"), #selector(MacAccountsViewController.addAccount), "n", to: file)
-    add(Localization.text("import"), #selector(MacAccountsViewController.importAccounts), "o", to: file)
-    add(Localization.text("export"), #selector(MacAccountsViewController.exportAccounts), "e", to: file)
+    add(Localization.text("import") + "…", #selector(MacAccountsViewController.importAccounts), "o", to: file)
+    add(Localization.text("import.clipboard"), #selector(MacAccountsViewController.importFromClipboard), "V", to: file)
+    add(Localization.text("export") + "…", #selector(MacAccountsViewController.exportAccounts), "e", to: file)
+    file.addItem(.separator())
+    add(Localization.text("close.window"), #selector(NSWindow.performClose(_:)), "w", to: file)
     let edit = submenu(Localization.text("edit"))
     add(Localization.text("undo"), Selector(("undo:")), "z", to: edit)
     add(Localization.text("redo"), Selector(("redo:")), "Z", to: edit)
+    edit.addItem(.separator())
     add(Localization.text("cut"), #selector(NSText.cut(_:)), "x", to: edit)
     add(Localization.text("copy"), #selector(NSText.copy(_:)), "c", to: edit)
     add(Localization.text("paste"), #selector(NSText.paste(_:)), "v", to: edit)
     add(Localization.text("select.all"), #selector(NSText.selectAll(_:)), "a", to: edit)
+    edit.addItem(.separator())
+    add(Localization.text("find"), #selector(MacAccountsViewController.focusSearch), "f", to: edit)
     let windows = submenu(Localization.text("window"))
     add(Localization.text("minimize"), #selector(NSWindow.miniaturize(_:)), "m", to: windows)
+    add(Localization.text("main.window"), #selector(showMainWindow), "0", to: windows, target: self)
     NSApp.windowsMenu = windows
     NSApp.mainMenu = menu
   }

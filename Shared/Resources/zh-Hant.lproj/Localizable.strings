@@ -97,3 +97,27 @@
 "selection.delete.final" = "再次確認永久刪除";
 "selection.delete.final.warning" = "最後確認：永久刪除 %d 個帳戶？刪除後無法復原。請確認已提前匯出備份，並能夠使用備份還原帳戶。";
 "selection.delete.confirm" = "永久刪除";
+
+"error.busy" = "正在匯入帳戶，請稍候再試。";
+"error.no.accounts" = "未找到支援的驗證碼 QR 碼或 otpauth 連結。";
+"error.lock.unavailable" = "此裝置未設定密碼或不支援身分驗證，無法開啟解鎖保護。";
+"lock.reason" = "解鎖以查看驗證碼";
+"lock.enable.reason" = "驗證身分以開啟解鎖保護";
+"lock.disable.reason" = "驗證身分以關閉解鎖保護";
+"lock.title" = "TickKey 已鎖定";
+"lock.body" = "驗證身分後查看驗證碼。";
+"lock.unlock" = "解鎖";
+"lock.now" = "立即鎖定";
+"lock.setting" = "需要身分驗證";
+"lock.setting.help" = "啟動、回到前景或鎖定螢幕後，需要透過 Face ID、Touch ID 或裝置密碼解鎖。";
+"security" = "安全性";
+"import.clipboard" = "從剪貼簿匯入";
+"import.skipped.codes" = "已略過 %d 個無效或不支援的 QR 碼。";
+"import.files.help" = "也可以把備份檔案或 QR 碼圖片拖到視窗中匯入。";
+"about.app" = "關於 TickKey";
+"hide" = "隱藏 TickKey";
+"hide.others" = "隱藏其他";
+"show.all" = "全部顯示";
+"close.window" = "關閉視窗";
+"find" = "尋找";
+"main.window" = "TickKey 主視窗";

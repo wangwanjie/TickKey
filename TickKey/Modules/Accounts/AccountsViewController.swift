@@ -249,6 +249,9 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
     sheet.addAction(UIAlertAction(title: Localization.text("import.photos"), style: .default) { [weak self] _ in
       self?.photoImport.choosePhotos()
     })
+    sheet.addAction(UIAlertAction(title: Localization.text("import.clipboard"), style: .default) { [weak self] _ in
+      self?.transfer.importFromClipboard()
+    })
     sheet
       .addAction(UIAlertAction(title: Localization.text("import"), style: .default) { [weak self] _ in
         self?.transfer.chooseImport()
@@ -357,8 +360,18 @@ internal final class AccountsViewController: UIViewController, UITableViewDataSo
     }
     copyHUD = hud
     copyHUDDismissal = Just(())
-      .delay(for: .seconds(2), scheduler: DispatchQueue.main)
+      .delay(for: .seconds(Self.copyHUDDuration), scheduler: DispatchQueue.main)
       .sink { [weak self] _ in self?.dismissCopyHUD() }
+  }
+
+  /// 正常显示 2 秒；界面测试的无障碍快照轮询较慢，Debug 测试模式下延长以避免误判。
+  private static var copyHUDDuration: Double {
+    #if DEBUG
+      if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+        return 5
+      }
+    #endif
+    return 2
   }
 
   private func dismissCopyHUD() {

@@ -1,1 +1,2 @@
 "NSCameraUsageDescription" = "扫描二维码以添加验证账户。";
+"NSFaceIDUsageDescription" = "使用面容 ID 解锁 TickKey，查看验证码。";

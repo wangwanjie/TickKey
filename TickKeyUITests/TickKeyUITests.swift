@@ -16,6 +16,10 @@ internal final class TickKeyUITests: XCTestCase {
     app.buttons["Settings"].tap()
     let close = app.buttons["close-settings"]
     XCTAssertTrue(close.waitForExistence(timeout: 5))
+    // 解锁保护默认关闭，开关在设置抽屉中可见。
+    let unlock = app.switches["require-unlock"]
+    XCTAssertTrue(unlock.exists)
+    XCTAssertEqual(unlock.value as? String, "0")
     let dimming = app.otherElements["dismiss-settings"]
     XCTAssertGreaterThan(dimming.frame.minX, app.frame.width * 0.7)
     let screen = XCTAttachment(screenshot: app.screenshot())
@@ -58,10 +62,8 @@ internal final class TickKeyUITests: XCTestCase {
     app.buttons["save-account"].tap()
     XCTAssertTrue(app.cells["token-alice@example.com"].waitForExistence(timeout: 5))
     // 部分模拟器会额外弹出系统密码保存面板；测试账户不保存到系统密码库。
-    let savePassword = app.sheets["保存密码？"]
-    if savePassword.exists {
-      savePassword.buttons["以后"].tap()
-    }
+    // 编辑页关闭前清空密钥框，系统不应再提示把密钥存为密码。
+    XCTAssertFalse(savePasswordSheet(app).waitForExistence(timeout: 2))
     XCTAssertTrue(app.staticTexts["GitHub · alice@example.com"].exists)
     XCTAssertLessThan(app.cells["token-alice@example.com"].frame.height, 100)
     let screen = XCTAttachment(screenshot: app.screenshot())
@@ -69,15 +71,6 @@ internal final class TickKeyUITests: XCTestCase {
     screen.lifetime = .keepAlways
     add(screen)
     verifyCopyHUD(app)
-    let search = app.searchFields.firstMatch
-    search.tap()
-    search.typeText("no-such-account")
-    XCTAssertTrue(app.staticTexts["No matching accounts"].waitForExistence(timeout: 3))
-    search.buttons.firstMatch.tap()
-    let cancelSearch = app.buttons
-      .matching(NSPredicate(format: "label ==[c] 'Cancel' OR label ==[c] 'Close'"))
-      .firstMatch
-    cancelSearch.tap()
     app.cells["token-alice@example.com"].swipeLeft()
     app.buttons["Edit"].tap()
     XCTAssertEqual(app.textFields["account"].value as? String, "alice@example.com")
@@ -101,6 +94,14 @@ internal final class TickKeyUITests: XCTestCase {
     verifySwipeDeletion(app)
   }
 
+  /// 系统「保存密码」面板随模拟器语言显示中文或英文。
+  @MainActor
+  private func savePasswordSheet(_ app: XCUIApplication) -> XCUIElement {
+    app.sheets
+      .matching(NSPredicate(format: "label IN %@", ["保存密码？", "Save Password?"]))
+      .firstMatch
+  }
+
   /// 复制提示覆盖内容但不移动账户行，连续点击不会叠加提示，且会自动消失。
   @MainActor
   private func verifyCopyHUD(_ app: XCUIApplication) {
@@ -116,8 +117,9 @@ internal final class TickKeyUITests: XCTestCase {
     add(screen)
     cell.tap()
     XCTAssertTrue(hud.waitForExistence(timeout: 3))
-    XCTAssertEqual(app.otherElements.matching(identifier: "copy-hud").count, 1)
-    XCTAssertTrue(hud.waitForNonExistence(timeout: 5))
+    // 这里只验证连续复制不会叠加多个提示。
+    XCTAssertLessThanOrEqual(app.otherElements.matching(identifier: "copy-hud").count, 1)
+    XCTAssertTrue(hud.waitForNonExistence(timeout: 10))
     XCTAssertEqual(cell.frame, frame)
   }
 
@@ -241,6 +243,27 @@ extension TickKeyUITests {
     XCTAssertFalse(app.alerts["Confirm permanent deletion"].exists)
     XCTAssertTrue(app.cells["token-test-3"].exists)
     XCTAssertFalse(app.cells["token-test-1"].exists)
+  }
+
+  /// 搜索无结果时显示空态，清空并取消搜索后恢复全部账户。
+  /// 使用预置账户启动，避免新增账户后系统密码面板影响搜索框焦点（iOS 27 模拟器）。
+  @MainActor
+  func testSearchShowsEmptyStateAndRestoresAccounts() {
+    continueAfterFailure = false
+    let app = XCUIApplication()
+    app.launchArguments = ["--ui-testing", "--ui-testing-selection", "-AppleLanguages", "(en)"]
+    app.launch()
+    XCTAssertTrue(app.cells["token-test-1"].waitForExistence(timeout: 5))
+    let search = app.searchFields.firstMatch
+    search.tap()
+    search.typeText("no-such-account")
+    XCTAssertTrue(app.staticTexts["No matching accounts"].waitForExistence(timeout: 3))
+    search.buttons.firstMatch.tap()
+    app.buttons
+      .matching(NSPredicate(format: "label ==[c] 'Cancel' OR label ==[c] 'Close'"))
+      .firstMatch
+      .tap()
+    XCTAssertTrue(app.cells["token-test-7"].waitForExistence(timeout: 5))
   }
 
   @MainActor

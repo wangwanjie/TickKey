@@ -1,1 +1,2 @@
 "NSCameraUsageDescription" = "掃描 QR 碼以加入驗證帳戶。";
+"NSFaceIDUsageDescription" = "使用 Face ID 解鎖 TickKey 以查看驗證碼。";

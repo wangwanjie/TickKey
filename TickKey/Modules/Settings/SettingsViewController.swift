@@ -60,6 +60,7 @@ internal final class SettingsViewController: UIViewController {
       [Localization.text("system"), "简体中文", "繁體中文", "English"],
       selected: ["system", "zh-Hans", "zh-Hant", "en"].firstIndex(of: AppModel.shared.preferences.language) ?? 0,
       action: #selector(language(_:)))
+    addSecurityOption()
     addLabel("version", suffix: " " + AppInfo.version)
 
     let feedback = UIButton(type: .system)
@@ -97,6 +98,46 @@ internal final class SettingsViewController: UIViewController {
       options.addArrangedSubview(button)
     }
     stack.addArrangedSubview(options)
+  }
+
+  /// 解锁保护开关；切换前由系统验证身份，取消或失败时重建界面恢复原状态。
+  private func addSecurityOption() {
+    addLabel("security")
+
+    let title = UILabel()
+    title.text = Localization.text("lock.setting")
+    title.numberOfLines = 0
+    title.font = .preferredFont(forTextStyle: .body)
+    title.adjustsFontForContentSizeCategory = true
+
+    let toggle = UISwitch()
+    toggle.isOn = AppModel.shared.preferences.requiresUnlock
+    toggle.accessibilityIdentifier = "require-unlock"
+    toggle.accessibilityLabel = title.text
+    toggle.addTarget(self, action: #selector(lockChanged(_:)), for: .valueChanged)
+    toggle.setContentHuggingPriority(.required, for: .horizontal)
+
+    let row = UIStackView(arrangedSubviews: [title, toggle])
+    row.alignment = .center
+    row.spacing = 12
+    stack.addArrangedSubview(row)
+
+    let help = UILabel()
+    help.text = Localization.text("lock.setting.help")
+    help.numberOfLines = 0
+    help.font = .preferredFont(forTextStyle: .footnote)
+    help.adjustsFontForContentSizeCategory = true
+    help.textColor = .secondaryLabel
+    stack.addArrangedSubview(help)
+  }
+
+  @objc private func lockChanged(_ sender: UISwitch) {
+    AppLock.shared.setRequiresUnlock(sender.isOn) { [weak self] error in
+      if let error {
+        self?.showError(error)
+      }
+      self?.rebuild()
+    }
   }
 
   private func addLabel(_ key: String, suffix: String = "") {

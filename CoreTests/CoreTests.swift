@@ -1,3 +1,4 @@
+import ImageIO
 import XCTest
 #if os(macOS)
   import AppKit
@@ -358,6 +359,10 @@ internal final class CoreTests: XCTestCase {
         try model.delete(original[0])
         XCTFail("导入期间不应允许交错写入")
       } catch {
+        // 导入占用期间应返回「正在导入」，而不是误报保险库损坏。
+        if case TickKeyError.busy = error {} else {
+          XCTFail("导入期间的写入应返回 busy 错误：\(error)")
+        }
         XCTAssertEqual(model.tokens, original)
       }
     }
@@ -466,4 +471,149 @@ extension CoreTests {
       }
     }
   #endif
+}
+
+/// 覆盖 otpauth 兼容性、迁移链接容错、偏好持久化与按内容识别的导入入口。
+extension CoreTests {
+  /// Key URI 规范允许「发行方:」后带空格；导出时同时写入标签前缀和 issuer 参数。
+  func testURIAcceptsSpaceAfterIssuerSeparatorAndExportsIssuerPrefix() throws {
+    let parsed = try OTPURI.parse(
+      "otpauth://totp/Example:%20%20alice@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Example")
+    XCTAssertEqual(parsed.issuer, "Example")
+    XCTAssertEqual(parsed.account, "alice@example.com")
+    let encoded = try OTPURI.encode(parsed)
+    XCTAssertTrue(encoded.hasPrefix("otpauth://totp/Example:alice@example.com?"))
+    XCTAssertTrue(encoded.contains("issuer=Example"))
+    let noIssuer = try Token(issuer: "", account: "bob", secret: "JBSWY3DPEHPK3PXP")
+    XCTAssertFalse(try OTPURI.encode(noIssuer).contains("issuer="))
+    XCTAssertTrue(try OTPURI.parse(OTPURI.encode(noIssuer)).sameIdentity(as: noIssuer))
+  }
+
+  /// 保留字符必须编码；以空格开头的账户名不加前缀，往返后身份保持一致。
+  func testURIEncodingEscapesReservedCharactersAndPreservesIdentity() throws {
+    let reserved = try Token(issuer: "A+B&C=D", account: "x+y@example.com", secret: "JBSWY3DPEHPK3PXP")
+    let encoded = try OTPURI.encode(reserved)
+    XCTAssertTrue(encoded.contains("issuer=A%2BB%26C%3DD"))
+    XCTAssertTrue(try OTPURI.parse(encoded).sameIdentity(as: reserved))
+    let spaced = try Token(issuer: "Example", account: " leading", secret: "JBSWY3DPEHPK3PXP")
+    XCTAssertTrue(try OTPURI.parse(OTPURI.encode(spaced)).sameIdentity(as: spaced))
+    XCTAssertThrowsError(try OTPURI.parse("otpauth://totp/Example:alice?secret=JBSWY3DPEHPK3PXP&issuer=Other"))
+  }
+
+  /// 第三方工具可能输出 URL 安全或无填充的 Base64，内容相同时应得到相同账户。
+  func testGoogleMigrationAcceptsURLSafeAndUnpaddedBase64() throws {
+    let token = try Token(issuer: "Example", account: "alice", secret: "JBSWY3DPEHPK3PXP")
+    let uri = try XCTUnwrap(GoogleMigration.encode([token]).first)
+    let items = try XCTUnwrap(URLComponents(string: uri)?.queryItems)
+    let standard = try XCTUnwrap(items.first?.value)
+    let variant = standard
+      .replacingOccurrences(of: "+", with: "-")
+      .replacingOccurrences(of: "/", with: "_")
+      .replacingOccurrences(of: "=", with: "")
+    let parsed = try GoogleMigration.parse("otpauth-migration://offline?data=" + variant)
+    XCTAssertTrue(try XCTUnwrap(parsed.tokens.first).sameIdentity(as: token))
+    XCTAssertThrowsError(try GoogleMigration.parse("otpauth-migration://offline?data=A"))
+  }
+
+  /// 名称展示：副标题去掉重复前缀，组合名称与原有规则一致。
+  func testDetailRemovesIssuerPrefixOnlyForDisplay() throws {
+    let token = try Token(issuer: "GitHub", account: "GitHub: alice", secret: "JBSWY3DPEHPK3PXP")
+    XCTAssertEqual(token.detail, "alice")
+    XCTAssertEqual(token.displayName, "GitHub · alice")
+    XCTAssertEqual(token.account, "GitHub: alice")
+    let accountOnly = try Token(issuer: "", account: "bob", secret: "JBSWY3DPEHPK3PXP")
+    XCTAssertEqual(accountOnly.detail, "bob")
+    XCTAssertEqual(accountOnly.displayName, "bob")
+  }
+
+  /// 密钥录入允许小写和分组空格；验证码展示只在中间分组。
+  func testSecretNormalizationAndCodeGrouping() throws {
+    let token = try Token(issuer: "Example", account: "alice", secret: "jbsw y3dp ehpk 3pxp")
+    XCTAssertEqual(token.secret, "JBSWY3DPEHPK3PXP")
+    XCTAssertEqual(TOTP.display("123456"), "123 456")
+    XCTAssertEqual(TOTP.display("1234567"), "123 4567")
+    XCTAssertEqual(TOTP.display("12345678"), "1234 5678")
+    XCTAssertThrowsError(try Token(issuer: "Example", account: "alice", secret: "JBSWY3DPEHPK3PX1"))
+    XCTAssertThrowsError(try Token(issuer: "Example", account: "a\nb", secret: "JBSWY3DPEHPK3PXP"))
+  }
+
+  /// 偏好包含解锁开关；非法语言和外观值回退到跟随系统。
+  func testPreferencesPersistUnlockAndRejectInvalidValues() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let vault = try Vault(directory: root, testKey: Data(repeating: 9, count: 32))
+    XCTAssertEqual(try vault.preferences(), Preferences())
+    try vault.savePreferences(Preferences(language: "zh-Hant", appearance: 2, requiresUnlock: true))
+    let reopened = try Vault(directory: root, testKey: Data(repeating: 9, count: 32))
+    XCTAssertEqual(try reopened.preferences(), Preferences(language: "zh-Hant", appearance: 2, requiresUnlock: true))
+    try reopened.savePreferences(Preferences(language: "fr", appearance: 7, requiresUnlock: false))
+    XCTAssertEqual(try reopened.preferences(), Preferences())
+  }
+
+  /// 文件导入按内容区分加密备份、二维码图片和文本，不依赖扩展名。
+  func testImportDecoderRecognizesFilesByContent() throws {
+    let token = try fixture()
+    let image = try pngData(QRCode.image(for: token))
+    XCTAssertTrue(ImportDecoder.isImage(image))
+    XCTAssertFalse(try ImportDecoder.isImage(BackupCodec.text([token])))
+    XCTAssertTrue(try XCTUnwrap(ImportDecoder.decodeFile(image).tokens.first).sameIdentity(as: token))
+    let text = try ImportDecoder.decodeFile(BackupCodec.text([token]))
+    XCTAssertTrue(try XCTUnwrap(text.tokens.first).sameIdentity(as: token))
+    let encrypted = try BackupCodec.encrypt([token], password: "import-decoder-2026")
+    XCTAssertEqual(try ImportDecoder.decodeFile(encrypted, password: "import-decoder-2026").tokens, [token])
+    XCTAssertThrowsError(try ImportDecoder.decodeFile(encrypted))
+    XCTAssertThrowsError(try ImportDecoder.decodeFile(Data()))
+
+    // 不含二维码的图片应明确报告未找到账户，而不是静默导入 0 个。
+    let blank = try pngData(blankImage())
+    XCTAssertThrowsError(try ImportDecoder.decodeFile(blank)) { error in
+      if case TickKeyError.noAccountsFound = error {} else {
+        XCTFail("空白图片应返回 noAccountsFound：\(error)")
+      }
+    }
+  }
+
+  /// 剪贴板优先识别 otpauth 文本，其次识别截图；都没有时返回明确错误。
+  func testPasteboardImportPrefersTextThenImage() throws {
+    let token = try fixture()
+    let text = try OTPURI.encode(token)
+    XCTAssertEqual(try ImportDecoder.decodePasteboard(text: text, image: nil).tokens.count, 1)
+    let image = try pngData(QRCode.image(for: token))
+    XCTAssertEqual(try ImportDecoder.decodePasteboard(text: "hello", image: image).tokens.count, 1)
+    XCTAssertThrowsError(try ImportDecoder.decodePasteboard(text: "hello", image: nil))
+    XCTAssertThrowsError(try ImportDecoder.decodePasteboard(text: "otpauth://totp/x?secret=1", image: image))
+  }
+
+  /// 导出文件名包含日期，便于区分多次备份。
+  func testBackupFileNameContainsDate() {
+    let date = Date(timeIntervalSince1970: 1_800_000_000)
+    let name = BackupCodec.fileName(extension: "tickkey", date: date)
+    XCTAssertTrue(name.hasPrefix("TickKey-backup-20"))
+    XCTAssertTrue(name.hasSuffix(".tickkey"))
+    XCTAssertEqual(name.count, "TickKey-backup-yyyyMMdd-HHmm.tickkey".count)
+  }
+
+  /// 纯白位图，用于验证没有二维码的图片。
+  private func blankImage() throws -> CGImage {
+    let context = try XCTUnwrap(CGContext(
+      data: nil,
+      width: 64,
+      height: 64,
+      bitsPerComponent: 8,
+      bytesPerRow: 0,
+      space: CGColorSpaceCreateDeviceRGB(),
+      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+    context.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 1))
+    context.fill(CGRect(x: 0, y: 0, width: 64, height: 64))
+    return try XCTUnwrap(context.makeImage())
+  }
+
+  /// 使用 ImageIO 生成 PNG，两端测试共用，不依赖 UIKit 或 AppKit 绘图。
+  private func pngData(_ image: CGImage) throws -> Data {
+    let data = NSMutableData()
+    let destination = try XCTUnwrap(CGImageDestinationCreateWithData(data, "public.png" as CFString, 1, nil))
+    CGImageDestinationAddImage(destination, image, nil)
+    XCTAssertTrue(CGImageDestinationFinalize(destination))
+    return data as Data
+  }
 }

@@ -124,13 +124,15 @@ internal final class Vault: @unchecked Sendable {
 
     return Preferences(
       language: ["system", "en", "zh-Hans", "zh-Hant"].contains(language) ? language : "system",
-      appearance: (0 ... 2).contains(appearance) ? appearance : 0)
+      appearance: (0 ... 2).contains(appearance) ? appearance : 0,
+      requiresUnlock: settings.bool(forKey: "requiresUnlock"))
   }
 
   /// 轻量偏好写入 MMKV，写入失败时由界面显示错误。
   func savePreferences(_ value: Preferences) throws {
     guard settings.set(value.language, forKey: "language"),
-          settings.set(Int32(value.appearance), forKey: "appearance") else {
+          settings.set(Int32(value.appearance), forKey: "appearance"),
+          settings.set(value.requiresUnlock, forKey: "requiresUnlock") else {
       throw TickKeyError.storage
     }
   }
@@ -172,10 +174,12 @@ internal final class Vault: @unchecked Sendable {
 
 // MARK: - Preferences
 
-/// 两端共用的语言与外观设置，不包含账户或密钥。
-internal struct Preferences {
+/// 两端共用的语言、外观与启动解锁设置，不包含账户或密钥。
+internal struct Preferences: Equatable {
   var language = "system"
   var appearance = 0
+  /// 开启后启动和回到前台时需要通过面容 ID、触控 ID 或设备密码解锁。
+  var requiresUnlock = false
 }
 
 // MARK: - AppModel
@@ -202,15 +206,14 @@ internal final class AppModel: ObservableObject {
     do {
       #if DEBUG
 
-        if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+        let process = ProcessInfo.processInfo
+        // 单元测试宿主同样会启动应用，使用临时保险库，避免测试读取或写入真实账户与 Keychain。
+        let isTesting = process.arguments.contains("--ui-testing") ||
+          process.environment["XCTestConfigurationFilePath"] != nil
+        if isTesting {
           let root = FileManager.default.temporaryDirectory.appendingPathComponent("TickKey-UI-" + UUID().uuidString)
           vault = try Vault(directory: root, testKey: Data(repeating: 7, count: 32))
-          if ProcessInfo.processInfo.arguments.contains("--ui-testing-selection") {
-            let fixtures = try (1 ... 7).map {
-              try Token(issuer: "Selection Test", account: "test-\($0)", secret: "JBSWY3DPEHPK3PXP")
-            }
-            try vault?.save(fixtures)
-          }
+          try vault?.save(Self.fixtures(arguments: process.arguments))
         } else {
           vault = try Vault()
         }
@@ -228,6 +231,31 @@ internal final class AppModel: ObservableObject {
       startupError = error
     }
   }
+
+  #if DEBUG
+
+    /// 界面测试与截图使用的虚构账户，密钥均为公开测试值，不对应任何真实服务。
+    private static func fixtures(arguments: [String]) throws -> [Token] {
+      if arguments.contains("--ui-testing-selection") {
+        return try (1 ... 7).map {
+          try Token(issuer: "Selection Test", account: "test-\($0)", secret: "JBSWY3DPEHPK3PXP")
+        }
+      }
+      guard arguments.contains("--screenshot-demo") else {
+        return []
+      }
+      return try [
+        ("GitHub", "octocat@example.com", "JBSWY3DPEHPK3PXP"),
+        ("Google", "alice@example.com", "GEZDGNBVGY3TQOJQ"),
+        ("Apple", "alice@icloud.example", "MFRGGZDFMZTWQ2LK"),
+        ("Cloudflare", "ops@example.com", "NBSWY3DPO5XXE3DE"),
+        ("Microsoft", "alice@outlook.example", "KRUGS4ZANFZSA5DF"),
+        ("AWS", "root-account", "ONSWG4TFORZWK4TF"),
+        ("Discord", "alice#2026", "MZXW6YTBOI======"),
+        ("Binance", "alice@example.com", "GE3DCMRUGAZTKNBQ")
+      ].map { try Token(issuer: $0.0, account: $0.1, secret: $0.2) }
+    }
+  #endif
 
   /// 在现有账户及本次导入内部同时去重，新条目重新分配 UUID，最后统一保存。
   func add(_ imported: [Token]) throws -> (added: Int, duplicates: Int) {
@@ -260,8 +288,12 @@ internal final class AppModel: ObservableObject {
 
   /// iOS 批量导入的校验、加密和数据库事务均在后台完成，成功后才发布新状态。
   func importTokens(_ imported: [Token], completion: @escaping (Result<String, Error>) -> Void) {
-    guard let vault, startupError == nil, !importing else {
+    guard let vault, startupError == nil else {
       completion(.failure(TickKeyError.storage))
+      return
+    }
+    guard !importing else {
+      completion(.failure(TickKeyError.busy))
       return
     }
     importing = true
@@ -338,9 +370,13 @@ internal final class AppModel: ObservableObject {
 
   /// 启动读取失败时禁止写回；数据库保存成功后才替换内存状态。
   private func persist(_ updated: [Token]) throws {
-    // 后台导入持有旧快照时拒绝交错编辑，避免完成回写覆盖较新的账户状态。
-    guard let vault, startupError == nil, !importing else {
+    guard let vault, startupError == nil else {
       throw TickKeyError.storage
+    }
+
+    // 后台导入持有旧快照时拒绝交错编辑，避免完成回写覆盖较新的账户状态。
+    guard !importing else {
+      throw TickKeyError.busy
     }
     try PerformanceDiagnostics.measure("vault.persist", count: updated.count) { try vault.save(updated) }
     tokens = updated

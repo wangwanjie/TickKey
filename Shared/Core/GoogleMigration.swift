@@ -26,7 +26,7 @@ internal enum GoogleMigration {
           url.path.isEmpty, url.fragment == nil,
           let items = url.queryItems, items.count == 1, items[0].name == "data",
           let encoded = items[0].value,
-          let data = Data(base64Encoded: encoded), !data.isEmpty, data.count <= maximumPayloadSize else {
+          let data = decodeBase64(encoded), !data.isEmpty, data.count <= maximumPayloadSize else {
       throw TickKeyError.invalidURI
     }
     var reader = Reader(data)
@@ -47,6 +47,28 @@ internal enum GoogleMigration {
       size: Int(size),
       index: Int(index),
       id: Int(UInt32(truncatingIfNeeded: id)))
+  }
+
+  /// 兼容第三方工具生成的无填充或 URL 安全 Base64，以及未编码「+」被表单规则还原成的空格。
+  private static func decodeBase64(_ encoded: String) -> Data? {
+    var text = String(encoded.map { character -> Character in
+      switch character {
+      case "-":
+        "+"
+      case "_":
+        "/"
+      case " ":
+        "+"
+      default:
+        character
+      }
+    })
+
+    // 只补足缺失的填充，长度本身非法时仍由系统解码器拒绝。
+    if text.count % 4 != 0 {
+      text += String(repeating: "=", count: 4 - text.count % 4)
+    }
+    return Data(base64Encoded: text)
   }
 
   /// 单个二维码有容量上限；生成 Google 可识别的批次编号和页码。

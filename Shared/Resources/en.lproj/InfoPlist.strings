@@ -1,1 +1,2 @@
 "NSCameraUsageDescription" = "Scan QR codes to add authenticator accounts.";
+"NSFaceIDUsageDescription" = "Use Face ID to unlock TickKey and view your codes.";

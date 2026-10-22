@@ -11,45 +11,93 @@ internal final class MacTransferCoordinator {
     self.presenter = presenter
   }
 
-  /// 通过用户选择取得文件权限，检查大小并按内容识别加密或文本格式。
+  /// 通过用户选择取得文件权限；可一次选择多份备份或二维码图片，按内容识别格式。
   func chooseImport() {
     let panel = NSOpenPanel()
     panel.canChooseDirectories = false
-    panel.allowsMultipleSelection = false
+    panel.allowsMultipleSelection = true
+    panel.message = Localization.text("import.files.help")
 
-    guard panel.runModal() == .OK, let url = panel.url else {
+    guard panel.runModal() == .OK, !panel.urls.isEmpty else {
+      return
+    }
+    importFiles(panel.urls)
+  }
+
+  /// 打开面板和拖放共用：逐个读取文件，加密备份单独询问密码，全部识别后一次去重保存。
+  func importFiles(_ urls: [URL]) {
+    var sources: [(data: Data, password: String?)] = []
+
+    do {
+      for url in urls {
+        let data = try Self.read(url)
+        var passphrase: String?
+
+        if BackupCodec.isEncrypted(data) {
+          // 多个加密备份时在提示中带上文件名，避免把密码输错到另一份备份。
+          guard let value = password(exporting: false, file: urls.count > 1 ? url.lastPathComponent : nil) else {
+            return
+          }
+          passphrase = value
+        }
+        sources.append((data, passphrase))
+      }
+    } catch {
+      MacAlerts.error(error)
       return
     }
 
+    work({
+      try sources.reduce(into: ImportDecoder.Result()) { total, source in
+        let decoded = try ImportDecoder.decodeFile(source.data, password: source.password)
+        total.tokens += decoded.tokens
+        total.rejectedCodes += decoded.rejectedCodes
+      }
+    }, completion: { result in
+      Self.finishImport(result)
+    })
+  }
+
+  /// 读取剪贴板中的 otpauth 链接或二维码截图，识别在后台完成。
+  func importFromClipboard() {
+    let board = NSPasteboard.general
+    let text = board.string(forType: .string)
+    let image = NSImage(pasteboard: board).flatMap { image -> Data? in
+      guard let tiff = image.tiffRepresentation else {
+        return nil
+      }
+      return NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:])
+    }
+    work({ try ImportDecoder.decodePasteboard(text: text, image: image) }, completion: { result in
+      Self.finishImport(result)
+    })
+  }
+
+  /// 在安全作用域内读取用户选择或拖入的文件，并先按文件大小拒绝过大的内容。
+  private static func read(_ url: URL) throws -> Data {
+    let access = url.startAccessingSecurityScopedResource()
+    defer {
+      if access {
+        url.stopAccessingSecurityScopedResource()
+      }
+    }
+
+    guard try (url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) <= BackupCodec.maximumSize else {
+      throw TickKeyError.unsupportedFormat
+    }
+    return try Data(contentsOf: url)
+  }
+
+  /// 统一保存识别结果并反馈新增、重复和跳过的数量。
+  private static func finishImport(_ result: Result<ImportDecoder.Result, Error>) {
     do {
-      let access = url.startAccessingSecurityScopedResource()
-      defer {
-        if access {
-          url.stopAccessingSecurityScopedResource()
-        }
-      }
+      let decoded = try result.get()
+      var message = try AppModel.shared.importTokens(decoded.tokens)
 
-      guard try (url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) <= BackupCodec.maximumSize
-      else {
-        throw TickKeyError.unsupportedFormat
+      if decoded.rejectedCodes > 0 {
+        message += "\n\n" + String(format: Localization.text("import.skipped.codes"), decoded.rejectedCodes)
       }
-
-      let data = try Data(contentsOf: url)
-      var pass: String?
-
-      if BackupCodec.isEncrypted(data) {
-        guard let password = password(exporting: false) else {
-          return
-        }
-        pass = password
-      }
-      work({ try BackupCodec.decode(data, password: pass) }, completion: { result in
-        do {
-          try MacAlerts.message(AppModel.shared.importTokens(result.get()))
-        } catch {
-          MacAlerts.error(error)
-        }
-      })
+      MacAlerts.message(message)
     } catch {
       MacAlerts.error(error)
     }
@@ -104,7 +152,7 @@ internal final class MacTransferCoordinator {
   /// 只向保存面板选定的位置写入文件，并在完成后结束安全作用域访问。
   private func save(_ data: Data, extension ext: String) throws {
     let panel = NSSavePanel()
-    panel.nameFieldStringValue = "TickKey-backup." + ext
+    panel.nameFieldStringValue = BackupCodec.fileName(extension: ext)
     panel.allowedContentTypes = [UTType(filenameExtension: ext) ?? .data]
 
     guard panel.runModal() == .OK, let url = panel.url else {
@@ -121,10 +169,10 @@ internal final class MacTransferCoordinator {
   }
 
   /// 使用安全输入框收集密码，导出时额外检查两次输入是否一致。
-  private func password(exporting: Bool) -> String? {
+  private func password(exporting: Bool, file: String? = nil) -> String? {
     let alert = NSAlert()
     alert.messageText = Localization.text("password")
-    alert.informativeText = exporting ? Localization.text("password.help") : ""
+    alert.informativeText = exporting ? Localization.text("password.help") : (file ?? "")
 
     let stack = NSStackView()
     stack.orientation = .vertical

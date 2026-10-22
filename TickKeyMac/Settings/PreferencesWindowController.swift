@@ -12,7 +12,7 @@ internal final class PreferencesWindowController: NSWindowController {
 
   init() {
     let window = NSWindow(
-      contentRect: NSRect(x: 0, y: 0, width: 500, height: 360),
+      contentRect: NSRect(x: 0, y: 0, width: 500, height: 470),
       styleMask: [.titled, .closable],
       backing: .buffered,
       defer: false)
@@ -68,7 +68,7 @@ internal final class PreferencesWindowController: NSWindowController {
       return
     }
 
-    let height: CGFloat = [360, 310, 340][tabs.selectedSegment]
+    let height: CGFloat = [470, 310, 340][tabs.selectedSegment]
     let target = window.frameRect(forContentRect: NSRect(x: 0, y: 0, width: 500, height: height))
     var frame = window.frame
     frame.origin.y += frame.height - target.height
@@ -114,6 +114,7 @@ internal final class PreferencesWindowController: NSWindowController {
       language.target = self
       language.action = #selector(languageChanged(_:))
       stack.addArrangedSubview(language)
+      addSecurityOption()
     case 1:
       label(Localization.text("version") + " " + AppInfo.version)
 
@@ -135,6 +136,33 @@ internal final class PreferencesWindowController: NSWindowController {
       let feedback = NSButton(title: Localization.text("feedback"), target: self, action: #selector(feedback))
       feedback.bezelStyle = .rounded
       stack.addArrangedSubview(feedback)
+    }
+  }
+
+  /// 解锁保护开关；切换前由系统验证身份，取消或失败时重建界面恢复原状态。
+  private func addSecurityOption() {
+    label(Localization.text("security"))
+
+    let toggle = NSButton(
+      checkboxWithTitle: Localization.text("lock.setting"),
+      target: self,
+      action: #selector(lockChanged(_:)))
+    toggle.state = AppModel.shared.preferences.requiresUnlock ? .on : .off
+    stack.addArrangedSubview(toggle)
+
+    let help = NSTextField(wrappingLabelWithString: Localization.text("lock.setting.help"))
+    help.font = .systemFont(ofSize: 11)
+    help.textColor = .secondaryLabelColor
+    stack.addArrangedSubview(help)
+    help.snp.makeConstraints { $0.width.equalTo(stack) }
+  }
+
+  @objc private func lockChanged(_ sender: NSButton) {
+    AppLock.shared.setRequiresUnlock(sender.state == .on) { [weak self] error in
+      if let error {
+        MacAlerts.error(error)
+      }
+      self?.rebuild()
     }
   }
 

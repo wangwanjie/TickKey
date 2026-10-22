@@ -4,6 +4,8 @@
 <dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Scan QR codes to add authenticator accounts.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Use Face ID to unlock TickKey and view your codes.</string>
 	<key>TickKeyRepositoryURL</key>
 	<string>$(TICKKEY_REPOSITORY_URL)</string>
 	<key>UIApplicationSceneManifest</key>

@@ -9,7 +9,8 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
   private let sidebar = MacAppearanceBackgroundView(color: .controlBackgroundColor)
   private let header = NSView()
   private let scroll = NSScrollView()
-  private let canvas = NSView()
+  /// 文档视图使用自上而下的坐标，打开窗口时列表停在第一行，而不是滚动到底部。
+  private let canvas = MacFlippedView()
   private let search = NSSearchField()
   private let heading = NSTextField(labelWithString: "")
   private let summary = NSTextField(labelWithString: "")
@@ -25,9 +26,19 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
   private var shown: [Token] = []
   private var selectionButtons: [(NSButton, String)] = []
   private var normalButtons: [NSButton] = []
+  private let lockView = MacLockView()
 
   override func loadView() {
-    view = MacAppearanceBackgroundView(color: .windowBackgroundColor)
+    let root = MacAppearanceBackgroundView(color: .windowBackgroundColor)
+    // 拖入备份文件或二维码图片直接导入；锁定或多选时拒绝拖放。
+    root.onDropFiles = { [weak self] urls in
+      guard let self, !selecting, !AppLock.shared.isLocked else {
+        return false
+      }
+      transfer.importFiles(urls)
+      return true
+    }
+    view = root
     view.frame = NSRect(x: 0, y: 0, width: 1040, height: 720)
   }
 
@@ -55,8 +66,40 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
     scroll.documentView = canvas
     configureSidebar()
     configureHeader()
+    configureLock()
     observeModel()
     reload()
+  }
+
+  /// 锁定界面位于所有内容之上；上锁时关闭表单与二维码页面，避免密钥留在屏幕上。
+  private func configureLock() {
+    view.addSubview(lockView)
+    lockView.snp.makeConstraints { $0.edges.equalToSuperview() }
+    lockView.onUnlock = { [weak self] in self?.requestUnlock(automatic: false) }
+    AppLock.shared
+      .$isLocked
+      .sink { [weak self] locked in
+        guard let self else {
+          return
+        }
+        lockView.isHidden = !locked
+        if locked {
+          presentedViewControllers?.forEach { self.dismiss($0) }
+          lockView.localize()
+          view.window?.makeFirstResponder(lockView)
+        }
+      }
+      .store(in: &subscriptions)
+    NotificationCenter.default
+      .publisher(for: NSApplication.didBecomeActiveNotification)
+      .sink { [weak self] _ in self?.requestUnlock(automatic: true) }
+      .store(in: &subscriptions)
+  }
+
+  private func requestUnlock(automatic: Bool) {
+    AppLock.shared.unlock(automatic: automatic) { [weak self] error in
+      self?.lockView.show(error)
+    }
   }
 
   /// 将全局入口与本机存储说明放在侧边栏，主内容区保留给账户列表。
@@ -205,6 +248,7 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
     if let error = AppModel.shared.startupError {
       MacAlerts.error(error)
     }
+    requestUnlock(automatic: true)
   }
 
   override func viewDidLayout() {
@@ -340,32 +384,51 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
     for (index, card) in cards.enumerated() {
       card.frame = NSRect(
         x: 24 + CGFloat(index % columns) * (cardWidth + 16),
-        y: height - 16 - CGFloat(index / columns + 1) * 176 + 16,
+        y: 16 + CGFloat(index / columns) * 176,
         width: cardWidth,
         height: 160)
     }
-    empty.frame = NSRect(x: 30, y: max(20, height / 2 - 70), width: max(100, width - 60), height: 160)
+    empty.frame = NSRect(x: 30, y: max(20, height / 2 - 90), width: max(100, width - 60), height: 160)
+  }
+
+  /// 菜单和工具栏共用的入口；锁定或多选期间不打开任何会显示账户的页面。
+  private var acceptsActions: Bool {
+    !selecting && !AppLock.shared.isLocked
   }
 
   @objc func addAccount() {
-    guard !selecting else {
+    guard acceptsActions else {
       return
     }
     edit(nil)
   }
 
   @objc func importAccounts() {
-    guard !selecting else {
+    guard acceptsActions else {
       return
     }
     transfer.chooseImport()
   }
 
+  @objc func importFromClipboard() {
+    guard acceptsActions else {
+      return
+    }
+    transfer.importFromClipboard()
+  }
+
   @objc func exportAccounts() {
-    guard !selecting else {
+    guard acceptsActions else {
       return
     }
     transfer.chooseExport()
+  }
+
+  @objc func focusSearch() {
+    guard !AppLock.shared.isLocked else {
+      return
+    }
+    view.window?.makeFirstResponder(search)
   }
 
   @objc private func showSettings() {
@@ -379,11 +442,30 @@ internal final class MacAccountsViewController: NSViewController, NSSearchFieldD
   }
 }
 
+// MARK: - MacFlippedView
+
+/// 滚动内容按自上而下排列，与阅读顺序一致。
+internal final class MacFlippedView: NSView {
+  override var isFlipped: Bool {
+    true
+  }
+}
+
 // MARK: - MacAppearanceBackgroundView
 
 /// 动态颜色必须在视图当前外观中解析；外观变化主动使图层失效，无需等待窗口缩放。
+/// 设置拖放回调后接受文件拖入，沙盒会为拖入的文件自动授予读取权限。
 internal final class MacAppearanceBackgroundView: NSView {
   private let color: NSColor
+  var onDropFiles: (([URL]) -> Bool)? {
+    didSet {
+      if onDropFiles == nil {
+        unregisterDraggedTypes()
+      } else {
+        registerForDraggedTypes([.fileURL])
+      }
+    }
+  }
 
   init(color: NSColor) {
     self.color = color
@@ -409,5 +491,24 @@ internal final class MacAppearanceBackgroundView: NSView {
     effectiveAppearance.performAsCurrentDrawingAppearance {
       layer?.backgroundColor = color.cgColor
     }
+  }
+
+  override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+    droppedFiles(sender).isEmpty ? [] : .copy
+  }
+
+  override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+    let urls = droppedFiles(sender)
+    guard !urls.isEmpty, let onDropFiles else {
+      return false
+    }
+    return onDropFiles(urls)
+  }
+
+  /// 只接受本地文件，忽略文件夹与网页链接。
+  private func droppedFiles(_ sender: NSDraggingInfo) -> [URL] {
+    let options: [NSPasteboard.ReadingOptionKey: Any] = [.urlReadingFileURLsOnly: true]
+    let urls = sender.draggingPasteboard.readObjects(forClasses: [NSURL.self], options: options) as? [URL] ?? []
+    return urls.filter { !$0.hasDirectoryPath }
   }
 }

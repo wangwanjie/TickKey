@@ -10,4 +10,7 @@ if ! command -v pod >/dev/null 2>&1; then
   exit 1
 fi
 
+# CocoaPods 要求 UTF-8 终端；部分 Ruby / ActiveSupport 组合需预先加载 Logger，否则启动即报 NameError。
+export LANG="${LANG:-en_US.UTF-8}"
+export RUBYOPT="-rlogger ${RUBYOPT:-}"
 pod install --project-directory="$ROOT" "$@"

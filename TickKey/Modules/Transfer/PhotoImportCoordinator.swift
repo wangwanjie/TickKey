@@ -1,52 +1,6 @@
-import CoreImage
-import ImageIO
 import PhotosUI
 import UIKit
 import UniformTypeIdentifiers
-import Vision
-
-// MARK: - PhotoTokenDecoder
-
-/// 在本机识别图片内全部二维码，单个无效二维码不阻断其余账户。
-internal enum PhotoTokenDecoder {
-  struct Result {
-    var tokens: [Token] = []
-    var rejectedCodes = 0
-  }
-
-  static func decode(_ data: Data) throws -> Result {
-    let request = VNDetectBarcodesRequest()
-    request.symbologies = [.qr]
-    let payloads: [String?]
-    do {
-      try VNImageRequestHandler(data: data, options: [:]).perform([request])
-      payloads = (request.results ?? []).map(\.payloadStringValue)
-    } catch {
-      // 部分系统环境无法初始化 Vision 推理上下文，回退到系统 Core Image 二维码检测。
-      guard let image = CIImage(data: data),
-            let detector = CIDetector(
-              ofType: CIDetectorTypeQRCode,
-              context: nil,
-              options: [CIDetectorAccuracy: CIDetectorAccuracyHigh]) else {
-        throw error
-      }
-      let orientation = image.properties[kCGImagePropertyOrientation as String] as? Int ?? 1
-      payloads = detector.features(in: image, options: [CIDetectorImageOrientation: orientation])
-        .compactMap { $0 as? CIQRCodeFeature }
-        .map(\.messageString)
-    }
-    var result = Result()
-    for payload in payloads {
-      if let payload, let tokens = try? (GoogleMigration.isMigration(payload)
-        ? GoogleMigration.parse(payload).tokens : [OTPURI.parse(payload)]) {
-        result.tokens.append(contentsOf: tokens)
-      } else {
-        result.rejectedCodes += 1
-      }
-    }
-    return result
-  }
-}
 
 // MARK: - PhotoImportCoordinator
 

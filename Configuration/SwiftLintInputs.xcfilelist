@@ -10,6 +10,8 @@ $(SRCROOT)/Shared/Core/OTPURI.swift
 $(SRCROOT)/Shared/Core/TOTP.swift
 $(SRCROOT)/Shared/Core/Token.swift
 $(SRCROOT)/Shared/Storage/Vault.swift
+$(SRCROOT)/Shared/Support/AppLock.swift
+$(SRCROOT)/Shared/Support/ImportDecoder.swift
 $(SRCROOT)/Shared/Support/Localization.swift
 $(SRCROOT)/Shared/Support/PerformanceDiagnostics.swift
 $(SRCROOT)/Shared/Support/QRCode.swift
@@ -19,6 +21,7 @@ $(SRCROOT)/TickKey/Modules/Accounts/AccountsViewController.swift
 $(SRCROOT)/TickKey/Modules/Accounts/CountdownView.swift
 $(SRCROOT)/TickKey/Modules/Accounts/TokenCell.swift
 $(SRCROOT)/TickKey/Modules/Accounts/TokenEditorViewController.swift
+$(SRCROOT)/TickKey/Modules/Lock/LockOverlayView.swift
 $(SRCROOT)/TickKey/Modules/Scanner/CameraSessionPipeline.swift
 $(SRCROOT)/TickKey/Modules/Scanner/ScannerViewController.swift
 $(SRCROOT)/TickKey/Modules/Settings/SettingsDrawerController.swift
@@ -29,6 +32,7 @@ $(SRCROOT)/TickKey/Modules/Transfer/QRViewController.swift
 $(SRCROOT)/TickKey/SceneDelegate.swift
 $(SRCROOT)/TickKeyMac/Accounts/MacAccountsViewController.swift
 $(SRCROOT)/TickKeyMac/Accounts/MacCountdownView.swift
+$(SRCROOT)/TickKeyMac/Accounts/MacLockView.swift
 $(SRCROOT)/TickKeyMac/Accounts/MacTokenCard.swift
 $(SRCROOT)/TickKeyMac/Accounts/MacTokenEditor.swift
 $(SRCROOT)/TickKeyMac/App/ApplicationMain.swift
