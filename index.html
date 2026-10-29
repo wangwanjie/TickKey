@@ -1,322 +1,361 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TickKey — 免费的本地两步验证器</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TickKey — 本地生成验证码的两步验证器</title>
 <meta name="description" content="TickKey 是免费的本地 TOTP 两步验证器，支持 Mac、iPhone 与 iPad。无账户注册、广告、分析 SDK 或服务端，验证码完全在本机生成。">
-<meta property="og:title" content="TickKey — 免费的本地两步验证器">
-<meta property="og:description" content="验证码只在本机生成。支持 Apple 芯片与 Intel，macOS 12 及以上；iOS 15 及以上。">
-<meta property="og:image" content="https://wangwanjie.github.io/TickKey/assets/icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="TickKey — 本地生成验证码的两步验证器">
+<meta property="og:description" content="免费的 TOTP 两步验证器，支持 Mac、iPhone 与 iPad。无账户、无服务端，验证码只在本机生成。">
+<meta property="og:image" content="assets/icon-256.png">
+<meta name="theme-color" content="#fbfcfe">
 <link rel="icon" type="image/png" href="assets/icon-256.png">
-<style>
-  :root {
-    color-scheme: dark;
-    --bg: #08101f;
-    --text: #eef3fc;
-    --muted: #9aa8c4;
-    --card: rgba(255, 255, 255, 0.045);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --nav-bg: rgba(8, 16, 31, 0.6);
-    --accent: #2f63d6;
-    --accent-2: #5fb2ff;
-    --accent-soft: rgba(95, 178, 255, 0.18);
-    --glow-1: rgba(47, 99, 214, 0.32);
-    --glow-2: rgba(130, 196, 255, 0.12);
-    --shadow: 0 40px 120px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .06);
-    --radius: 18px;
-    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  }
-  /* 亮色系统外观：保留同一套蓝色，调整底色与文字对比度 */
-  @media (prefers-color-scheme: light) {
-    :root {
-      color-scheme: light;
-      --bg: #f5f8fe;
-      --text: #0f1b33;
-      --muted: #55627d;
-      --card: rgba(255, 255, 255, 0.8);
-      --card-border: rgba(15, 27, 51, 0.09);
-      --nav-bg: rgba(245, 248, 254, 0.72);
-      --accent-soft: rgba(47, 99, 214, 0.12);
-      --glow-1: rgba(47, 99, 214, 0.18);
-      --glow-2: rgba(95, 178, 255, 0.14);
-      --shadow: 0 30px 80px rgba(31, 74, 156, .18), 0 0 0 1px rgba(15, 27, 51, .06);
+<link rel="apple-touch-icon" href="assets/icon-256.png">
+<script>
+  // 首屏前确定主题，避免闪烁；URL 参数 ?theme= 优先于 localStorage
+  (function () {
+    var root = document.documentElement;
+    root.classList.add("js");
+    var pref = "system";
+    try {
+      var q = new URLSearchParams(location.search).get("theme");
+      var saved = localStorage.getItem("tickkey.theme");
+      if (q === "light" || q === "dark" || q === "system") {
+        pref = q;
+      } else if (saved === "light" || saved === "dark") {
+        pref = saved;
+      }
+    } catch (e) {}
+    var dark = pref === "dark" || (pref === "system" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+    root.dataset.themePref = pref;
+    root.dataset.theme = dark ? "dark" : "light";
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      meta.content = dark ? "#060b16" : "#fbfcfe";
     }
-  }
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    font-family: var(--sans);
-    color: var(--text);
-    background:
-      radial-gradient(1200px 600px at 50% -10%, var(--glow-1), transparent 60%),
-      radial-gradient(800px 500px at 90% 30%, var(--glow-2), transparent 60%),
-      var(--bg);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
-  a { color: inherit; }
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
-
-  nav {
-    position: sticky; top: 0; z-index: 10;
-    backdrop-filter: saturate(180%) blur(18px);
-    -webkit-backdrop-filter: saturate(180%) blur(18px);
-    background: var(--nav-bg);
-    border-bottom: 1px solid var(--card-border);
-  }
-  nav .wrap { display: flex; align-items: center; height: 56px; gap: 28px; }
-  nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; }
-  nav .brand img { width: 26px; height: 26px; }
-  nav .links { margin-left: auto; display: flex; gap: 22px; font-size: 14px; }
-  nav .links a { color: var(--muted); text-decoration: none; }
-  nav .links a:hover { color: var(--text); }
-  nav .lang { cursor: pointer; border: 1px solid var(--card-border); border-radius: 999px; padding: 3px 12px; background: none; color: var(--muted); font: inherit; font-size: 13px; }
-
-  header.hero { text-align: center; padding: 88px 0 40px; }
-  .hero img.icon { width: 148px; height: 148px; filter: drop-shadow(0 24px 48px rgba(47, 99, 214, 0.45)); }
-  .hero h1 { font-size: clamp(40px, 7vw, 68px); letter-spacing: -0.03em; margin: 18px 0 8px; line-height: 1.05; }
-  .hero h1 span {
-    background: linear-gradient(120deg, #a9d6ff, #5fb2ff 40%, #2f63d6);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
-  .hero p.lead { font-size: clamp(17px, 2.2vw, 21px); color: var(--muted); max-width: 720px; margin: 0 auto; }
-  .downloads { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin: 36px 0 14px; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 10px; text-align: left;
-    padding: 13px 22px; border-radius: 14px; text-decoration: none; font-weight: 600; font-size: 16px;
-    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
-  }
-  .btn small { display: block; font-weight: 400; font-size: 12px; opacity: .75; }
-  .btn.primary { color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 10px 30px rgba(47, 99, 214, .35); }
-  .btn.secondary { background: var(--card); border: 1px solid var(--card-border); }
-  .btn:hover { transform: translateY(-2px); }
-  .btn svg { width: 22px; height: 22px; flex: none; }
-  .meta { color: var(--muted); font-size: 13px; }
-
-  .shot { margin: 56px auto 0; max-width: 1000px; }
-  .shot img { display: block; margin: 0 auto; max-width: 100%; border-radius: 14px; box-shadow: var(--shadow); }
-  .shot img.phone { max-height: 720px; border-radius: 28px; }
-  .tabs { display: flex; justify-content: center; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
-  .tabs button {
-    font: inherit; font-size: 13px; color: var(--muted); background: var(--card); border: 1px solid var(--card-border);
-    border-radius: 999px; padding: 6px 14px; cursor: pointer;
-  }
-  .tabs button.active { color: var(--text); border-color: rgba(95, 178, 255, .7); background: var(--accent-soft); }
-
-  section { padding: 96px 0 0; }
-  section h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.02em; margin: 0 0 8px; text-align: center; }
-  section p.sub { text-align: center; color: var(--muted); margin: 0 auto 44px; max-width: 640px; }
-
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
-  .card {
-    background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius);
-    padding: 20px; transition: border-color .15s ease, transform .15s ease;
-  }
-  .card:hover { border-color: rgba(95, 178, 255, .5); transform: translateY(-2px); }
-  .card .tile {
-    width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
-    font-size: 19px; color: #fff; margin-bottom: 12px;
-  }
-  .card h3 { margin: 0 0 6px; font-size: 17px; }
-  .card p { margin: 0; color: var(--muted); font-size: 14px; }
-
-  .points { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
-  .point { padding: 24px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--card-border); }
-  .point b { display: block; font-size: 18px; margin-bottom: 6px; }
-  .point span { color: var(--muted); font-size: 14px; }
-
-  .install ol { counter-reset: step; list-style: none; padding: 0; margin: 0 auto; max-width: 720px; }
-  .install li { counter-increment: step; position: relative; padding: 18px 20px 18px 64px; margin-bottom: 10px; background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; }
-  .install li::before {
-    content: counter(step); position: absolute; left: 18px; top: 16px; width: 30px; height: 30px; border-radius: 50%;
-    display: grid; place-items: center; font-weight: 700; background: var(--accent-soft); color: var(--accent-2);
-  }
-  .install li code { background: var(--accent-soft); border-radius: 6px; padding: 1px 6px; font-size: 13px; }
-
-  footer { margin-top: 110px; padding: 36px 0 48px; border-top: 1px solid var(--card-border); color: var(--muted); font-size: 13px; }
-  footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; }
-  footer a { color: var(--muted); }
-
-  [data-lang="en"] .zh, [data-lang="zh"] .en { display: none !important; }
-
-  @media (max-width: 640px) {
-    nav .links a.hide-sm { display: none; }
-    header.hero { padding-top: 56px; }
-  }
-</style>
+  })();
+</script>
+<link rel="stylesheet" href="assets/site.css">
 </head>
-<body data-lang="zh">
+<body>
+<a class="skip" href="#main" data-i="skip">跳到正文</a>
 
-<nav>
-  <div class="wrap">
-    <a class="brand" href="#"><img src="assets/icon-256.png" alt="">TickKey</a>
-    <div class="links">
-      <a class="hide-sm" href="#features"><span class="zh">功能</span><span class="en">Features</span></a>
-      <a class="hide-sm" href="#install"><span class="zh">安装</span><span class="en">Install</span></a>
-      <a href="https://github.com/wangwanjie/TickKey/releases"><span class="zh">版本历史</span><span class="en">Releases</span></a>
-      <a href="https://github.com/wangwanjie/TickKey">GitHub</a>
-    </div>
-    <button class="lang" id="lang-toggle" type="button">EN</button>
-  </div>
-</nav>
-
-<header class="hero">
-  <div class="wrap">
-    <img class="icon" src="assets/icon.png" alt="TickKey">
-    <h1><span>TickKey</span></h1>
-    <p class="lead">
-      <span class="zh">免费的本地两步验证器，支持 Mac、iPhone 与 iPad。无账户注册、广告、分析 SDK 或服务端，验证码完全在本机生成。</span>
-      <span class="en">A free, local two-factor authenticator for Mac, iPhone and iPad. No sign-up, ads, analytics or servers — codes are generated entirely on your device.</span>
-    </p>
-    <div class="downloads">
-      <!-- 默认指向当前最新版；页面加载后通过 GitHub API 换成最新 Release 中的同架构安装包 -->
-      <a class="btn primary" id="dl-arm" href="https://github.com/wangwanjie/TickKey/releases/download/v1.1.2/TickKey-1.1.2-arm64.dmg">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14"/></svg>
-        <span><span class="zh">下载 Apple 芯片版</span><span class="en">Download for Apple silicon</span><small>M1 / M2 / M3 / M4 …</small></span>
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="#top" aria-label="TickKey">
+      <img src="assets/icon-64.webp" srcset="assets/icon-64.webp 1x, assets/icon-128.webp 2x" width="28" height="28" alt="TickKey 图标" data-i-alt="iconAlt" decoding="async">
+      <span>TickKey</span>
+    </a>
+    <nav class="nav" aria-label="主导航" data-i-aria="navAria">
+      <a href="#how" data-i="navHow">原理</a>
+      <a href="#local" data-i="navLocal">安全</a>
+      <a href="#features" data-i="navFeatures">功能</a>
+      <a href="#download" data-i="navDownload">下载</a>
+    </nav>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="语言" data-i-aria="langAria" id="lang-seg">
+        <button type="button" data-lang="zh-CN" aria-pressed="true">简</button>
+        <button type="button" data-lang="zh-TW" aria-pressed="false">繁</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <div class="seg seg-icon" role="group" aria-label="主题" data-i-aria="themeAria" id="theme-seg">
+        <button type="button" data-theme-set="light" aria-pressed="false" title="浅色" aria-label="浅色" data-i-aria="themeLight" data-i-title="themeLight">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 1.8v2.4M10 15.8v2.4M1.8 10h2.4M15.8 10h2.4M4.2 4.2l1.7 1.7M14.1 14.1l1.7 1.7M4.2 15.8l1.7-1.7M14.1 5.9l1.7-1.7"/></svg>
+        </button>
+        <button type="button" data-theme-set="dark" aria-pressed="false" title="深色" aria-label="深色" data-i-aria="themeDark" data-i-title="themeDark">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 12.3A7 7 0 0 1 7.7 3.5a7 7 0 1 0 8.8 8.8z"/></svg>
+        </button>
+        <button type="button" data-theme-set="system" aria-pressed="true" title="跟随系统" aria-label="跟随系统" data-i-aria="themeSystem" data-i-title="themeSystem">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="3.5" width="15" height="10" rx="1.6"/><path d="M7 17h6M10 13.5V17"/></svg>
+        </button>
+      </div>
+      <a class="gh" href="https://github.com/wangwanjie/TickKey" aria-label="GitHub 仓库" data-i-aria="ghAria">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
       </a>
-      <a class="btn secondary" id="dl-intel" href="https://github.com/wangwanjie/TickKey/releases/download/v1.1.2/TickKey-1.1.2-x86_64.dmg">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14"/></svg>
-        <span><span class="zh">下载 Intel 版</span><span class="en">Download for Intel</span><small>x86_64</small></span>
-      </a>
-    </div>
-    <div class="meta">
-      <span class="zh">免费 · macOS 12 及以上 · 已通过 Apple 公证 · 内置自动更新</span>
-      <span class="en">Free · macOS 12 or later · Notarized by Apple · Built-in auto update</span>
-      <span id="version"></span>
-    </div>
-
-    <div class="shot">
-      <img id="shot" src="assets/screenshots/mac-main.png" alt="TickKey">
-    </div>
-    <div class="tabs" id="tabs">
-      <button type="button" class="active" data-shot="mac-main"><span class="zh">Mac</span><span class="en">Mac</span></button>
-      <button type="button" data-shot="ios-main" data-phone="1"><span class="zh">iPhone</span><span class="en">iPhone</span></button>
     </div>
   </div>
 </header>
 
-<section>
-  <div class="wrap">
-    <div class="points">
-      <div class="point"><b><span class="zh">只在本机</span><span class="en">Local only</span></b><span class="zh">没有账户和服务端，验证码在本机生成，账户数据不离开设备。</span><span class="en">No accounts or servers. Codes are generated locally and your accounts never leave the device.</span></div>
-      <div class="point"><b><span class="zh">加密存储</span><span class="en">Encrypted at rest</span></b><span class="zh">账户以 AES-256-GCM 加密存入数据库，设备密钥保存在 Keychain 且不同步到 iCloud。</span><span class="en">Accounts are encrypted with AES-256-GCM; the device key stays in the Keychain and never syncs to iCloud.</span></div>
-      <div class="point"><b><span class="zh">原生应用</span><span class="en">Truly native</span></b><span class="zh">Mac 使用 AppKit，iPhone / iPad 使用 UIKit，两端共用验证码与备份实现。</span><span class="en">AppKit on Mac and UIKit on iPhone / iPad, sharing the same code generation and backup engine.</span></div>
-      <div class="point"><b><span class="zh">三种语言</span><span class="en">Three languages</span></b><span class="zh">简体中文、繁體中文、English，语言和外观随时切换。</span><span class="en">Simplified Chinese, Traditional Chinese and English, with live language and appearance switching.</span></div>
+<main id="main">
+  <!-- 首屏：左侧文案与下载，右侧跳动的验证码卡片 -->
+  <section class="hero" id="top">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="dot" aria-hidden="true"></span><span data-i="eyebrow">TOTP 两步验证器 · Mac / iPhone / iPad</span></p>
+        <h1><span data-i="h1a">每 30 秒一组新验证码，</span><br><span class="h1b" data-i="h1b">只在你的设备上生成。</span></h1>
+        <p class="lead" data-i="lead">TickKey 是免费的本地两步验证器。无需注册账户，没有广告、分析 SDK 和服务端；账户密钥加密保存在本机。</p>
+        <div class="cta">
+          <a class="btn btn-primary" id="dl-arm" href="https://github.com/wangwanjie/TickKey/releases/latest">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m0 0-4-4m4 4 4-4M4 17h12"/></svg>
+            <span><b data-i="btnArm">下载 Mac 版 · Apple 芯片</b><small data-i="btnArmSub">arm64 DMG · macOS 12+</small></span>
+          </a>
+          <a class="btn btn-ghost" id="dl-intel" href="https://github.com/wangwanjie/TickKey/releases/latest">
+            <span><b data-i="btnIntel">Intel 版</b><small data-i="btnIntelSub">x86_64 DMG</small></span>
+          </a>
+        </div>
+        <p class="meta">
+          <span data-i="meta">Developer ID 签名 · Apple 公证 · Sparkle 自动更新</span>
+          <span class="ver" id="ver-hero"></span>
+        </p>
+        <p class="meta ios-link"><a href="#download" data-i="iosLink">iPhone / iPad：Release 中提供 Ad Hoc 测试包 →</a></p>
+      </div>
+
+      <div class="hero-stage" id="stage">
+        <div class="codes" id="codes" aria-live="off"></div>
+        <div class="beat" aria-hidden="true">
+          <div class="beat-ticks" id="ticks"></div>
+          <div class="beat-label"><span data-i="beatLabel">距下次刷新</span> <b id="beat-sec">30</b><span data-i="beatUnit">秒</span></div>
+        </div>
+        <p class="stage-note" id="stage-note" data-i="stageNote">示例账户与密钥均为虚构；验证码由本页在浏览器中按 RFC 6238 实时计算。点按卡片可复制。</p>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section id="features">
-  <div class="wrap">
-    <h2><span class="zh">需要的都在这里</span><span class="en">Everything you need</span></h2>
-    <p class="sub"><span class="zh">支持标准 TOTP（SHA-1 / SHA-256 / SHA-512，6–8 位，1–300 秒）与 Google Authenticator 迁移二维码。</span><span class="en">Standard TOTP (SHA-1 / SHA-256 / SHA-512, 6–8 digits, 1–300 s) and Google Authenticator migration QR codes.</span></p>
-    <div class="grid" id="feature-grid"></div>
-  </div>
-</section>
+  <!-- 三个零：无账户、无服务端、无追踪 -->
+  <section class="zeros" aria-label="隐私承诺" data-i-aria="zerosAria">
+    <div class="wrap zeros-grid">
+      <div class="zero reveal"><b>0</b><span data-i="z1">账户注册</span></div>
+      <div class="zero reveal"><b>0</b><span data-i="z2">服务端</span></div>
+      <div class="zero reveal"><b>0</b><span data-i="z3">广告与分析 SDK</span></div>
+      <div class="zero reveal"><b class="small">AES-256-GCM</b><span data-i="z4">本机加密存储</span></div>
+    </div>
+  </section>
 
-<section id="install" class="install">
-  <div class="wrap">
-    <h2><span class="zh">安装</span><span class="en">Install</span></h2>
-    <p class="sub"><span class="zh">不确定芯片类型？打开「苹果菜单 › 关于本机」，看“芯片”或“处理器”一栏。</span><span class="en">Not sure which chip you have? Open  › About This Mac and check “Chip” or “Processor”.</span></p>
-    <ol>
-      <li><span class="zh">下载与本机芯片匹配的 DMG，打开后把 TickKey 拖进「应用程序」文件夹。</span><span class="en">Download the DMG for your chip, open it and drag TickKey into Applications.</span></li>
-      <li><span class="zh">从「应用程序」中打开 TickKey，扫码、拖入二维码图片或导入备份即可添加账户。</span><span class="en">Launch TickKey from Applications, then add accounts by dropping in QR images or importing a backup.</span></li>
-      <li><span class="zh">之后的新版本通过内置的 Sparkle 自动更新获取，也可在设置中手动检查。</span><span class="en">Future versions arrive through the built-in Sparkle updater, or check manually in Settings.</span></li>
-      <li><span class="zh">iOS 版暂未上架 App Store；Release 中的 <code>iOS-AdHoc.ipa</code> 只能安装到已加入描述文件的设备。</span><span class="en">The iOS app is not on the App Store yet. The <code>iOS-AdHoc.ipa</code> in each release installs only on provisioned devices.</span></li>
-    </ol>
-  </div>
-</section>
+  <!-- 原理：TOTP 计算流水线，数值实时更新 -->
+  <section class="sec" id="how">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="idx">01</p>
+        <h2 data-i="howTitle">验证码由密钥和时间算出，全程离线。</h2>
+        <p class="sub" data-i="howSub">TOTP（RFC 6238）用共享密钥对当前时间片做 HMAC，再截取 6 位数字。网站和 TickKey 各自计算，结果一致即通过验证。</p>
+      </div>
+      <ol class="pipe reveal">
+        <li>
+          <span class="pipe-n">A</span>
+          <h3 data-i="p1">密钥</h3>
+          <code class="pipe-v">JBSWY3DPEHPK3PXP</code>
+          <p data-i="p1d">添加账户时从二维码或链接读取，加密保存在本机。</p>
+        </li>
+        <li>
+          <span class="pipe-n">B</span>
+          <h3 data-i="p2">时间片 T</h3>
+          <code class="pipe-v" id="pv-t">—</code>
+          <p data-i="p2d">T = ⌊Unix 时间 ÷ 30⌋，每 30 秒加一。</p>
+        </li>
+        <li>
+          <span class="pipe-n">C</span>
+          <h3>HMAC-SHA1</h3>
+          <code class="pipe-v pipe-hex" id="pv-h">—</code>
+          <p data-i="p3d">用密钥对 T 计算 20 字节消息认证码。</p>
+        </li>
+        <li>
+          <span class="pipe-n">D</span>
+          <h3 data-i="p4">动态截断</h3>
+          <code class="pipe-v pipe-code" id="pv-c">— — —</code>
+          <p data-i="p4d">取出 31 位整数，对 10⁶ 取模得到 6 位验证码。</p>
+        </li>
+      </ol>
+      <p class="fine reveal" data-i="howFine">TickKey 同样支持 SHA-256 / SHA-512、6–8 位与 1–300 秒周期。正确的系统时钟是验证码正确的前提。</p>
+    </div>
+  </section>
 
-<footer>
-  <div class="wrap">
-    <span>© 2026 VanJay · TickKey</span>
-    <span>
-      <a href="https://github.com/wangwanjie/TickKey/releases"><span class="zh">版本历史</span><span class="en">Releases</span></a> ·
-      <a href="https://github.com/wangwanjie/TickKey/issues"><span class="zh">反馈问题</span><span class="en">Feedback</span></a>
-    </span>
+  <!-- 本地：锁与离线示意动画 -->
+  <section class="sec" id="local">
+    <div class="wrap local-grid">
+      <div class="sec-head reveal">
+        <p class="idx">02</p>
+        <h2 data-i="localTitle">账户数据留在设备里。</h2>
+        <p class="sub" data-i="localSub">验证码生成与账户存储都在本机完成，断网时照常可用。TickKey 没有同步服务，也就没有可以泄露账户的云端。</p>
+      </div>
+      <figure class="diagram reveal" id="diagram" aria-hidden="true">
+        <svg viewBox="0 0 560 340" role="img">
+          <!-- 设备边界 -->
+          <rect class="dg-device" x="12" y="20" width="356" height="300" rx="22"/>
+          <text class="dg-label" x="36" y="54" data-i="dgDevice">你的设备</text>
+          <g class="dg-offline" transform="translate(262 38)">
+            <rect width="84" height="24" rx="12"/>
+            <path class="dg-wifi" d="M14 15.5a4 4 0 0 1 6 0M11 12.5a8.2 8.2 0 0 1 12 0M17 18.6h.01"/>
+            <path class="dg-wifi-x" d="M10.5 8.5l13 12"/>
+            <text x="30" y="16.5" data-i="dgOffline">离线可用</text>
+          </g>
+          <!-- 输入：密钥 + 时间 -->
+          <g class="dg-node" transform="translate(36 96)">
+            <rect width="92" height="56" rx="12"/>
+            <path class="dg-ico" d="M22 30a6 6 0 1 1 6 6h-1l-3 3h-3v3h-3v-3l4.4-4.4A6 6 0 0 1 22 30z"/>
+            <text x="40" y="34" data-i="dgKey">密钥</text>
+          </g>
+          <g class="dg-node" transform="translate(36 184)">
+            <rect width="92" height="56" rx="12"/>
+            <circle class="dg-ico" cx="26" cy="28" r="9"/>
+            <path class="dg-ico" d="M26 23v5l3 2"/>
+            <text x="42" y="34" data-i="dgTime">时间</text>
+          </g>
+          <!-- 计算节点 -->
+          <g class="dg-node dg-hmac" transform="translate(172 140)">
+            <rect width="74" height="56" rx="12"/>
+            <text x="37" y="34" text-anchor="middle">HMAC</text>
+          </g>
+          <!-- 输出验证码 -->
+          <g class="dg-out" transform="translate(268 140)">
+            <rect width="82" height="56" rx="12"/>
+            <text x="41" y="35" text-anchor="middle" id="dg-code">674 146</text>
+          </g>
+          <path class="dg-wire" d="M128 124h22v34h22M128 212h22v-34h22M246 168h22"/>
+          <!-- 沿连线移动的数据点，只做 transform 动画 -->
+          <g class="dg-pulses">
+            <circle class="pl pl-a" cx="128" cy="124" r="3.5"/>
+            <circle class="pl pl-b" cx="128" cy="212" r="3.5"/>
+            <circle class="pl pl-c" cx="246" cy="168" r="3.5"/>
+          </g>
+          <!-- 锁：进入视口后锁扣落下 -->
+          <g class="dg-lock" transform="translate(40 262)">
+            <path class="dg-shackle" d="M16 10V4a8 8 0 0 1 16 0v6"/>
+            <rect class="dg-lockbody" x="10" y="10" width="28" height="22" rx="6"/>
+            <circle class="dg-keyhole" cx="24" cy="20" r="2.6"/>
+            <text x="48" y="26" data-i="dgEnc">AES-256-GCM · Keychain</text>
+          </g>
+          <!-- 外部：被切断的云端 -->
+          <path class="dg-cut" d="M368 170h40M440 170h28"/>
+          <g class="dg-x" transform="translate(424 170)">
+            <path d="M-7 -7l14 14M7 -7l-14 14"/>
+          </g>
+          <g class="dg-cloud" transform="translate(470 136)">
+            <path d="M18 50h44a14 14 0 0 0 0-28 20 20 0 0 0-38-6A15 15 0 0 0 18 50z"/>
+          </g>
+          <text class="dg-label dg-muted" x="510" y="214" text-anchor="middle" data-i="dgCloud">同步服务器</text>
+          <text class="dg-label dg-teal" x="510" y="236" text-anchor="middle" data-i="dgNone">不存在</text>
+        </svg>
+      </figure>
+      <ul class="facts">
+        <li class="reveal">
+          <h3 data-i="f1">AES-256-GCM 加密</h3>
+          <p data-i="f1d">账户整体加密后存入 SQLite；随机设备密钥保存在 Keychain，不同步到 iCloud。</p>
+        </li>
+        <li class="reveal">
+          <h3 data-i="f2">排除系统备份</h3>
+          <p data-i="f2d">账户数据库排除系统文件备份。换设备时，主动导出用密码加密的 .tickkey 备份；遗失备份密码无法恢复。</p>
+        </li>
+        <li class="reveal">
+          <h3 data-i="f3">可选解锁保护</h3>
+          <p data-i="f3d">启动、回到前台或锁屏后需通过面容 ID、触控 ID 或设备密码解锁，Mac 按 ⌘L 立即锁定。身份验证由系统完成，应用不保存生物特征或设备密码。</p>
+        </li>
+        <li class="reveal">
+          <h3 data-i="f4">剪贴板 30 秒清理</h3>
+          <p data-i="f4d">复制的验证码 30 秒后清理。Mac 将其标记为敏感临时内容，遵循约定的剪贴板管理工具不会记录；iOS 禁止验证码经通用剪贴板跨设备传播，失去活动状态时遮挡界面。</p>
+        </li>
+      </ul>
+      <p class="fine reveal local-fine" data-i="localFine">TickKey 目前未经过独立安全审计。导出的文本和二维码包含真实密钥，请像密码一样保管。</p>
+    </div>
+  </section>
+
+  <!-- 截图 -->
+  <section class="sec" id="screens">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="idx">03</p>
+        <h2 data-i="shotTitle">原生的 Mac 与 iPhone 应用。</h2>
+        <p class="sub" data-i="shotSub">Mac 使用 AppKit，iPhone / iPad 使用 UIKit，两端共用验证码、存储与备份实现。界面支持简体中文、繁体中文与 English，语言和外观可热切换。</p>
+      </div>
+      <div class="shots reveal">
+        <figure class="shot-mac">
+          <img src="assets/screenshots/mac-main-1600.webp" srcset="assets/screenshots/mac-main-800.webp 800w, assets/screenshots/mac-main-1600.webp 1600w" sizes="(max-width: 760px) 92vw, 760px" width="1600" height="1157" loading="lazy" decoding="async" alt="TickKey Mac 主界面" data-i-alt="altMac">
+          <figcaption>macOS 12+</figcaption>
+        </figure>
+        <figure class="shot-ios">
+          <img src="assets/screenshots/ios-main-552.webp" srcset="assets/screenshots/ios-main-320.webp 320w, assets/screenshots/ios-main-552.webp 552w" sizes="(max-width: 760px) 46vw, 276px" width="552" height="1200" loading="lazy" decoding="async" alt="TickKey iPhone 主界面" data-i-alt="altIos">
+          <figcaption>iOS 15+</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 功能网格 -->
+  <section class="sec" id="features">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="idx">04</p>
+        <h2 data-i="featTitle">日常够用，迁移顺手。</h2>
+      </div>
+      <div class="feat-grid">
+        <article class="feat reveal"><span class="feat-n">01</span><h3 data-i="ft1">账户卡片</h3><p data-i="ft1d">自适应卡片布局，搜索、单击复制、编辑与删除，圆饼倒计时一目了然。</p></article>
+        <article class="feat reveal"><span class="feat-n">02</span><h3 data-i="ft2">扫码与剪贴板导入</h3><p data-i="ft2d">手机相机扫描 otpauth 与迁移二维码；两端都可从二维码图片、剪贴板链接或截图导入，Mac 可把文件直接拖进窗口。</p></article>
+        <article class="feat reveal"><span class="feat-n">03</span><h3 data-i="ft3">Google Authenticator 迁移</h3><p data-i="ft3d">导入 Google Authenticator 迁移二维码与链接，也能导出分页的迁移二维码。</p></article>
+        <article class="feat reveal"><span class="feat-n">04</span><h3 data-i="ft4">.tickkey 加密备份</h3><p data-i="ft4d">跨平台的密码加密备份。在访达中双击，或在「文件」、邮件、隔空投送中选择「用 TickKey 打开」即可导入。</p></article>
+        <article class="feat reveal"><span class="feat-n">05</span><h3 data-i="ft5">文本导入导出</h3><p data-i="ft5d">逐行导入 otpauth URI 或迁移链接，兼容浏览器 Authenticator 插件导出的文本；可导出 otpauth 文本。</p></article>
+        <article class="feat reveal"><span class="feat-n">06</span><h3 data-i="ft6">精确去重</h3><p data-i="ft6d">发行方、账户、规范化密钥、算法、位数、周期完全一致才视为重复，不同密钥都会保留。</p></article>
+        <article class="feat reveal"><span class="feat-n">07</span><h3 data-i="ft7">二维码导出</h3><p data-i="ft7d">导出单个账户二维码、全部账户二维码，方便换到其他验证器。</p></article>
+        <article class="feat reveal"><span class="feat-n">08</span><h3 data-i="ft8">安全的批量删除</h3><p data-i="ft8d">多选、全选与反选；超过 5 项或全选删除时提醒备份，并要求两次确认。</p></article>
+      </div>
+
+      <div class="spec reveal">
+        <h3 class="spec-title" data-i="specTitle">兼容性</h3>
+        <dl>
+          <div><dt data-i="sAlg">算法</dt><dd>SHA-1 · SHA-256 · SHA-512</dd></div>
+          <div><dt data-i="sDigits">位数 / 周期</dt><dd data-i="sDigitsV">6–8 位 · 1–300 秒</dd></div>
+          <div><dt data-i="sIn">导入</dt><dd data-i="sInV">otpauth://totp · Google Authenticator 迁移 · 文本文件 · .tickkey</dd></div>
+          <div><dt data-i="sOut">导出</dt><dd data-i="sOutV">otpauth 文本 · .tickkey · 二维码 · 迁移二维码（30 秒周期的 6 / 8 位账户）</dd></div>
+          <div><dt>HOTP</dt><dd data-i="sHotpV">暂不支持</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- 下载 -->
+  <section class="sec" id="download">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="idx">05</p>
+        <h2 data-i="dlTitle">下载 TickKey</h2>
+        <p class="sub"><span data-i="dlSub">免费。Mac 版经 Developer ID 签名和 Apple 公证，安装后通过 Sparkle 获取与本机架构一致的更新。</span> <span class="ver" id="ver-dl"></span></p>
+      </div>
+      <div class="dl-grid">
+        <div class="dl reveal">
+          <p class="dl-k">Mac</p>
+          <h3 data-i="dlArm">Apple 芯片</h3>
+          <p data-i="dlArmD">M1 及更新的 Mac · macOS 12 或更高</p>
+          <a class="btn btn-primary" id="dl-arm-2" href="https://github.com/wangwanjie/TickKey/releases/latest"><span><b data-i="dlDmg">下载 DMG</b><small class="size" id="sz-arm">arm64</small></span></a>
+        </div>
+        <div class="dl reveal">
+          <p class="dl-k">Mac</p>
+          <h3 data-i="dlIntel">Intel 芯片</h3>
+          <p data-i="dlIntelD">Intel 处理器的 Mac · macOS 12 或更高</p>
+          <a class="btn btn-ghost" id="dl-intel-2" href="https://github.com/wangwanjie/TickKey/releases/latest"><span><b data-i="dlDmg">下载 DMG</b><small class="size" id="sz-intel">x86_64</small></span></a>
+        </div>
+        <div class="dl dl-ios reveal">
+          <p class="dl-k">iPhone · iPad</p>
+          <h3 data-i="dlIos">Ad Hoc 测试包</h3>
+          <p data-i="dlIosD">iOS 15 或更高。尚未上架 App Store；IPA 只能安装到已加入描述文件的设备。</p>
+          <a class="btn btn-ghost" id="dl-ipa" href="https://github.com/wangwanjie/TickKey/releases/latest"><span><b data-i="dlIpa">下载 IPA</b><small class="size" id="sz-ipa">Ad Hoc</small></span></a>
+        </div>
+      </div>
+      <ol class="steps reveal">
+        <li data-i-html="st1">不确定芯片类型：打开「苹果菜单 › 关于本机」，查看「芯片」或「处理器」一栏。</li>
+        <li data-i-html="st2">打开 DMG，把 TickKey 拖进「应用程序」文件夹。</li>
+        <li data-i-html="st3">之后的新版本由内置的 Sparkle 自动获取，也可在设置中手动检查。</li>
+      </ol>
+      <p class="fine reveal"><a href="https://github.com/wangwanjie/TickKey/releases" data-i="dlHistory">历史版本与 SHA256SUMS 校验值 →</a></p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      <img src="assets/icon-64.webp" srcset="assets/icon-64.webp 1x, assets/icon-128.webp 2x" width="24" height="24" alt="TickKey 图标" data-i-alt="iconAlt" loading="lazy" decoding="async">
+      <span>TickKey</span>
+    </div>
+    <nav class="foot-links" aria-label="页脚链接" data-i-aria="footAria">
+      <a href="https://vanjay.cn" data-i="fMore">VanJay 的更多作品</a>
+      <a href="https://github.com/wangwanjie/TickKey">GitHub</a>
+      <a href="https://github.com/wangwanjie/TickKey/issues" data-i="fIssues">反馈问题</a>
+      <a href="https://github.com/wangwanjie/TickKey/releases" data-i="fReleases">版本历史</a>
+    </nav>
+    <p class="copy">© 2026 VanJay</p>
   </div>
 </footer>
 
-<script>
-  // 功能卡片：[图标, 颜色, 中文名, 英文名, 中文说明, 英文说明]
-  const features = [
-    ["◔", "#2f63d6", "账户卡片", "Account cards", "自适应卡片布局，搜索、单击复制、编辑、删除，圆饼倒计时一目了然。", "Adaptive cards with search, click-to-copy, edit, delete and a pie countdown."],
-    ["⌗", "#0ea5e9", "扫码与导入", "Scan & import", "iPhone 相机扫码，两端都可从二维码图片、剪贴板链接与截图导入；Mac 可直接把图片拖进窗口。", "Scan with the iPhone camera, or import from QR images, clipboard links and screenshots. Drag images into the Mac window."],
-    ["⇄", "#6366f1", "迁移二维码", "Migration QR", "导入 Google Authenticator 迁移二维码，也能导出单个、全部或分页的迁移二维码。", "Import Google Authenticator migration codes and export single, full or paged migration QR codes."],
-    ["⛁", "#16a34a", "加密备份", "Encrypted backup", "跨平台密码加密的 .tickkey 备份，在访达、文件、邮件或隔空投送中直接用 TickKey 打开导入。", "Password-encrypted .tickkey backups across platforms. Open them straight from Finder, Files, Mail or AirDrop."],
-    ["≡", "#f59e0b", "文本导入导出", "Text import & export", "逐行导入 otpauth URI 或迁移链接，兼容浏览器 Authenticator 插件导出的文本。", "Import otpauth URIs or migration links line by line, compatible with browser Authenticator extensions."],
-    ["⚿", "#e11d48", "解锁保护", "App lock", "启动、回到前台或锁屏后用面容 ID、触控 ID 或设备密码解锁；Mac 可用 ⌘L 立即锁定。", "Require Face ID, Touch ID or the device passcode on launch or return. Press ⌘L to lock instantly on Mac."],
-    ["☑", "#14b8a6", "批量删除", "Batch delete", "多选、全选与反选，大批量删除前提醒备份并二次确认。", "Multi-select, select all and invert, with backup reminders and double confirmation for large deletions."],
-    ["⧉", "#a16207", "剪贴板清理", "Clipboard hygiene", "复制的验证码 30 秒后自动清理，并标记为敏感内容，剪贴板工具不会记录。", "Copied codes are cleared after 30 seconds and marked as sensitive so clipboard managers skip them."]
-  ];
-
-  const grid = document.getElementById("feature-grid");
-  for (const [glyph, color, zh, en, zhText, enText] of features) {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML =
-      `<div class="tile" style="background:${color}">${glyph}</div>` +
-      `<h3><span class="zh">${zh}</span><span class="en">${en}</span></h3>` +
-      `<p><span class="zh">${zhText}</span><span class="en">${enText}</span></p>`;
-    grid.appendChild(card);
-  }
-
-  // 截图切换：iPhone 截图为竖图，限制高度
-  const shot = document.getElementById("shot");
-  document.getElementById("tabs").addEventListener("click", (event) => {
-    const button = event.target.closest("button");
-    if (!button) {
-      return;
-    }
-    document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("active", b === button));
-    shot.src = `assets/screenshots/${button.dataset.shot}.png`;
-    shot.classList.toggle("phone", button.dataset.phone === "1");
-  });
-
-  // 语言：默认跟随浏览器，记住用户的选择
-  const toggle = document.getElementById("lang-toggle");
-  function applyLanguage(lang) {
-    document.body.dataset.lang = lang;
-    document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
-    toggle.textContent = lang === "zh" ? "EN" : "中文";
-    localStorage.setItem("tickkey.lang", lang);
-  }
-  const saved = localStorage.getItem("tickkey.lang");
-  applyLanguage(saved || (navigator.language.toLowerCase().startsWith("zh") ? "zh" : "en"));
-  toggle.addEventListener("click", () => applyLanguage(document.body.dataset.lang === "zh" ? "en" : "zh"));
-
-  // 尽量识别 Intel Mac（浏览器无法可靠区分时保持 Apple 芯片优先）
-  try {
-    const canvas = document.createElement("canvas");
-    const gl = canvas.getContext("webgl");
-    const info = gl && gl.getExtension("WEBGL_debug_renderer_info");
-    const renderer = info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : "";
-    if (/Intel|AMD|Radeon/i.test(renderer) && !/Apple/i.test(renderer)) {
-      document.getElementById("dl-intel").className = "btn primary";
-      document.getElementById("dl-arm").className = "btn secondary";
-      document.querySelector(".downloads").prepend(document.getElementById("dl-intel"));
-    }
-  } catch (error) {}
-
-  // 显示最新版本号，并把下载按钮指向最新 Release 中对应架构的 DMG
-  fetch("https://api.github.com/repos/wangwanjie/TickKey/releases/latest")
-    .then((response) => (response.ok ? response.json() : null))
-    .then((release) => {
-      if (!release || !release.tag_name) {
-        return;
-      }
-      document.getElementById("version").textContent = ` · ${release.tag_name}`;
-      for (const asset of release.assets || []) {
-        if (/-arm64\.dmg$/.test(asset.name)) {
-          document.getElementById("dl-arm").href = asset.browser_download_url;
-        } else if (/-x86_64\.dmg$/.test(asset.name)) {
-          document.getElementById("dl-intel").href = asset.browser_download_url;
-        }
-      }
-    })
-    .catch(() => {});
-</script>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/site.js"></script>
 </body>
 </html>
