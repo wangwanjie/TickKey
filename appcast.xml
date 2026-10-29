@@ -1,0 +1,25 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>TickKey</title>
+        <item>
+            <title>1.1.2</title>
+            <pubDate>Fri, 23 Oct 2026 00:35:20 +0800</pubDate>
+            <sparkle:version>6</sparkle:version>
+            <sparkle:shortVersionString>1.1.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <sparkle:releaseNotesLink>https://github.com/wangwanjie/TickKey/releases/download/v1.1.2/TickKey-1.1.2.md</sparkle:releaseNotesLink>
+            <enclosure url="https://github.com/wangwanjie/TickKey/releases/download/v1.1.2/TickKey-1.1.2-arm64.dmg" type="application/octet-stream" sparkle:edSignature="mf7HsDMnE20qiBpk0GvGJ/VVv+DP0pzs0v3pmIUnLobDv6m+v+7MaB6VSIglCs5WR+4Zx6oSuTsdvBW/F/mcAQ==" length="2557040"/>
+        </item>
+        <item>
+            <title>1.1.2</title>
+            <pubDate>Fri, 23 Oct 2026 00:35:20 +0800</pubDate>
+            <sparkle:version>6</sparkle:version>
+            <sparkle:shortVersionString>1.1.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <sparkle:releaseNotesLink>https://github.com/wangwanjie/TickKey/releases/download/v1.1.2/TickKey-1.1.2.md</sparkle:releaseNotesLink>
+            <enclosure url="https://github.com/wangwanjie/TickKey/releases/download/v1.1.2/TickKey-1.1.2-x86_64.dmg" type="application/octet-stream" sparkle:edSignature="Kd/y4Ip57WGbaHsbJxtxvznZn0L/FOpNIV1dovYAg1q81APgNP0WpkiwEyEk8gefqt7lQKQx49GmUfp232KkBw==" length="2625059"/>
+        </item>
+    </channel>
+</rss>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TickKey — 免费的本地两步验证器</title>
+<meta name="description" content="TickKey 是免费的本地 TOTP 两步验证器，支持 Mac、iPhone 与 iPad。无账户注册、广告、分析 SDK 或服务端，验证码完全在本机生成。">
+<meta property="og:title" content="TickKey — 免费的本地两步验证器">
+<meta property="og:description" content="验证码只在本机生成。支持 Apple 芯片与 Intel，macOS 12 及以上；iOS 15 及以上。">
+<meta property="og:image" content="https://wangwanjie.github.io/TickKey/assets/icon.png">
+<link rel="icon" type="image/png" href="assets/icon-256.png">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #08101f;
+    --text: #eef3fc;
+    --muted: #9aa8c4;
+    --card: rgba(255, 255, 255, 0.045);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --nav-bg: rgba(8, 16, 31, 0.6);
+    --accent: #2f63d6;
+    --accent-2: #5fb2ff;
+    --accent-soft: rgba(95, 178, 255, 0.18);
+    --glow-1: rgba(47, 99, 214, 0.32);
+    --glow-2: rgba(130, 196, 255, 0.12);
+    --shadow: 0 40px 120px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .06);
+    --radius: 18px;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  }
+  /* 亮色系统外观：保留同一套蓝色，调整底色与文字对比度 */
+  @media (prefers-color-scheme: light) {
+    :root {
+      color-scheme: light;
+      --bg: #f5f8fe;
+      --text: #0f1b33;
+      --muted: #55627d;
+      --card: rgba(255, 255, 255, 0.8);
+      --card-border: rgba(15, 27, 51, 0.09);
+      --nav-bg: rgba(245, 248, 254, 0.72);
+      --accent-soft: rgba(47, 99, 214, 0.12);
+      --glow-1: rgba(47, 99, 214, 0.18);
+      --glow-2: rgba(95, 178, 255, 0.14);
+      --shadow: 0 30px 80px rgba(31, 74, 156, .18), 0 0 0 1px rgba(15, 27, 51, .06);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--text);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, var(--glow-1), transparent 60%),
+      radial-gradient(800px 500px at 90% 30%, var(--glow-2), transparent 60%),
+      var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: saturate(180%) blur(18px);
+    -webkit-backdrop-filter: saturate(180%) blur(18px);
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--card-border);
+  }
+  nav .wrap { display: flex; align-items: center; height: 56px; gap: 28px; }
+  nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; }
+  nav .brand img { width: 26px; height: 26px; }
+  nav .links { margin-left: auto; display: flex; gap: 22px; font-size: 14px; }
+  nav .links a { color: var(--muted); text-decoration: none; }
+  nav .links a:hover { color: var(--text); }
+  nav .lang { cursor: pointer; border: 1px solid var(--card-border); border-radius: 999px; padding: 3px 12px; background: none; color: var(--muted); font: inherit; font-size: 13px; }
+
+  header.hero { text-align: center; padding: 88px 0 40px; }
+  .hero img.icon { width: 148px; height: 148px; filter: drop-shadow(0 24px 48px rgba(47, 99, 214, 0.45)); }
+  .hero h1 { font-size: clamp(40px, 7vw, 68px); letter-spacing: -0.03em; margin: 18px 0 8px; line-height: 1.05; }
+  .hero h1 span {
+    background: linear-gradient(120deg, #a9d6ff, #5fb2ff 40%, #2f63d6);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p.lead { font-size: clamp(17px, 2.2vw, 21px); color: var(--muted); max-width: 720px; margin: 0 auto; }
+  .downloads { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin: 36px 0 14px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px; text-align: left;
+    padding: 13px 22px; border-radius: 14px; text-decoration: none; font-weight: 600; font-size: 16px;
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .btn small { display: block; font-weight: 400; font-size: 12px; opacity: .75; }
+  .btn.primary { color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 10px 30px rgba(47, 99, 214, .35); }
+  .btn.secondary { background: var(--card); border: 1px solid var(--card-border); }
+  .btn:hover { transform: translateY(-2px); }
+  .btn svg { width: 22px; height: 22px; flex: none; }
+  .meta { color: var(--muted); font-size: 13px; }
+
+  .shot { margin: 56px auto 0; max-width: 1000px; }
+  .shot img { display: block; margin: 0 auto; max-width: 100%; border-radius: 14px; box-shadow: var(--shadow); }
+  .shot img.phone { max-height: 720px; border-radius: 28px; }
+  .tabs { display: flex; justify-content: center; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+  .tabs button {
+    font: inherit; font-size: 13px; color: var(--muted); background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 999px; padding: 6px 14px; cursor: pointer;
+  }
+  .tabs button.active { color: var(--text); border-color: rgba(95, 178, 255, .7); background: var(--accent-soft); }
+
+  section { padding: 96px 0 0; }
+  section h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.02em; margin: 0 0 8px; text-align: center; }
+  section p.sub { text-align: center; color: var(--muted); margin: 0 auto 44px; max-width: 640px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .card {
+    background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius);
+    padding: 20px; transition: border-color .15s ease, transform .15s ease;
+  }
+  .card:hover { border-color: rgba(95, 178, 255, .5); transform: translateY(-2px); }
+  .card .tile {
+    width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
+    font-size: 19px; color: #fff; margin-bottom: 12px;
+  }
+  .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .points { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .point { padding: 24px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--card-border); }
+  .point b { display: block; font-size: 18px; margin-bottom: 6px; }
+  .point span { color: var(--muted); font-size: 14px; }
+
+  .install ol { counter-reset: step; list-style: none; padding: 0; margin: 0 auto; max-width: 720px; }
+  .install li { counter-increment: step; position: relative; padding: 18px 20px 18px 64px; margin-bottom: 10px; background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; }
+  .install li::before {
+    content: counter(step); position: absolute; left: 18px; top: 16px; width: 30px; height: 30px; border-radius: 50%;
+    display: grid; place-items: center; font-weight: 700; background: var(--accent-soft); color: var(--accent-2);
+  }
+  .install li code { background: var(--accent-soft); border-radius: 6px; padding: 1px 6px; font-size: 13px; }
+
+  footer { margin-top: 110px; padding: 36px 0 48px; border-top: 1px solid var(--card-border); color: var(--muted); font-size: 13px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; }
+  footer a { color: var(--muted); }
+
+  [data-lang="en"] .zh, [data-lang="zh"] .en { display: none !important; }
+
+  @media (max-width: 640px) {
+    nav .links a.hide-sm { display: none; }
+    header.hero { padding-top: 56px; }
+  }
+</style>
+</head>
+<body data-lang="zh">
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#"><img src="assets/icon-256.png" alt="">TickKey</a>
+    <div class="links">
+      <a class="hide-sm" href="#features"><span class="zh">功能</span><span class="en">Features</span></a>
+      <a class="hide-sm" href="#install"><span class="zh">安装</span><span class="en">Install</span></a>
+      <a href="https://github.com/wangwanjie/TickKey/releases"><span class="zh">版本历史</span><span class="en">Releases</span></a>
+      <a href="https://github.com/wangwanjie/TickKey">GitHub</a>
+    </div>
+    <button class="lang" id="lang-toggle" type="button">EN</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <img class="icon" src="assets/icon.png" alt="TickKey">
+    <h1><span>TickKey</span></h1>
+    <p class="lead">
+      <span class="zh">免费的本地两步验证器，支持 Mac、iPhone 与 iPad。无账户注册、广告、分析 SDK 或服务端，验证码完全在本机生成。</span>
+      <span class="en">A free, local two-factor authenticator for Mac, iPhone and iPad. No sign-up, ads, analytics or servers — codes are generated entirely on your device.</span>
+    </p>
+    <div class="downloads">
+      <!-- 默认指向当前最新版；页面加载后通过 GitHub API 换成最新 Release 中的同架构安装包 -->
+      <a class="btn primary" id="dl-arm" href="https://github.com/wangwanjie/TickKey/releases/download/v1.1.2/TickKey-1.1.2-arm64.dmg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14"/></svg>
+        <span><span class="zh">下载 Apple 芯片版</span><span class="en">Download for Apple silicon</span><small>M1 / M2 / M3 / M4 …</small></span>
+      </a>
+      <a class="btn secondary" id="dl-intel" href="https://github.com/wangwanjie/TickKey/releases/download/v1.1.2/TickKey-1.1.2-x86_64.dmg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14"/></svg>
+        <span><span class="zh">下载 Intel 版</span><span class="en">Download for Intel</span><small>x86_64</small></span>
+      </a>
+    </div>
+    <div class="meta">
+      <span class="zh">免费 · macOS 12 及以上 · 已通过 Apple 公证 · 内置自动更新</span>
+      <span class="en">Free · macOS 12 or later · Notarized by Apple · Built-in auto update</span>
+      <span id="version"></span>
+    </div>
+
+    <div class="shot">
+      <img id="shot" src="assets/screenshots/mac-main.png" alt="TickKey">
+    </div>
+    <div class="tabs" id="tabs">
+      <button type="button" class="active" data-shot="mac-main"><span class="zh">Mac</span><span class="en">Mac</span></button>
+      <button type="button" data-shot="ios-main" data-phone="1"><span class="zh">iPhone</span><span class="en">iPhone</span></button>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="points">
+      <div class="point"><b><span class="zh">只在本机</span><span class="en">Local only</span></b><span class="zh">没有账户和服务端，验证码在本机生成，账户数据不离开设备。</span><span class="en">No accounts or servers. Codes are generated locally and your accounts never leave the device.</span></div>
+      <div class="point"><b><span class="zh">加密存储</span><span class="en">Encrypted at rest</span></b><span class="zh">账户以 AES-256-GCM 加密存入数据库，设备密钥保存在 Keychain 且不同步到 iCloud。</span><span class="en">Accounts are encrypted with AES-256-GCM; the device key stays in the Keychain and never syncs to iCloud.</span></div>
+      <div class="point"><b><span class="zh">原生应用</span><span class="en">Truly native</span></b><span class="zh">Mac 使用 AppKit，iPhone / iPad 使用 UIKit，两端共用验证码与备份实现。</span><span class="en">AppKit on Mac and UIKit on iPhone / iPad, sharing the same code generation and backup engine.</span></div>
+      <div class="point"><b><span class="zh">三种语言</span><span class="en">Three languages</span></b><span class="zh">简体中文、繁體中文、English，语言和外观随时切换。</span><span class="en">Simplified Chinese, Traditional Chinese and English, with live language and appearance switching.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <h2><span class="zh">需要的都在这里</span><span class="en">Everything you need</span></h2>
+    <p class="sub"><span class="zh">支持标准 TOTP（SHA-1 / SHA-256 / SHA-512，6–8 位，1–300 秒）与 Google Authenticator 迁移二维码。</span><span class="en">Standard TOTP (SHA-1 / SHA-256 / SHA-512, 6–8 digits, 1–300 s) and Google Authenticator migration QR codes.</span></p>
+    <div class="grid" id="feature-grid"></div>
+  </div>
+</section>
+
+<section id="install" class="install">
+  <div class="wrap">
+    <h2><span class="zh">安装</span><span class="en">Install</span></h2>
+    <p class="sub"><span class="zh">不确定芯片类型？打开「苹果菜单 › 关于本机」，看“芯片”或“处理器”一栏。</span><span class="en">Not sure which chip you have? Open  › About This Mac and check “Chip” or “Processor”.</span></p>
+    <ol>
+      <li><span class="zh">下载与本机芯片匹配的 DMG，打开后把 TickKey 拖进「应用程序」文件夹。</span><span class="en">Download the DMG for your chip, open it and drag TickKey into Applications.</span></li>
+      <li><span class="zh">从「应用程序」中打开 TickKey，扫码、拖入二维码图片或导入备份即可添加账户。</span><span class="en">Launch TickKey from Applications, then add accounts by dropping in QR images or importing a backup.</span></li>
+      <li><span class="zh">之后的新版本通过内置的 Sparkle 自动更新获取，也可在设置中手动检查。</span><span class="en">Future versions arrive through the built-in Sparkle updater, or check manually in Settings.</span></li>
+      <li><span class="zh">iOS 版暂未上架 App Store；Release 中的 <code>iOS-AdHoc.ipa</code> 只能安装到已加入描述文件的设备。</span><span class="en">The iOS app is not on the App Store yet. The <code>iOS-AdHoc.ipa</code> in each release installs only on provisioned devices.</span></li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 VanJay · TickKey</span>
+    <span>
+      <a href="https://github.com/wangwanjie/TickKey/releases"><span class="zh">版本历史</span><span class="en">Releases</span></a> ·
+      <a href="https://github.com/wangwanjie/TickKey/issues"><span class="zh">反馈问题</span><span class="en">Feedback</span></a>
+    </span>
+  </div>
+</footer>
+
+<script>
+  // 功能卡片：[图标, 颜色, 中文名, 英文名, 中文说明, 英文说明]
+  const features = [
+    ["◔", "#2f63d6", "账户卡片", "Account cards", "自适应卡片布局，搜索、单击复制、编辑、删除，圆饼倒计时一目了然。", "Adaptive cards with search, click-to-copy, edit, delete and a pie countdown."],
+    ["⌗", "#0ea5e9", "扫码与导入", "Scan & import", "iPhone 相机扫码，两端都可从二维码图片、剪贴板链接与截图导入；Mac 可直接把图片拖进窗口。", "Scan with the iPhone camera, or import from QR images, clipboard links and screenshots. Drag images into the Mac window."],
+    ["⇄", "#6366f1", "迁移二维码", "Migration QR", "导入 Google Authenticator 迁移二维码，也能导出单个、全部或分页的迁移二维码。", "Import Google Authenticator migration codes and export single, full or paged migration QR codes."],
+    ["⛁", "#16a34a", "加密备份", "Encrypted backup", "跨平台密码加密的 .tickkey 备份，在访达、文件、邮件或隔空投送中直接用 TickKey 打开导入。", "Password-encrypted .tickkey backups across platforms. Open them straight from Finder, Files, Mail or AirDrop."],
+    ["≡", "#f59e0b", "文本导入导出", "Text import & export", "逐行导入 otpauth URI 或迁移链接，兼容浏览器 Authenticator 插件导出的文本。", "Import otpauth URIs or migration links line by line, compatible with browser Authenticator extensions."],
+    ["⚿", "#e11d48", "解锁保护", "App lock", "启动、回到前台或锁屏后用面容 ID、触控 ID 或设备密码解锁；Mac 可用 ⌘L 立即锁定。", "Require Face ID, Touch ID or the device passcode on launch or return. Press ⌘L to lock instantly on Mac."],
+    ["☑", "#14b8a6", "批量删除", "Batch delete", "多选、全选与反选，大批量删除前提醒备份并二次确认。", "Multi-select, select all and invert, with backup reminders and double confirmation for large deletions."],
+    ["⧉", "#a16207", "剪贴板清理", "Clipboard hygiene", "复制的验证码 30 秒后自动清理，并标记为敏感内容，剪贴板工具不会记录。", "Copied codes are cleared after 30 seconds and marked as sensitive so clipboard managers skip them."]
+  ];
+
+  const grid = document.getElementById("feature-grid");
+  for (const [glyph, color, zh, en, zhText, enText] of features) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML =
+      `<div class="tile" style="background:${color}">${glyph}</div>` +
+      `<h3><span class="zh">${zh}</span><span class="en">${en}</span></h3>` +
+      `<p><span class="zh">${zhText}</span><span class="en">${enText}</span></p>`;
+    grid.appendChild(card);
+  }
+
+  // 截图切换：iPhone 截图为竖图，限制高度
+  const shot = document.getElementById("shot");
+  document.getElementById("tabs").addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) {
+      return;
+    }
+    document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("active", b === button));
+    shot.src = `assets/screenshots/${button.dataset.shot}.png`;
+    shot.classList.toggle("phone", button.dataset.phone === "1");
+  });
+
+  // 语言：默认跟随浏览器，记住用户的选择
+  const toggle = document.getElementById("lang-toggle");
+  function applyLanguage(lang) {
+    document.body.dataset.lang = lang;
+    document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+    toggle.textContent = lang === "zh" ? "EN" : "中文";
+    localStorage.setItem("tickkey.lang", lang);
+  }
+  const saved = localStorage.getItem("tickkey.lang");
+  applyLanguage(saved || (navigator.language.toLowerCase().startsWith("zh") ? "zh" : "en"));
+  toggle.addEventListener("click", () => applyLanguage(document.body.dataset.lang === "zh" ? "en" : "zh"));
+
+  // 尽量识别 Intel Mac（浏览器无法可靠区分时保持 Apple 芯片优先）
+  try {
+    const canvas = document.createElement("canvas");
+    const gl = canvas.getContext("webgl");
+    const info = gl && gl.getExtension("WEBGL_debug_renderer_info");
+    const renderer = info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : "";
+    if (/Intel|AMD|Radeon/i.test(renderer) && !/Apple/i.test(renderer)) {
+      document.getElementById("dl-intel").className = "btn primary";
+      document.getElementById("dl-arm").className = "btn secondary";
+      document.querySelector(".downloads").prepend(document.getElementById("dl-intel"));
+    }
+  } catch (error) {}
+
+  // 显示最新版本号，并把下载按钮指向最新 Release 中对应架构的 DMG
+  fetch("https://api.github.com/repos/wangwanjie/TickKey/releases/latest")
+    .then((response) => (response.ok ? response.json() : null))
+    .then((release) => {
+      if (!release || !release.tag_name) {
+        return;
+      }
+      document.getElementById("version").textContent = ` · ${release.tag_name}`;
+      for (const asset of release.assets || []) {
+        if (/-arm64\.dmg$/.test(asset.name)) {
+          document.getElementById("dl-arm").href = asset.browser_download_url;
+        } else if (/-x86_64\.dmg$/.test(asset.name)) {
+          document.getElementById("dl-intel").href = asset.browser_download_url;
+        }
+      }
+    })
+    .catch(() => {});
+</script>
+</body>
+</html>
